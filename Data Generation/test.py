@@ -14,7 +14,7 @@ import datetime
 # =============================================================================
 
 script_directory = os.path.dirname(__file__)
-results_folderpath = os.path.join(script_directory, 'Results', 'Processed_BuildingSim_Data')
+# results_folderpath = os.path.join(script_directory, 'Results', 'Processed_BuildingSim_Data')
 results_folderpath = r"D:\Building_Results" # Overriding default path
 
 def make_aggregation_csvs():
@@ -27,7 +27,10 @@ def make_aggregation_csvs():
     for Simulation_Name in Simulation_Name_List:
     
         aggregation_folderpath = os.path.join(results_folderpath, Simulation_Name, 'Sim_AggregatedData')
-        aggregation_pickle_filepath = os.path.join(aggregation_folderpath, 'Aggregation_Dict_OneZone.pickle')
+        aggregation_pickle_filepath = os.path.join(aggregation_folderpath, 'Aggregation_Dict_AllZones.pickle')
+
+        aggregation_csv_folderpath = os.path.join(aggregation_folderpath, 'Aggregation_AllZones')
+        os.makedirs(aggregation_csv_folderpath, exist_ok=True)
     
         with open(aggregation_pickle_filepath, 'rb') as file:
             data = pickle.load(file)
@@ -37,7 +40,7 @@ def make_aggregation_csvs():
             if isinstance(value, pd.DataFrame):
                 # value.insert(0, 'Datetime', data['DateTime_List'])
                 csv_filename = key + '.csv'
-                csv_filepath = os.path.join(aggregation_folderpath, csv_filename)
+                csv_filepath = os.path.join(aggregation_csv_folderpath, csv_filename)
                 value.to_csv(csv_filepath, index=False)
 
 make_aggregation_csvs()   
