@@ -43,7 +43,7 @@ def get_create_table_query(tablename):
             zone_id SERIAL PRIMARY KEY,
             building_id INT NOT NULL,
             zone_name VARCHAR(100) UNIQUE NOT NULL,
-            FOREIGN KEY (building_id) REFERENCES building_zones(building_id));"""
+            FOREIGN KEY (building_id) REFERENCES building_prototypes(building_id));"""
         
     elif tablename == "variables":
         query = """
@@ -67,10 +67,9 @@ def get_create_table_query(tablename):
         variable_id INT NOT NULL,
         datetime_id INT NOT NULL,
         value FLOAT NOT NULL,
-        FOREIGN KEY (simulation_id) REFERENCES simulations(simulation_id),
         FOREIGN KEY (variable_id) REFERENCES variables(variable_id),
         FOREIGN KEY (datetime_id) REFERENCES datetimes(datetime_id),
-        PRIMARY KEY (simulation_id, variable_id, datetime_id));"""
+        PRIMARY KEY (variable_id, datetime_id));"""
     
     # Return Query
     
@@ -92,8 +91,6 @@ def create_tables():
               "zones",
               "variables",
               "aggregation_zones",
-              "simulations",
-              "building_zones",
               "timeseriesdata"]
     
     for table in tables:
@@ -128,5 +125,5 @@ def delete_all_tables(dbname="buildings", user="Casey", password="OfficeLarge", 
                   
 #Main
 #create_database()        
-#create_tables()    
-#delete_all_tables()    
+create_tables()
+#delete_all_tables()

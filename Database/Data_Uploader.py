@@ -125,8 +125,8 @@ def populate_buildings_table(conn):
     except Exception as e:
         conn.rollback()
         print(f"Error inserting into building_prototypes: {e}")
-# Creates a record for each prototypical buidling IDF provided by PNNL.
-# Uploades this dataframe to Database.
+# Creates a record for each prototypical building IDF provided by PNNL.
+# Uploads this dataframe to Database.
 # This Function only needs to be run once.     
 
 def get_building_id(conn, building_name):
@@ -160,8 +160,6 @@ def populate_zones_table(conn, data_dict, building_id):
     
     try:
         with conn.cursor() as cursor:
-            
-            
 
             # Convert to DataFrame
             zones_df = pd.DataFrame(zones, columns=["zone_name"])
