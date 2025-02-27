@@ -68,3 +68,4 @@ def make_one_zone_aggregation_csvs():
                 value.to_csv(csv_filepath, index=False)
 
 make_one_zone_aggregation_csvs()
+make_all_zones_aggregation_csvs()

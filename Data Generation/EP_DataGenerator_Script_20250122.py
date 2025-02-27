@@ -464,8 +464,8 @@ def simulate_building(IDF_FilePath, Weather_FilePath, Special_IDFFile_Path, Simu
 IDF_FileYear = 2013
 Sim_Start_Day = 1
 Sim_Start_Month = 1
-Sim_End_Day = 2
-Sim_End_Month = 1
+Sim_End_Day = 31
+Sim_End_Month = 12
 Sim_OutputVariable_ReportingFrequency = 'timestep'
 Sim_TimeStep = 5
 Simulation_VariableNames = ['Schedule Value',
@@ -522,7 +522,7 @@ idf_filepath_seattle_list = []
 for filepath in idf_filepath_list: 
     if "Seattle" in filepath: idf_filepath_seattle_list.append(filepath)
     
-Weather_FilePath = os.path.join(script_directory, 'Data', 'TMY3_WeatherFiles_Commercial', 'USA_FL_Tampa-MacDill.AFB.747880_TMY3.epw')
+Weather_FilePath = os.path.join(script_directory, 'Data', 'TMY3_WeatherFiles_Commercial', 'USA_WA_Seattle-Tacoma.Intl.AP.727930_TMY3.epw')
 
 # Storing Results in Folder Containing Application
 Results_FolderPath = os.path.join(script_directory, 'Results', 'Processed_BuildingSim_Data')
