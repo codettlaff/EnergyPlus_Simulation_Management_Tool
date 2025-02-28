@@ -5,6 +5,30 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 import pickle
+import re
+
+def get_climate_zone(location):
+    climate_zones = {
+        "Miami": "1A",
+        "Tampa": "2A",
+        "Tucson": "2B",
+        "Atlanta": "3A",
+        "ElPaso": "3B",
+        "SanDiego": "3C",
+        "NewYork": "4A",
+        "Albuquerque": "4B",
+        "Seattle": "4C",
+        "Buffalo": "5A",
+        "Denver": "5B",
+        "PortAngeles": "5C",
+        "Rochester": "6A",
+        "GreatFalls": "6B",
+        "InternationalFalls": "7",
+        "Fairbanks": "8"
+    }
+
+    return climate_zones.get(location, "Climate Zone not found.")
+# Tested - Passed
 
 def populate_datetimes_table(conn, start_datetime=datetime(2013, 1, 1, 0, 0)):
     """
@@ -37,6 +61,7 @@ def populate_datetimes_table(conn, start_datetime=datetime(2013, 1, 1, 0, 0)):
         conn.rollback()
         print(f"Error inserting into datetimes table: {e}")
 # Fills datetimes table with timestamps at 5-minute intervals for one year.
+# Tested - Passed
 
 def populate_buildings_table(conn):
     """
@@ -86,7 +111,7 @@ def populate_buildings_table(conn):
     # Manufactured Homes
     configurations = ["Single-section", "Multi-section"]
     heating_system_types = ["Electric-Resistance", "Gas-Furnace", "Oil-Furnace", "Heat-Pump"]
-    manufactured_standards = ["Final-Rule", "HUD-Baseline"]
+    manufactured_standards = ["Final-Rule-Tier1", "Final-Rule-Tier2", "HUD-Baseline"]
     
     manufactured_data = [
         ["Manufactured", configuration, standard, climate_zone, heating_type, None]
@@ -127,28 +152,84 @@ def populate_buildings_table(conn):
         print(f"Error inserting into building_prototypes: {e}")
 # Creates a record for each prototypical building IDF provided by PNNL.
 # Uploads this dataframe to Database.
-# This Function only needs to be run once.     
+# This Function only needs to be run once.
+# Tested - Passed
 
-def get_building_id(conn, building_name):
+def get_building_id(conn, building_type, building_name):
     """
     Retrieves the building_id for a given building name from the database.
 
     :param conn: psycopg2 connection object
-    :param building_name: Name of the building to look up
+    :param building_type: 'Commercial', 'Residential', 'Manufactured'
+    :param building_name: Formatted building name based on the type
     :return: Building ID if found, None otherwise
     """
-    try:
-        with conn.cursor() as cursor:
-            cursor.execute("SELECT building_id FROM building_prototypes WHERE prototype = %s;", (building_name,))
-            result = cursor.fetchone()
-            return result[0] if result else None
 
-    except Exception as e:
-        print(f"Error retrieving building_id for '{building_name}': {e}")
+    cursor = conn.cursor()
+
+    # Initialize query parameters
+    prototype, energy_code, climate_zone, heating_type, foundation_type = None, None, None, None, None
+
+    if building_type == "Commercial":
+        # Example Name: ASHRAE901_Hospital_STD2013_Tampa
+        match = re.match(r"(ASHRAE\d{3}|IECC\d{4})_(\w+)_STD(\d{4})_([A-Za-z]+)", building_name)
+        if match:
+            energy_code = match.group(1).replace('901', '') + match.group(3)  # Combine standard and year
+            prototype = match.group(2)
+            location = match.group(4)
+            climate_zone = get_climate_zone(location)
+
+    elif building_type == "Residential":
+        # Example Name: US+MF+CZ1AWH+elecres+crawlspace+IECC_2021
+        match = re.match(r"US\+([A-Za-z-]+)\+CZ(\d+[A-Z]*)\+([a-z-]+)\+([a-z-]+)\+(IECC_\d{4})", building_name)
+        if match:
+            prototype = match.group(1).replace('MF', 'Multi-family').replace('SF', 'Single-family')
+            climate_zone = match.group(2).replace('CZ', '').replace('W', '').replace('H', '')
+            heating_type = match.group(3).replace('elecres', 'Electric-Resistance').replace('hp', 'Heat-Pump').replace('gasfurnace', 'Gas-Furnace').replace('oilfurnace', 'Oil-Furnace')
+            foundation_type = match.group(4).replace('crawlspace', 'Crawlspace').replace('unheatedbsmt', 'Unheated-basement').replace('heatedbsmt', 'Heated-basement').replace('slab', 'Slab')
+            energy_code = match.group(5).replace('_', '')
+
+    elif building_type == "Manufactured":
+        # Example Name: MS_Miami_1A_HUD_electricfurnace
+        match = re.match(r"([A-Za-z]+)_([A-Za-z]+)_(\d+[A-Z]*)_(HUD|Final-Rule)_(\w+)", building_name)
+        if match:
+            prototype = match.group(1).replace('SS', 'Single-section').replace('MS', 'Multi-section')
+            climate_zone = match.group(3)
+            energy_code = match.group(4).replace('tier1', 'Final-Rule-Tier1').replace('tier2', 'Final-Rule-Tier2').replace('HUD', 'HUB-Baseline')
+            heating_type = match.group(5).replace('elecres', 'Electric-Resistance').replace('hp', 'Heat-Pump').replace('gasfurnace', 'Gas-Furnace').replace('oilfurnace', 'Oil-Furnace')
+
+    # If parsing failed, return None
+    if not prototype or not energy_code or not climate_zone:
         return None
-# Returns Building ID
 
-def populate_zones_table(conn, data_dict, building_id):
+    # Construct SQL query
+    query = """
+        SELECT building_id FROM building_prototypes
+        WHERE building_type = %s AND prototype = %s AND energy_code = %s AND climate_zone = %s
+    """
+    params = [building_type, prototype, energy_code, climate_zone]
+
+    if heating_type:
+        query += " AND heating_type = %s"
+        params.append(heating_type)
+    if foundation_type:
+        query += " AND foundation_type = %s"
+        params.append(foundation_type)
+
+    try:
+        cursor.execute(query, params)
+        result = cursor.fetchone()
+        cursor.close()
+        return result[0] if result else None
+    except Exception as e:
+        print(f"Error retrieving building ID: {e}")
+        cursor.close()
+        return None
+# Tested for Commercial Building - Passed
+# Tested for Residential Building - Passed
+# Tested for Manufactured Buildign - Passed
+
+def populate_zones_table(conn, data_dict, building_name, building_id):
     """
     Populates the 'zones' table with unique zone names from the provided data dictionary.
     
@@ -185,7 +266,7 @@ def populate_zones_table(conn, data_dict, building_id):
 # Uploads tot eh zones database    
 # Use for All-Zones Aggregation Only     
 
-def populate_aggregation_zones_table(conn, data_dict, building_id):
+def populate_aggregation_zones_table(conn, data_dict, building_name, building_id):
     
     zones = [zone for zone in data_dict.keys() if "DateTime_List" not in zone and "Equipment" not in zone]
     
@@ -237,8 +318,25 @@ def populate_aggregation_zones_table(conn, data_dict, building_id):
 # Each record has FK Composite Zone and FK Aggregation Zone  
 # Use for Single-Zone Aggregation Only       
     
+# Test
+dbname = "buildings"
+user = "Casey"
+password = "OfficeLarge"
+host = "localhost"
 
+# Create the connection object
+conn = psycopg2.connect(dbname=dbname, user=user, password=password, host=host)
 
-        
+# populate_datetimes_table(conn)
+populate_buildings_table(conn)
 
- 
+# test_building_name = 'ASHRAE901_Hospital_STD2013_Tampa'
+# building_id = get_building_id(conn, 'Commercial', test_building_name)
+# print(building_id)
+
+test_building_name = 'US+MF+CZ1AWH+elecres+crawlspace+IECC_2021'
+building_id = get_building_id(conn, 'Residential', test_building_name)
+print(building_id)
+
+# Debugging get_building_id function
+# Need Location to Climate Zone Function
