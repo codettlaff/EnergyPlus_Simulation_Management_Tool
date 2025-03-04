@@ -1,0 +1,114 @@
+Setting Up a Conda Environment Using environment.yml
+
+
+Step 1: Install Conda
+
+	- If you haven't installed Conda yet, download and install Miniconda or Anaconda from:
+
+		- Miniconda
+
+		- Anaconda
+
+
+Step 2: Open Command Prompt
+
+	- Windows: Open cmd or Anaconda Prompt
+
+	- Mac/Linux: Open Terminal
+
+
+Step 3: Navigate to the Directory Containing environment.yml
+
+	- Use cd to navigate to the folder where your environment.yml file is located. For example:
+
+		-> cd C:\path\to\your\project
+
+
+Step 4: Create a Conda Environment from environment.yml
+
+	- To create an environment from the YAML file, run:
+
+		-> conda env create --file environment.yml
+
+	- Using a Custom Name (If you want to use a different name for the environment)
+
+		-> conda env create --file environment.yml --name my_custom_env
+
+	- Using a Custom Path (To install the environment in a specific directory)
+
+		-> conda env create --file environment.yml --prefix C:\custom\path\to\env
+
+
+Step 5: Verify Installation
+
+	- Restart the terminal.
+
+	- Check if the environment is set up correctly:
+
+			-> conda env list
+
+		- or
+
+			-> conda info --envs
+
+		- You should see your environment listed.
+
+	- To confirm all packages are installed:
+
+		-> conda list
+
+Step 6: Activate the Environment
+
+	
+
+	- Restart the terminal.
+
+	- Initialize conda:
+
+		-> conda init
+
+	- Activate environment (Replace my_custom_env with the actual name of your environment / restart of terminal might be required):
+
+		-> conda activate my_custom_env
+
+
+Step 7: Using the Environment
+
+	- While inside the environment, you can:
+
+		- Install new packages:
+
+			-> conda install package_name
+
+		- Install pip packages:
+
+			-> pip install package_name
+
+		- Exit the environment:
+
+			-> conda deactivate
+
+
+Step 8: Create environment.yml from an Existing Environment
+
+	- If you have an existing environment and want to export it to a YAML file, run:
+
+		-> conda env export --name your_env_name > environment.yml
+
+	- This will create an environment.yml file that includes all installed packages and dependencies in the current directory of the cmd.
+
+
+Step 9: Deleting an Environment (Optional)
+
+	- To remove the environment (Replace my_custom_env with the actual name.):
+
+		-> conda env remove --name my_custom_env
+
+
+Step 10: Recreating the Environment (If Needed)
+
+	- If the environment is deleted or needs to be recreated on another system, just re-run:
+
+		-> conda env create --file environment.yml
+
+This document provides a step-by-step guide to setting up and using a Conda environment from an environment.yml file. Ensure you remove the prefix: line from the YAML file if sharing it with others.
