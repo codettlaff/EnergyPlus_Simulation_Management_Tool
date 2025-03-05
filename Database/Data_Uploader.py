@@ -267,6 +267,27 @@ def populate_zones_table(conn, data_dict, building_name, building_id):
 # Use for All-Zones Aggregation Only
 # Passed
 
+def get_zone_id(conn, building_id, zone_name):
+    """
+    Retrieves the zone_id for a given building_id and zone_name from the zones table.
+
+    :param conn: psycopg2 connection object.
+    :param building_id: The ID of the building.
+    :param zone_name: The name of the zone.
+    :return: The corresponding zone_id if found, otherwise None.
+    """
+    query = """
+    SELECT zone_id FROM zones 
+    WHERE building_id = %s AND zone_name = %s;
+    """
+
+    with conn.cursor() as cursor:
+        cursor.execute(query, (building_id, zone_name))
+        result = cursor.fetchone()  # Fetch one result
+
+    return result[0] if result else None  # Return zone_id or None if not found
+# Passed
+
 def populate_aggregation_zones_table(conn, data_dict, building_name, building_id):
     
     zones = [zone for zone in data_dict.keys() if "DateTime_List" not in zone and "Equipment" not in zone]
@@ -317,8 +338,45 @@ def populate_aggregation_zones_table(conn, data_dict, building_name, building_id
         print(f"Error populating aggregation_zones: {e}")
 # Fills the Aggregation Zones Linking Table
 # Each record has FK Composite Zone and FK Aggregation Zone  
-# Use for Single-Zone Aggregation Only       
-    
+# Use for Single-Zone Aggregation Only
+# Do This Later
+
+def populate_variables_table(conn, data_dict):
+
+    keys = list(data_dict.keys())  # Convert keys to a list
+    zone_names = []
+    for key in keys[1:]:
+        if "Equipment" in key:
+            continue
+        else:
+            zone_names.append(key)
+
+    insert_zone_ids = []
+    insert_variable_names = []
+
+    for zone_name in zone_names:
+
+        zone_id = get_zone_id(conn, building_id, zone_name)
+        variable_names = data_dict[zone_name].columns.tolist()
+
+        for variable_name in variable_names:
+
+            insert_zone_ids.append(zone_id)
+            insert_variable_names.append(variable_name)
+
+    records = list(zip(insert_variable_names, insert_zone_ids))
+
+    query = """
+    INSERT INTO variables (variable_name, zone_id)
+    VALUES (%s, %s)
+    ON CONFLICT DO NOTHING;
+    """
+
+    with conn.cursor() as cursor:
+        cursor.executemany(query, records)  # Batch insert
+        conn.commit()
+# Produces Results, Results should be investigated for correctness.
+
 # Test
 dbname = "buildings"
 user = "Casey"
@@ -328,8 +386,8 @@ host = "localhost"
 # Create the connection object
 conn = psycopg2.connect(dbname=dbname, user=user, password=password, host=host)
 
-populate_datetimes_table(conn)
-populate_buildings_table(conn)
+#populate_datetimes_table(conn)
+#populate_buildings_table(conn)
 
 test_building_name = 'ASHRAE901_Hospital_STD2013_Tampa'
 building_id = get_building_id(conn, 'Commercial', test_building_name)
@@ -338,4 +396,6 @@ print(building_id)
 all_zone_aggregated_pickle_filepath = r"D:\Seattle_ASHRAE_2013_2day\ASHRAE901_OfficeSmall_STD2013_Seattle\Sim_AggregatedData\Aggregation_Dict_AllZones.pickle"
 file = open(all_zone_aggregated_pickle_filepath,"rb")
 data_dict = pickle.load(file)
-populate_zones_table(conn, data_dict, test_building_name, building_id)
+#populate_zones_table(conn, data_dict, test_building_name, building_id)
+populate_variables_table(conn, data_dict)
+
