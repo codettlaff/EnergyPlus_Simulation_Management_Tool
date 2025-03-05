@@ -511,7 +511,7 @@ Simulation_VariableNames = ['Schedule Value',
 script_directory = os.path.dirname(__file__)
 Special_IDFFile_Path = os.path.join(script_directory, 'Special.idf')
 
-folderpath = os.path.join(script_directory, 'Data', 'Commercial_Prototypes', 'ASHRAE', '90_1_2013')
+folderpath = os.path.abspath(os.path.join(script_directory, '..', '..', 'Data', 'Commercial_Prototypes', 'ASHRAE', '90_1_2013'))
 idf_filepath_list = []
 for root, dirs, files in os.walk(folderpath):
     for file in files:
@@ -520,7 +520,7 @@ for root, dirs, files in os.walk(folderpath):
   
 idf_filepath_seattle_list = []
 for filepath in idf_filepath_list: 
-    if "Seattle" in filepath: idf_filepath_seattle_list.append(filepath)
+    if "Atlanta" in filepath: idf_filepath_seattle_list.append(filepath)
     
 Weather_FilePath = os.path.join(script_directory, 'Data', 'TMY3_WeatherFiles_Commercial', 'USA_WA_Seattle-Tacoma.Intl.AP.727930_TMY3.epw')
 
