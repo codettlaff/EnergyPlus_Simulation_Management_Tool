@@ -24,7 +24,8 @@ def get_create_table_query(tablename):
             energy_code VARCHAR(100) NOT NULL,
             climate_zone VARCHAR(100) NOT NULL,
             heating_type VARCHAR(100),
-            foundation_type VARCHAR(100)); """
+            foundation_type VARCHAR(100),
+            UNIQUE (building_id, building_type, prototype, energy_code, climate_zone, heating_type, foundation_type)); """
         
     # Variable Information Tables
         
@@ -52,7 +53,8 @@ def get_create_table_query(tablename):
             variable_id SERIAL PRIMARY KEY,
             variable_name VARCHAR(100) NOT NULL,
             zone_id INT NOT NULL,
-            FOREIGN KEY (zone_id) REFERENCES zones(zone_id));"""
+            FOREIGN KEY (zone_id) REFERENCES zones(zone_id),
+            UNIQUE (variable_name, zone_id));"""
         
     # Time Series Data Tables
     
@@ -60,7 +62,7 @@ def get_create_table_query(tablename):
         query = """
         CREATE TABLE datetimes (
         datetime_id SERIAL PRIMARY KEY,
-        datetime TIMESTAMP NOT NULL);"""
+        datetime TIMESTAMP UNIQUE NOT NULL);"""
         
     elif tablename == "timeseriesdata":
         query = """

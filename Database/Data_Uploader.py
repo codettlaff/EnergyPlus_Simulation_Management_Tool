@@ -251,7 +251,7 @@ def populate_zones_table(conn, data_dict, building_name, building_id):
             # Insert zones into the table with conflict handling
             query = """
             INSERT INTO zones (building_id, zone_name)
-            SELECT %s, zone_id FROM zones WHERE zone_name = %s
+            VALUES (%s, %s)
             ON CONFLICT (building_id, zone_name) DO NOTHING;
             """
             
@@ -263,8 +263,9 @@ def populate_zones_table(conn, data_dict, building_name, building_id):
         conn.rollback()
         print(f"Error inserting into zones table: {e}")
 # Creates a record for each zone in the data dictionary.
-# Uploads tot eh zones database    
-# Use for All-Zones Aggregation Only     
+# Uploads the zones database
+# Use for All-Zones Aggregation Only
+# Passed
 
 def populate_aggregation_zones_table(conn, data_dict, building_name, building_id):
     
@@ -327,21 +328,14 @@ host = "localhost"
 # Create the connection object
 conn = psycopg2.connect(dbname=dbname, user=user, password=password, host=host)
 
-# populate_datetimes_table(conn)
-# populate_buildings_table(conn)
+populate_datetimes_table(conn)
+populate_buildings_table(conn)
 
-# test_building_name = 'ASHRAE901_Hospital_STD2013_Tampa'
-# building_id = get_building_id(conn, 'Commercial', test_building_name)
-# print(building_id)
-
-test_building_name = 'US+MF+CZ1AWH+elecres+crawlspace+IECC_2021'
-building_id = get_building_id(conn, 'Residential', test_building_name)
+test_building_name = 'ASHRAE901_Hospital_STD2013_Tampa'
+building_id = get_building_id(conn, 'Commercial', test_building_name)
 print(building_id)
 
 all_zone_aggregated_pickle_filepath = r"D:\Seattle_ASHRAE_2013_2day\ASHRAE901_OfficeSmall_STD2013_Seattle\Sim_AggregatedData\Aggregation_Dict_AllZones.pickle"
 file = open(all_zone_aggregated_pickle_filepath,"rb")
 data_dict = pickle.load(file)
 populate_zones_table(conn, data_dict, test_building_name, building_id)
-
-# Debugging get_building_id function
-# Need Location to Climate Zone Function
