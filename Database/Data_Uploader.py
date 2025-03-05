@@ -227,7 +227,7 @@ def get_building_id(conn, building_type, building_name):
         return None
 # Tested for Commercial Building - Passed
 # Tested for Residential Building - Passed
-# Tested for Manufactured Buildign - Passed
+# Tested for Manufactured Building - Passed
 
 def populate_zones_table(conn, data_dict, building_name, building_id):
     """
@@ -246,13 +246,13 @@ def populate_zones_table(conn, data_dict, building_name, building_id):
             zones_df = pd.DataFrame(zones, columns=["zone_name"])
 
             # Prepare data for batch insertion
-            records = [(zone,) for zone in zones_df["zone_name"].unique()]
+            records = [(building_id, zone) for zone in zones_df["zone_name"].unique()]
 
             # Insert zones into the table with conflict handling
             query = """
-            INSERT INTO zones (zone_name)
-            VALUES (%s)
-            ON CONFLICT (zone_name) DO NOTHING;
+            INSERT INTO zones (building_id, zone_name)
+            SELECT %s, zone_id FROM zones WHERE zone_name = %s
+            ON CONFLICT (building_id, zone_name) DO NOTHING;
             """
             
             cursor.executemany(query, records)
@@ -328,7 +328,7 @@ host = "localhost"
 conn = psycopg2.connect(dbname=dbname, user=user, password=password, host=host)
 
 # populate_datetimes_table(conn)
-populate_buildings_table(conn)
+# populate_buildings_table(conn)
 
 # test_building_name = 'ASHRAE901_Hospital_STD2013_Tampa'
 # building_id = get_building_id(conn, 'Commercial', test_building_name)
@@ -337,6 +337,11 @@ populate_buildings_table(conn)
 test_building_name = 'US+MF+CZ1AWH+elecres+crawlspace+IECC_2021'
 building_id = get_building_id(conn, 'Residential', test_building_name)
 print(building_id)
+
+all_zone_aggregated_pickle_filepath = r"D:\Seattle_ASHRAE_2013_2day\ASHRAE901_OfficeSmall_STD2013_Seattle\Sim_AggregatedData\Aggregation_Dict_AllZones.pickle"
+file = open(all_zone_aggregated_pickle_filepath,"rb")
+data_dict = pickle.load(file)
+populate_zones_table(conn, data_dict, test_building_name, building_id)
 
 # Debugging get_building_id function
 # Need Location to Climate Zone Function

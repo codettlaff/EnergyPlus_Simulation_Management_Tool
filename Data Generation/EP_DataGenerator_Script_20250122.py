@@ -522,7 +522,7 @@ idf_filepath_seattle_list = []
 for filepath in idf_filepath_list: 
     if "Atlanta" in filepath: idf_filepath_seattle_list.append(filepath)
     
-Weather_FilePath = os.path.join(script_directory, 'Data', 'TMY3_WeatherFiles_Commercial', 'USA_WA_Seattle-Tacoma.Intl.AP.727930_TMY3.epw')
+Weather_FilePath = os.path.join(script_directory, '..', '..', 'Data', 'TMY3_WeatherFiles_Commercial', 'USA_GA_Atlanta-Hartsfield.Jackson.Intl.AP.722190_TMY3.epw')
 
 # Storing Results in Folder Containing Application
 Results_FolderPath = os.path.join(script_directory, 'Results', 'Processed_BuildingSim_Data')

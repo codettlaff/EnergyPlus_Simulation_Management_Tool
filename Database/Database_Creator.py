@@ -42,8 +42,9 @@ def get_create_table_query(tablename):
             CREATE TABLE zones (
             zone_id SERIAL PRIMARY KEY,
             building_id INT NOT NULL,
-            zone_name VARCHAR(100) UNIQUE NOT NULL,
-            FOREIGN KEY (building_id) REFERENCES building_prototypes(building_id));"""
+            zone_name VARCHAR(100) NOT NULL,
+            FOREIGN KEY (building_id) REFERENCES building_prototypes(building_id),
+            UNIQUE (building_id, zone_name));"""
         
     elif tablename == "variables":
         query = """
