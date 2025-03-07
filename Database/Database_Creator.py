@@ -127,6 +127,6 @@ def delete_all_tables(dbname="buildings", user="Casey", password="OfficeLarge", 
     conn.close()
                   
 #Main
-#create_database()        
-create_tables()
-#delete_all_tables()
+# create_database()
+# create_tables()
+# delete_all_tables()

@@ -375,7 +375,186 @@ def populate_variables_table(conn, data_dict):
     with conn.cursor() as cursor:
         cursor.executemany(query, records)  # Batch insert
         conn.commit()
-# Produces Results, Results should be investigated for correctness.
+# Passed
+
+def get_datetime_id_list(conn, data_dict):
+    """
+    Retrieves a list of datetime_ids from the 'datetimes' table based on the time resolution
+    given in data_dict. The 'datetimes' table is assumed to have a 5-minute resolution,
+    and the time resolution is assumed to be a multiple of 5 minutes.
+
+    Ensures the returned datetime_id list matches the length of the DateTime_List in data_dict.
+
+    :param conn: psycopg2 connection object
+    :param data_dict: Dictionary containing 'DateTime_List' with at least one timestamp
+    :return: List of datetime_ids matching the specified time resolution
+    """
+    try:
+        cursor = conn.cursor()
+
+        # Get DateTime_List from data_dict
+        datetime_list = data_dict.get("DateTime_List", [])
+        if not datetime_list:
+            raise ValueError("DateTime_List is missing or empty in data_dict")
+
+        start_datetime = datetime_list[0]
+        end_datetime = datetime_list[-1]  # Last timestamp in DateTime_List
+
+        # Determine time resolution from DateTime_List
+        if len(datetime_list) > 1:
+            time_resolution = (datetime_list[1] - datetime_list[0]).seconds // 60  # Convert to minutes
+        else:
+            raise ValueError("Not enough timestamps in DateTime_List to determine resolution")
+
+        if time_resolution % 5 != 0:
+            raise ValueError("Time resolution must be a multiple of 5 minutes")
+
+        step = time_resolution // 5  # Step size for selecting datetime_ids
+
+        # Query the database to get the datetime_id of the first timestamp
+        cursor.execute("SELECT datetime_id FROM datetimes WHERE datetime = %s;", (start_datetime,))
+        result = cursor.fetchone()
+        if not result:
+            raise ValueError(f"Start datetime {start_datetime} not found in datetimes table")
+
+        start_datetime_id = result[0]
+
+        # Query the database to get the datetime_id of the first timestamp
+        cursor.execute("SELECT datetime_id FROM datetimes WHERE datetime = %s;", (end_datetime,))
+        result = cursor.fetchone()
+        if not result:
+            raise ValueError(f"Start datetime {end_datetime} not found in datetimes table")
+
+        end_datetime_id = result[0] # Returns Correct Datetime
+
+        # Retrieve all datetime_ids within the given time range
+        cursor.execute("""
+            SELECT datetime_id FROM datetimes 
+            WHERE datetime >= %s AND datetime <= %s 
+            ORDER BY datetime_id;
+        """, (start_datetime, end_datetime))
+        all_datetime_ids = [row[0] for row in cursor.fetchall()]
+
+        # Select datetime_ids based on the time resolution step
+        selected_datetime_ids = all_datetime_ids[::step]
+
+        # Ensure the selected list matches the length of datetime_list
+        if len(selected_datetime_ids) != len(datetime_list): # BUG: len(datetime_list) is longer than it should be. There are 289 rows in CSV. Looks like it is duplicated.
+            raise ValueError("Mismatch between expected and retrieved datetime_id list lengths")
+
+        cursor.close()
+        return selected_datetime_ids
+
+    except Exception as e:
+        print(f"Error in get_datetime_id_list: {e}")
+        return []
+# Under Construction
+# BUG: datetime_list is twice as long as it should be.
+
+def get_variables(conn, zone_id):
+    """
+    Retrieves all variable_ids and variable_names associated with a given zone_name.
+
+    :param conn: psycopg2 connection object
+    :param zone_name: Name of the zone for which variables should be fetched
+    :return: List of tuples [(variable_id, variable_name), ...]
+    """
+    try:
+        cursor = conn.cursor()
+
+        # Step 1: Get zone_id for the given zone_name
+        cursor.execute("SELECT zone_id FROM zones WHERE zone_id = %s;", (zone_id,))
+        result = cursor.fetchone()
+
+        if not result:
+            raise ValueError(f"Zone '{zone_id}' not found in zones table")
+
+        zone_id = result[0]
+
+        # Step 2: Get all variable_ids and variable_names where zone_id matches
+        cursor.execute("SELECT variable_id, variable_name FROM variables WHERE zone_id = %s;", (zone_id,))
+        variables = cursor.fetchall()
+
+        cursor.close()
+        return variables  # List of (variable_id, variable_name)
+
+    except Exception as e:
+        print(f"Error in get_variables: {e}")
+        return []
+# Passed
+
+def populate_time_series_data_table(conn, data_dict, building_id):
+    """
+    Populates the 'timeseriesdata' table using data from data_dict for a given building_id.
+
+    :param conn: psycopg2 connection object
+    :param data_dict: Dictionary containing time-series data
+    :param building_id: ID of the building associated with the data
+    """
+
+    try:
+        cursor = conn.cursor()
+
+        # Extract zone names from data_dict, ignoring "Equipment" keys
+        keys = list(data_dict.keys())
+        zone_names = [key for key in keys[1:] if "Equipment" not in key]
+
+        # Get list of datetime_ids from datetimes table
+        datetime_ids = get_datetime_id_list(conn, data_dict)
+
+        for zone in zone_names:
+            # Get the zone_id for the given building_id and zone_name
+            zone_id = get_zone_id(conn, building_id, zone)
+
+            # Retrieve all variable_id and variable_name for this zone
+            variables = get_variables(conn, zone_id)
+
+            for variable in variables:
+                variable_id = variable[0]
+                variable_name = variable[1]
+
+                # Extract the corresponding values from the DataFrame in data_dict
+                if variable_name not in data_dict[zone].columns:
+                    print(f"Warning: Variable '{variable_name}' not found in data for zone '{zone}'")
+                    continue
+
+                values = data_dict[zone][variable_name].tolist()
+
+                # Check Values
+                # Schedule Values may be empty for some zones.
+                # If values are not empty, length should equal length of datetime list.
+                all_nan = all(
+                    pd.isna(x) if not isinstance(x, (list, np.ndarray, pd.Series)) else pd.isna(x).all() for x in
+                    values)
+                if all_nan:
+                    print(f"Warning: Variable '{variable_name}' data is empty for zone '{zone}'")
+                elif len(datetime_ids) != len(values):
+                    raise ValueError(f"Mismatch in data lengths for variable '{variable_name}' in zone '{zone}'")
+
+                # Do not Upload empty Values
+                if not all_nan:
+                    # Prepare data for batch upload
+                    data_to_insert = [(building_id, variable_id, datetime_id, value)
+                                      for datetime_id, value in zip(datetime_ids, values)]
+
+                    # Insert data using executemany for efficiency
+                    insert_query = """
+                    INSERT INTO timeseriesdata (simulation_id, variable_id, datetime_id, value)
+                    VALUES (%s, %s, %s, %s);
+                    """
+
+                    cursor.executemany(insert_query, data_to_insert)
+
+        conn.commit()
+        cursor.close()
+        print("Successfully populated timeseriesdata table.")
+
+    except Exception as e:
+        conn.rollback()
+        print(f"Error in populate_time_series_data_table: {e}")
+
+# Under Construction
+# BUG: Datetime List assumes 1 year of datetimes - we are breaking for the 2day test data. Revise get_datetime_id_list function.
 
 # Test
 dbname = "buildings"
@@ -389,13 +568,22 @@ conn = psycopg2.connect(dbname=dbname, user=user, password=password, host=host)
 #populate_datetimes_table(conn)
 #populate_buildings_table(conn)
 
-test_building_name = 'ASHRAE901_Hospital_STD2013_Tampa'
+test_building_name = 'ASHRAE901_OfficeSmall_STD2013_Seattle'
 building_id = get_building_id(conn, 'Commercial', test_building_name)
-print(building_id)
 
 all_zone_aggregated_pickle_filepath = r"D:\Seattle_ASHRAE_2013_2day\ASHRAE901_OfficeSmall_STD2013_Seattle\Sim_AggregatedData\Aggregation_Dict_AllZones.pickle"
 file = open(all_zone_aggregated_pickle_filepath,"rb")
 data_dict = pickle.load(file)
-#populate_zones_table(conn, data_dict, test_building_name, building_id)
-populate_variables_table(conn, data_dict)
 
+#populate_zones_table(conn, data_dict, test_building_name, building_id)
+#populate_variables_table(conn, data_dict)
+
+zone_name = 'CORE_ZN'
+zone_id = get_zone_id(conn, building_id, zone_name)
+datetime_ids = get_datetime_id_list(conn, data_dict) # Returning Empty List
+
+populate_time_series_data_table(conn, data_dict, building_id)
+
+# Datetime_List in data_dict is duplicated (twice as long as it should be)
+# Need to check that Values are not also duplicated.
+# There may be a mistake in aggregation.
