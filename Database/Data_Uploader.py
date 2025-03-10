@@ -397,9 +397,6 @@ def get_datetime_id_list(conn, data_dict):
         if not datetime_list:
             raise ValueError("DateTime_List is missing or empty in data_dict")
 
-        start_datetime = datetime_list[0]
-        end_datetime = datetime_list[-1]  # Last timestamp in DateTime_List
-
         # Determine time resolution from DateTime_List
         if len(datetime_list) > 1:
             time_resolution = (datetime_list[1] - datetime_list[0]).seconds // 60  # Convert to minutes
@@ -408,6 +405,9 @@ def get_datetime_id_list(conn, data_dict):
 
         if time_resolution % 5 != 0:
             raise ValueError("Time resolution must be a multiple of 5 minutes")
+
+        start_datetime = datetime_list[0] - timedelta(minutes=time_resolution) # First timestamp in DateTime_List, shifted.
+        end_datetime = datetime_list[-1] + timedelta(days=1) - timedelta(minutes=time_resolution) # Last timestamp in DateTime_List, shifted
 
         step = time_resolution // 5  # Step size for selecting datetime_ids
 
@@ -534,13 +534,13 @@ def populate_time_series_data_table(conn, data_dict, building_id):
                 # Do not Upload empty Values
                 if not all_nan:
                     # Prepare data for batch upload
-                    data_to_insert = [(building_id, variable_id, datetime_id, value)
+                    data_to_insert = [(variable_id, datetime_id, value)
                                       for datetime_id, value in zip(datetime_ids, values)]
 
                     # Insert data using executemany for efficiency
                     insert_query = """
-                    INSERT INTO timeseriesdata (simulation_id, variable_id, datetime_id, value)
-                    VALUES (%s, %s, %s, %s);
+                    INSERT INTO timeseriesdata (variable_id, datetime_id, value)
+                    VALUES (%s, %s, %s);
                     """
 
                     cursor.executemany(insert_query, data_to_insert)
