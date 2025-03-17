@@ -169,74 +169,108 @@ def get_datetime_ids(conn, start_datetime='none', end_datetime='none'):
 def get_timeseries_data(conn, building_id='all', zone_name='all', variable_name='all', start_datetime='none',
                         end_datetime='none'):
     """
-    Retrieve time-series data for a specified building, zone, and variable within a given time range.
+    Retrieve time-series data for specified building(s), zone(s), and variable(s) within a given time range.
 
     Args:
-        conn: psycopg2 connection object
-        building_id (int or str): ID of the building or 'all' for all buildings
-        zone_id (int or str): ID of the zone or 'all' for all zones
-        variable_name (str): Name of the variable to retrieve or 'all' for all variables
-        start_datetime (str): Start datetime (YYYY-MM-DD HH:MM:SS) or 'all' for no start datetime filter
-        end_datetime (str): End datetime (YYYY-MM-DD HH:MM:SS) or 'all' for no end datetime filter
+        conn: psycopg2 connection object.
+        building_id (list or int or str): ID(s) of the building(s) or 'all' for all buildings.
+        zone_name (list or str): Name(s) of the zone(s) or 'all' for all zones.
+        variable_name (list or str): Name(s) of the variable(s) to retrieve or 'all' for all variables.
+        start_datetime (datetime or str): Start datetime (YYYY-MM-DD HH:MM:SS) or 'none' for no start datetime filter.
+        end_datetime (datetime or str): End datetime (YYYY-MM-DD HH:MM:SS) or 'none' for no end datetime filter.
 
     Returns:
-        pd.DataFrame: Retrieved time-series data
+        pd.DataFrame: Retrieved time-series data.
 
     Raises:
-        MemoryError: If the size of the returned data frame is too large to load in memory.
-
-    NEW Requirements:
-    The columns in the timeseriesdata table are: variable_id, datetime_id, and value.
-    variable_id is the primary key for the 'variables' table, with columns: variable_id, zone_id
-    zone_id is the primary key for the 'zones' table, with columns: building_id, zone_name
-
-    Process:
-    from building_id, zone_name, variable_name, get variable_id
-    from start_datetime, end_datetime, get array of datetime_id's
-
-    TRY:
+        MemoryError: If the size of the returned DataFrame exceeds an acceptable threshold.
+        psycopg2.Error: For database-related errors.
+    """
+    try:
         # Initialize required IDs
         variable_ids = []
         datetime_ids = []
 
-        # Step 1: Retrieve variable IDs based on given parameters (building_id, zone_name, variable_name).
+        # Step 1: Retrieve variable_IDs based on building_id, zone_name, variable_name
         variable_ids = get_variable_ids(conn, building_id, zone_name, variable_name)
+        if not variable_ids:
+            print("No matching variable IDs found.")
+            return pd.DataFrame()  # Return empty DataFrame if no variables match
 
-        # Step 2: Retrieve datetime IDs based on given time range (start_datetime, end_datetime).
+        # Step 2: Retrieve datetime_IDs based on start_datetime and end_datetime
         datetime_ids = get_datetime_ids(conn, start_datetime, end_datetime)
+        if not datetime_ids:
+            print("No matching datetime IDs found.")
+            return pd.DataFrame()  # Return empty DataFrame if no datetimes match
 
-        # Step 3: Query the timeseriesdata table using retrieved IDs (variable_ids and datetime_ids).
-        QUERY =
+        # Step 3: Query the timeseriesdata table using retrieved IDs
+        # Construct the base query
+        sql_query = """
             SELECT *
             FROM timeseriesdata
             WHERE 1=1
+        """
+        parameters = []
 
-        # Add filters:
-        IF variable_ids is not empty:
-            QUERY += " AND variable_id IN (%s)"  # Format for array
-        IF datetime_ids is not empty:
-            QUERY += " AND datetime_id IN (%s)"  # Format for array
+        # Add building_id filter
+        if building_id != 'all':
+            if isinstance(building_id, list):
+                # If building_id is a list, use IN clause
+                building_placeholders = ', '.join(['%s'] * len(building_id))
+                sql_query += f" AND variable_id IN (SELECT variable_id FROM variables "
+                sql_query += f"WHERE zone_id IN (SELECT zone_id FROM zones WHERE building_id IN ({building_placeholders})))"
+                parameters.extend(building_id)
+            else:
+                # If building_id is a scalar, use = operator
+                sql_query += f" AND variable_id IN (SELECT variable_id FROM variables "
+                sql_query += f"WHERE zone_id IN (SELECT zone_id FROM zones WHERE building_id = %s))"
+                parameters.append(building_id)
 
-        # Execute query to fetch the time-series data.
-        QUERY_EXECUTION = EXECUTE QUERY with variable_ids and datetime_ids as parameters.
-        FETCH RESULTS into a pandas DataFrame (df).
+        # Add filter for variable_ids
+        if variable_ids:
+            placeholders = ', '.join(['%s'] * len(variable_ids))
+            sql_query += f" AND variable_id IN ({placeholders})"
+            parameters.extend(variable_ids)
 
-        # Step 4: Check DataFrame size in memory.
-        ESTIMATED_MEMORY = Calculate memory usage of the DataFrame.
-        IF ESTIMATED_MEMORY exceeds an appropriate threshold:
-            RAISE MemoryError.
+        # Add filter for datetime_ids
+        if datetime_ids:
+            placeholders = ', '.join(['%s'] * len(datetime_ids))
+            sql_query += f" AND datetime_id IN ({placeholders})"
+            parameters.extend(datetime_ids)
 
-        RETURN the resulting DataFrame.
+        # Debugging: Print the query and parameters (optional)
+        print(f"Executing query: {sql_query}")
+        print(f"With parameters: {parameters}")
 
-    EXCEPT psycopg2.Error AS db_error:
-        PRINT database query error message.
-        RAISE db_error.
+        # Execute the query and fetch the results into a pandas DataFrame
+        with conn.cursor() as cursor:
+            cursor.execute(sql_query, parameters)
+            result_rows = cursor.fetchall()
+            col_names = [desc[0] for desc in cursor.description]  # Get column names for the DataFrame
 
-    EXCEPT MemoryError AS mem_error:
-        PRINT memory error message.
-        RAISE mem_error.
-    """
-    pass
+        # Step 4: Create a DataFrame from the results
+        df = pd.DataFrame(result_rows, columns=col_names)
+
+        # Estimate memory usage of the DataFrame
+        estimated_memory = df.memory_usage(deep=True).sum()
+        print(f"Estimated memory usage: {estimated_memory} bytes")
+
+        # If memory exceeds threshold, raise MemoryError
+        # (You can adjust the threshold based on your application, here 1 GB is used)
+        if estimated_memory > 1 * 1024 * 1024 * 1024:  # 1 GB threshold
+            raise MemoryError("The DataFrame size exceeds the memory limit.")
+
+        # Return the resulting DataFrame
+        return df
+
+    except psycopg2.Error as db_error:
+        print("An error occurred while executing the database query.")
+        raise db_error
+
+    except MemoryError as mem_error:
+        print("The resulting DataFrame is too large to fit in memory.")
+        raise mem_error
+# Passed
 
 def get_buildings(conn):
     """
@@ -372,6 +406,19 @@ def get_variable_ids_test():
     variable_name = 'Facility_Total_HVAC_Electric_Demand_Power_'
     print(f"Test 2 Variable IDs: {get_variable_ids(conn, building_id, variable_name=variable_name)}")
 
+def get_timeseries_data_test():
+
+    conn = connect_to_db()
+    building_id = 582
+    zone_name = ['ATTIC', 'CORE_ZN']
+    variable_name = 'Facility_Total_HVAC_Electric_Demand_Power_'
+    start_datetime = datetime.strptime('2013-01-01 00:00:00', '%Y-%m-%d %H:%M:%S')
+    end_datetime = datetime.strptime('2013-01-01 01:35:00', '%Y-%m-%d %H:%M:%S')
+
+    timeseries_data = get_timeseries_data(conn, building_id, zone_name, variable_name, start_datetime, end_datetime)
+    print(timeseries_data)
+
 ##### Main #####
 
-get_variable_ids_test()
+#get_variable_ids_test()
+get_timeseries_data_test()
