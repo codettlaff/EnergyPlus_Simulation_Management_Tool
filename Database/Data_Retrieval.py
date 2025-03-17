@@ -338,46 +338,61 @@ def get_datetime_range(conn):
 # =============================================================================
 # Helper Functions
 # =============================================================================
-def get_building_id(conn, building_name):
+def get_building_id(conn, building_type, prototype, energy_code, climate_zone, heating_type=None, foundation_type=None):
     """
-    Retrieve the building_id given a building name.
+    Retrieve the building_id given specific building metadata.
 
     Args:
-        conn: psycopg2 connection object
-        building_name (str): Name of the building
+        conn: psycopg2 connection object.
+        building_type (str): 'Commercial', 'Residential', or 'Manufactured'.
+        prototype (str): The prototype name of the building.
+        energy_code (str): The energy code of the building.
+        climate_zone (str): The climate zone of the building.
+        heating_type (optional, str): The heating type of the building.
+        foundation_type (optional, str): The foundation type of the building.
 
     Returns:
-        int: building_id if found, None otherwise
+        int: The building_id if found, or None if no matching record exists.
+
+    Raises:
+        psycopg2.Error: If there's an issue executing the SQL query.
     """
-    pass
+    try:
+        # Base query
+        sql_query = """
+            SELECT building_id
+            FROM building_prototypes
+            WHERE building_type = %s
+              AND prototype = %s
+              AND energy_code = %s
+              AND climate_zone = %s
+        """
+        parameters = [building_type, prototype, energy_code, climate_zone]
 
-def get_zone_id(conn, building_id, zone_name):
-    """
-    Retrieve the zone_id given a zone name and building_id.
+        # Add optional filters for heating_type and foundation_type
+        if heating_type is not None:
+            sql_query += " AND heating_type = %s"
+            parameters.append(heating_type)
 
-    Args:
-        conn: psycopg2 connection object
-        building_id (int): ID of the building
-        zone_name (str): Name of the zone
+        if foundation_type is not None:
+            sql_query += " AND foundation_type = %s"
+            parameters.append(foundation_type)
 
-    Returns:
-        int: zone_id if found, None otherwise
-    """
-    pass
+        # Execute the query
+        with conn.cursor() as cursor:
+            cursor.execute(sql_query, parameters)
+            result = cursor.fetchone()  # Fetch the first matching row
 
-def get_variable_id(conn, zone_id, variable_name):
-    """
-    Retrieve the variable_id given a zone_id and variable name.
+        # Return the building_id if found, otherwise None
+        if result:
+            return result[0]  # First column corresponds to building_id
+        else:
+            return None
 
-    Args:
-        conn: psycopg2 connection object
-        zone_id (int): ID of the zone
-        variable_name (str): Name of the variable
-
-    Returns:
-        int: variable_id if found, None otherwise
-    """
-    pass
+    except psycopg2.Error as db_error:
+        print("An error occurred while querying the database for building_id.")
+        raise db_error
+# Passed
 
 ##### Test #####
 
@@ -418,7 +433,19 @@ def get_timeseries_data_test():
     timeseries_data = get_timeseries_data(conn, building_id, zone_name, variable_name, start_datetime, end_datetime)
     print(timeseries_data)
 
+def get_building_id_test():
+
+    conn = connect_to_db()
+    building_type = 'Commercial'
+    prototype = 'Hospital'
+    energy_code = 'ASHRAE2013'
+    climate_zone = '2A'
+
+    building_id = get_building_id(conn, building_type, prototype, energy_code, climate_zone)
+    print(f"Building ID: {building_id}")
+
 ##### Main #####
 
 #get_variable_ids_test()
-get_timeseries_data_test()
+#get_timeseries_data_test()
+get_building_id_test()
