@@ -12,6 +12,7 @@ Purpose:
 
 import psycopg2
 import pandas as pd
+from datetime import datetime
 
 # =============================================================================
 # Database Connection
@@ -46,73 +47,72 @@ def connect_to_db():
 # =============================================================================
 def get_variable_ids(conn, building_id='all', zone_name='all', variable_name='all'):
     """
-    Retrieve a single variable_id based on building_id, zone_name, and variable_name.
+    Retrieve a list of variable_ids based on building_id, zone_name, and variable_name.
 
     Args:
-        conn: psycopg2 connection object
-        building_id (int or str): ID of the building or 'all' to ignore this filter
-        zone_name (list or str): List of names of the zones or 'all' to ignore this filter
-        variable_name (list or str): List of name of the variables or 'all' to ignore this filter
+        conn: psycopg2 connection object.
+        building_id (int or str): ID of the building or 'all' to ignore this filter.
+        zone_name (list or str): List of zone names or 'all' to ignore this filter.
+        variable_name (list or str): List of variable names or 'all' to ignore this filter.
 
     Returns:
-        List of Ints: Variable_ids if found, None otherwise
+        List of Ints: List of variable_ids if matches are found, None otherwise.
 
     Raises:
         psycopg2.Error: If there's an issue executing the SQL query.
-
-    TRY:
+    """
+    try:
         # Step 1: Start constructing the base SQL query
-        SQL_QUERY =
+        sql_query = """
             SELECT variables.variable_id
             FROM variables
             JOIN zones ON variables.zone_id = zones.zone_id
             WHERE 1=1
+        """
 
         # Step 2: Prepare parameters for the SQL query
-        PARAMETERS = []
+        parameters = []
 
         # Step 2.1: Filter by building_id, if provided
-        IF building_id != 'all':
-            SQL_QUERY += " AND zones.building_id = %s"
-            ADD building_id TO PARAMETERS
+        if building_id != 'all':
+            sql_query += " AND zones.building_id = %s"
+            parameters.append(building_id)
 
         # Step 2.2: Filter by zone_name, if provided (accept list or single value)
-        IF zone_name != 'all':
-            IF zone_name IS A LIST:
-                SQL_PLACEHOLDERS = CREATE PLACEHOLDER STRING USING THE LIST LENGTH (e.g., %s, %s, ...)
-                SQL_QUERY += f" AND zones.zone_name IN ({SQL_PLACEHOLDERS})"
-                ADD ALL ITEMS FROM zone_name TO PARAMETERS
-            ELSE:
-                SQL_QUERY += " AND zones.zone_name = %s"
-                ADD zone_name TO PARAMETERS
+        if zone_name != 'all':
+            if isinstance(zone_name, list):
+                sql_placeholders = ', '.join(['%s'] * len(zone_name))  # Create placeholders for the list
+                sql_query += f" AND zones.zone_name IN ({sql_placeholders})"
+                parameters.extend(zone_name)  # Add all items from the list to parameters
+            else:
+                sql_query += " AND zones.zone_name = %s"
+                parameters.append(zone_name)
 
         # Step 2.3: Filter by variable_name, if provided (accept list or single value)
-        IF variable_name != 'all':
-            IF variable_name IS A LIST:
-                SQL_PLACEHOLDERS = CREATE PLACEHOLDER STRING USING THE LIST LENGTH (e.g., %s, %s, ...)
-                SQL_QUERY += f" AND variables.variable_name IN ({SQL_PLACEHOLDERS})"
-                ADD ALL ITEMS FROM variable_name TO PARAMETERS
-            ELSE:
-                SQL_QUERY += " AND variables.variable_name = %s"
-                ADD variable_name TO PARAMETERS
+        if variable_name != 'all':
+            if isinstance(variable_name, list):
+                sql_placeholders = ', '.join(['%s'] * len(variable_name))  # Create placeholders for the list
+                sql_query += f" AND variables.variable_name IN ({sql_placeholders})"
+                parameters.extend(variable_name)  # Add all items from the list to parameters
+            else:
+                sql_query += " AND variables.variable_name = %s"
+                parameters.append(variable_name)
 
         # Step 3: Execute the constructed query and fetch results
-        WITH conn.cursor() AS CURSOR:
-            CURSOR.EXECUTE(SQL_QUERY, PARAMETERS)
-            RESULT_ROWS = FETCH ALL ROWS
+        with conn.cursor() as cursor:
+            cursor.execute(sql_query, parameters)  # Execute the SQL query with parameters
+            result_rows = cursor.fetchall()  # Fetch all matching rows
 
-        # Step 4: Process the result
-        IF RESULT_ROWS IS EMPTY:
-            RETURN None  # No variable IDs found
-        ELSE:
-            RETURN A LIST OF variable_id VALUES FROM RESULT_ROWS
+        # Step 4: Process the results
+        if not result_rows:
+            return None  # No variable_ids found
+        else:
+            return [row[0] for row in result_rows]  # Extract and return variable_id values
 
-    EXCEPT psycopg2.Error AS DATABASE_ERROR:
-        PRINT "An error occurred while executing the database query."
-        RAISE DATABASE_ERROR
-
-    """
-    pass
+    except psycopg2.Error as database_error:
+        print("An error occurred while executing the database query.")
+        raise database_error
+# Passed
 
 def get_datetime_ids(conn, start_datetime='none', end_datetime='none'):
     """
@@ -128,43 +128,43 @@ def get_datetime_ids(conn, start_datetime='none', end_datetime='none'):
 
     Raises:
         psycopg2.Error: If there's an issue executing the SQL query.
-
-    TRY:
+    """
+    try:
         # Step 1: Start building the base SQL query
-        SQL_QUERY =
+        sql_query = """
             SELECT datetime_id
             FROM datetimes
             WHERE 1=1
+        """
 
         # Step 2: Prepare parameters for the query
-        PARAMETERS = []
+        parameters = []
 
-        # Step 2.1: Add filter for start_datetime if it is not 'none'
-        IF start_datetime != 'none':
-            SQL_QUERY += " AND datetime_value >= %s"
-            ADD start_datetime TO PARAMETERS
+        # Step 2.1: Add filter for start_datetime if provided
+        if start_datetime != 'none':
+            sql_query += " AND datetime >= %s"
+            parameters.append(start_datetime)
 
-        # Step 2.2: Add filter for end_datetime if it is not 'none'
-        IF end_datetime != 'none':
-            SQL_QUERY += " AND datetime_value <= %s"
-            ADD end_datetime TO PARAMETERS
+        # Step 2.2: Add filter for end_datetime if provided
+        if end_datetime != 'none':
+            sql_query += " AND datetime <= %s"
+            parameters.append(end_datetime)
 
         # Step 3: Execute the constructed SQL query
-        WITH conn.cursor() AS CURSOR:
-            CURSOR.EXECUTE(SQL_QUERY, PARAMETERS)
-            RESULT_ROWS = FETCH ALL ROWS
+        with conn.cursor() as cursor:
+            cursor.execute(sql_query, parameters)
+            result_rows = cursor.fetchall()
 
         # Step 4: Process the results
-        IF RESULT_ROWS IS EMPTY:
-            RETURN None  # No datetime_ids found
-        ELSE:
-            RETURN A LIST OF datetime_id VALUES FROM RESULT_ROWS
+        if not result_rows:
+            return None  # No datetime_ids found
+        else:
+            return [row[0] for row in result_rows]  # Extract and return datetime_id values from the rows
 
-    EXCEPT psycopg2.Error AS DATABASE_ERROR:
-        PRINT "An error occurred while executing the database query."
-        RAISE DATABASE_ERROR
-    """
-    pass
+    except psycopg2.Error as database_error:
+        print("An error occurred while executing the database query.")
+        raise database_error
+# Passed
 
 def get_timeseries_data(conn, building_id='all', zone_name='all', variable_name='all', start_datetime='none',
                         end_datetime='none'):
@@ -347,6 +347,31 @@ def get_variable_id(conn, zone_id, variable_name):
 
 ##### Test #####
 
-conn = connect_to_db()
+def get_datetime_ids_test():
 
-df = get_timeseries_data(building_id = '5')
+    conn = connect_to_db()
+    start_datetime = datetime.strptime('2013-01-01 00:00:00', '%Y-%m-%d %H:%M:%S')
+    end_datetime = datetime.strptime('2013-01-01 01:35:00', '%Y-%m-%d %H:%M:%S')
+
+    datetime_ids = get_datetime_ids(conn, start_datetime, end_datetime)
+    print(datetime_ids)
+
+def get_variable_ids_test():
+
+    conn = connect_to_db()
+
+    # Test 1
+    building_id = 582
+    zone_name = 'CORE_ZN'
+    variable_name = ['Facility_Total_HVAC_Electric_Demand_Power_', 'Site_Diffuse_Solar_Radiation_Rate_per_Area_']
+    variable_ids = get_variable_ids(conn, building_id, zone_name, variable_name)
+    print(f"Test 1 Variable IDs: {variable_ids}")
+
+    # Test 2
+    building_id = 582
+    variable_name = 'Facility_Total_HVAC_Electric_Demand_Power_'
+    print(f"Test 2 Variable IDs: {get_variable_ids(conn, building_id, variable_name=variable_name)}")
+
+##### Main #####
+
+get_variable_ids_test()
