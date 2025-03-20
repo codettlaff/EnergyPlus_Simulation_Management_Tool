@@ -400,7 +400,7 @@ def plot_time_series_data(con, time_series_data_df):
     # Step 3: Determine the combined datetime range from all the DataFrames.
     all_datetimes = []
     for df in data_by_variable_id.values():
-        all_datetimes.extend(df["datetime"].tolist())
+        all_datetimes.extend(df["datetime_id"].tolist())
     min_datetime, max_datetime = min(all_datetimes), max(all_datetimes)
 
     # Step 4: Prepare for plotting.
@@ -410,21 +410,14 @@ def plot_time_series_data(con, time_series_data_df):
 
     # Step 5: Plot the data for each variable ID.
     for idx, (variable_id, df) in enumerate(data_by_variable_id.items()):
-        # Align DataFrame's datetime values to the range
-        aligned_df = df.copy()
-        aligned_df = aligned_df.set_index("datetime").reindex(
-            pd.date_range(start=min_datetime, end=max_datetime, freq='H'),
-            fill_value=None
-        )
-        aligned_df = aligned_df.reset_index().rename(columns={'index': 'datetime'})
 
         # Retrieve the descriptive name for this variable_id
         descriptive_name = variable_id_to_name.get(variable_id, f"Variable ID: {variable_id}")
 
         # Plot the values
         plt.plot(
-            aligned_df["datetime"],
-            aligned_df["value"],
+            df["datetime_id"],
+            df["value"],
             label=descriptive_name,
             color=colors[idx]
         )
@@ -481,10 +474,10 @@ def get_timeseries_data_test():
 
     conn = connect_to_db()
     building_id = 582
-    zone_name = ['ATTIC', 'CORE_ZN']
-    variable_name = 'Facility_Total_HVAC_Electric_Demand_Power_'
+    zone_name = ['ATTIC', 'CORE_ZN', 'PERIMETER_ZN_1']
+    variable_name = 'Surface_Inside_Face_Temperature_'
     start_datetime = datetime.strptime('2013-01-01 00:00:00', '%Y-%m-%d %H:%M:%S')
-    end_datetime = datetime.strptime('2013-01-01 01:35:00', '%Y-%m-%d %H:%M:%S')
+    end_datetime = datetime.strptime('2013-01-02 12:00:00', '%Y-%m-%d %H:%M:%S')
 
     timeseries_data = get_timeseries_data(conn, building_id, zone_name, variable_name, start_datetime, end_datetime)
     print(timeseries_data)
