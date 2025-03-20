@@ -13,6 +13,7 @@ Purpose:
 import psycopg2
 import pandas as pd
 from datetime import datetime
+import matplotlib.pyplot as plt
 
 # =============================================================================
 # Database Connection
@@ -41,6 +42,65 @@ def connect_to_db():
     except psycopg2.Error as e:
         print(f"Error while connecting to the database: {e}")
         raise
+
+# =============================================================================
+# Helper Functions
+# =============================================================================
+def get_building_id(conn, building_type, prototype, energy_code, climate_zone, heating_type=None, foundation_type=None):
+    """
+    Retrieve the building_id given specific building metadata.
+
+    Args:
+        conn: psycopg2 connection object.
+        building_type (str): 'Commercial', 'Residential', or 'Manufactured'.
+        prototype (str): The prototype name of the building.
+        energy_code (str): The energy code of the building.
+        climate_zone (str): The climate zone of the building.
+        heating_type (optional, str): The heating type of the building.
+        foundation_type (optional, str): The foundation type of the building.
+
+    Returns:
+        int: The building_id if found, or None if no matching record exists.
+
+    Raises:
+        psycopg2.Error: If there's an issue executing the SQL query.
+    """
+    try:
+        # Base query
+        sql_query = """
+            SELECT building_id
+            FROM building_prototypes
+            WHERE building_type = %s
+              AND prototype = %s
+              AND energy_code = %s
+              AND climate_zone = %s
+        """
+        parameters = [building_type, prototype, energy_code, climate_zone]
+
+        # Add optional filters for heating_type and foundation_type
+        if heating_type is not None:
+            sql_query += " AND heating_type = %s"
+            parameters.append(heating_type)
+
+        if foundation_type is not None:
+            sql_query += " AND foundation_type = %s"
+            parameters.append(foundation_type)
+
+        # Execute the query
+        with conn.cursor() as cursor:
+            cursor.execute(sql_query, parameters)
+            result = cursor.fetchone()  # Fetch the first matching row
+
+        # Return the building_id if found, otherwise None
+        if result:
+            return result[0]  # First column corresponds to building_id
+        else:
+            return None
+
+    except psycopg2.Error as db_error:
+        print("An error occurred while querying the database for building_id.")
+        raise db_error
+# Passed
 
 # =============================================================================
 # Data Retrieval Functions
@@ -272,129 +332,125 @@ def get_timeseries_data(conn, building_id='all', zone_name='all', variable_name=
         raise mem_error
 # Passed
 
-def get_buildings(conn):
-    """
-    Retrieve all buildings stored in the database.
-
-    Args:
-        conn: psycopg2 connection object
-
-    Returns:
-        pd.DataFrame: List of buildings with their metadata
-    """
-    pass
-
-def get_zones_in_building(conn, building_id):
-    """
-    Retrieve all zones associated with a specific building.
-
-    Args:
-        conn: psycopg2 connection object
-        building_id (int): ID of the building
-
-    Returns:
-        pd.DataFrame: List of zones in the building
-    """
-    pass
-
-def get_variables_for_zone(conn, zone_id):
-    """
-    Retrieve all variables simulated for a specific zone.
-
-    Args:
-        conn: psycopg2 connection object
-        zone_id (int): ID of the zone
-
-    Returns:
-        pd.DataFrame: List of variables associated with the zone
-    """
-    pass
-
-def get_variables_for_building(conn, building_id):
-    """
-    Retrieve all variables simulated across all zones in a building.
-
-    Args:
-        conn: psycopg2 connection object
-        building_id (int): ID of the building
-
-    Returns:
-        pd.DataFrame: List of unique variables across all zones in the building
-    """
-    pass
-
-def get_datetime_range(conn):
-    """
-    Retrieve the available datetime range in the `timeseriesdata` table.
-
-    Args:
-        conn: psycopg2 connection object
-
-    Returns:
-        tuple: (min_datetime, max_datetime)
-    """
-    pass
-
 # =============================================================================
-# Helper Functions
+# Data Visualization Functions
 # =============================================================================
-def get_building_id(conn, building_type, prototype, energy_code, climate_zone, heating_type=None, foundation_type=None):
+
+def rename_keys(con, keys):
     """
-    Retrieve the building_id given specific building metadata.
-
-    Args:
-        conn: psycopg2 connection object.
-        building_type (str): 'Commercial', 'Residential', or 'Manufactured'.
-        prototype (str): The prototype name of the building.
-        energy_code (str): The energy code of the building.
-        climate_zone (str): The climate zone of the building.
-        heating_type (optional, str): The heating type of the building.
-        foundation_type (optional, str): The foundation type of the building.
-
-    Returns:
-        int: The building_id if found, or None if no matching record exists.
-
-    Raises:
-        psycopg2.Error: If there's an issue executing the SQL query.
+    Renames keys from variable_id to a more descriptive name.
+    Logic:
+        - If all variable_ids belong to the same building: use variable_name and zone_name.
+        - If all variable_ids belong to the same building and zone: use variable_name.
+        - If all variable_ids belong to the same variable: use building_id and variable_name.
+        - Etc.
+    :param con: Database connection object
+    :param keys: List of variable IDs
+    :return: List of descriptive names for the keys
     """
-    try:
-        # Base query
-        sql_query = """
-            SELECT building_id
-            FROM building_prototypes
-            WHERE building_type = %s
-              AND prototype = %s
-              AND energy_code = %s
-              AND climate_zone = %s
-        """
-        parameters = [building_type, prototype, energy_code, climate_zone]
 
-        # Add optional filters for heating_type and foundation_type
-        if heating_type is not None:
-            sql_query += " AND heating_type = %s"
-            parameters.append(heating_type)
+    # Step 1: Query the database for metadata about keys
+    query = f"""
+        SELECT v.variable_id, v.variable_name, z.zone_name, z.building_id
+        FROM variables v
+        INNER JOIN zones z ON v.zone_id = z.zone_id
+        WHERE v.variable_id IN ({', '.join(map(str, keys))})
+    """
+    df = pd.read_sql_query(query, con)
 
-        if foundation_type is not None:
-            sql_query += " AND foundation_type = %s"
-            parameters.append(foundation_type)
+    # Step 2: Check unique values in each column to determine naming convention
+    unique_buildings = df["building_id"].nunique()
+    unique_zones = df["zone_name"].nunique()
+    unique_variables = df["variable_name"].nunique()
 
-        # Execute the query
-        with conn.cursor() as cursor:
-            cursor.execute(sql_query, parameters)
-            result = cursor.fetchone()  # Fetch the first matching row
+    renamed_keys = [""] * len(df)  # Ensure renamed_keys matches the DataFrame length
 
-        # Return the building_id if found, otherwise None
-        if result:
-            return result[0]  # First column corresponds to building_id
-        else:
-            return None
+    if unique_buildings > 1:
+        renamed_keys = [key + "Building_" + str(bid) + " " for key, bid in zip(renamed_keys, df["building_id"])]
+    if unique_zones > 1:
+        renamed_keys = [key + str(zname) + " " for key, zname in zip(renamed_keys, df["zone_name"])]
+    if unique_variables > 1:
+        renamed_keys = [key + str(vname) + " " for key, vname in zip(renamed_keys, df["variable_name"])]
 
-    except psycopg2.Error as db_error:
-        print("An error occurred while querying the database for building_id.")
-        raise db_error
+    return renamed_keys
 # Passed
 
+def plot_time_series_data(con, time_series_data_df):
+    """
+    Plots time series data for given DataFrame using descriptive names in the legend.
+    :param con: Database connection object
+    :param time_series_data_df: DataFrame containing columns 'datetime', 'variable_id', and 'value'
+    :return: None
+    """
+
+    # Step 1: Divide the data into multiple DataFrames based on unique variable IDs.
+    data_by_variable_id = {}
+    unique_variable_ids = time_series_data_df["variable_id"].unique()
+    for variable_id in unique_variable_ids:
+        data_by_variable_id[variable_id] = time_series_data_df[
+            time_series_data_df["variable_id"] == variable_id
+            ]
+
+    # Step 2: Call rename_keys() to get descriptive names for each variable ID.
+    descriptive_names = rename_keys(con, unique_variable_ids)
+
+    # Create a mapping of variable_id to descriptive names
+    variable_id_to_name = dict(zip(unique_variable_ids, descriptive_names))
+
+    # Step 3: Determine the combined datetime range from all the DataFrames.
+    all_datetimes = []
+    for df in data_by_variable_id.values():
+        all_datetimes.extend(df["datetime"].tolist())
+    min_datetime, max_datetime = min(all_datetimes), max(all_datetimes)
+
+    # Step 4: Prepare for plotting.
+    plt.figure(figsize=(12, 6))
+    colors = plt.cm.viridis(range(len(data_by_variable_id)))
+    color_map = {}
+
+    # Step 5: Plot the data for each variable ID.
+    for idx, (variable_id, df) in enumerate(data_by_variable_id.items()):
+        # Align DataFrame's datetime values to the range
+        aligned_df = df.copy()
+        aligned_df = aligned_df.set_index("datetime").reindex(
+            pd.date_range(start=min_datetime, end=max_datetime, freq='H'),
+            fill_value=None
+        )
+        aligned_df = aligned_df.reset_index().rename(columns={'index': 'datetime'})
+
+        # Retrieve the descriptive name for this variable_id
+        descriptive_name = variable_id_to_name.get(variable_id, f"Variable ID: {variable_id}")
+
+        # Plot the values
+        plt.plot(
+            aligned_df["datetime"],
+            aligned_df["value"],
+            label=descriptive_name,
+            color=colors[idx]
+        )
+        color_map[variable_id] = colors[idx]
+
+    # Step 6: Add legend and labels to the plot.
+    plt.legend()
+    plt.xlabel("Datetime")
+    plt.ylabel("Value")
+    plt.title("Time Series Data by Descriptive Variable ID")
+
+    # Step 7: Show the finalized plot.
+    plt.show()
+
 ##### Test #####
+
+def get_building_id_test():
+
+    conn = connect_to_db()
+    building_type = 'Commercial'
+    prototype = 'Hospital'
+    energy_code = 'ASHRAE2013'
+    climate_zone = '2A'
+
+    building_id = get_building_id(conn, building_type, prototype, energy_code, climate_zone)
+    print(f"Building ID: {building_id}")
 
 def get_datetime_ids_test():
 
@@ -433,19 +489,10 @@ def get_timeseries_data_test():
     timeseries_data = get_timeseries_data(conn, building_id, zone_name, variable_name, start_datetime, end_datetime)
     print(timeseries_data)
 
-def get_building_id_test():
-
-    conn = connect_to_db()
-    building_type = 'Commercial'
-    prototype = 'Hospital'
-    energy_code = 'ASHRAE2013'
-    climate_zone = '2A'
-
-    building_id = get_building_id(conn, building_type, prototype, energy_code, climate_zone)
-    print(f"Building ID: {building_id}")
+    plot_time_series_data(conn, timeseries_data)
 
 ##### Main #####
 
 #get_variable_ids_test()
-#get_timeseries_data_test()
-get_building_id_test()
+get_timeseries_data_test()
+#get_building_id_test()
