@@ -37,7 +37,8 @@ def get_create_table_query(tablename):
         building_id INT NOT NULL,
         epw_climate_zone VARCHAR(100) NOT NULL,
         time_resolution INT NOT NULL,
-        FOREIGN KEY (building_id) REFERENCES building_prototypes(building_id)
+        FOREIGN KEY (building_id) REFERENCES building_prototypes(building_id),
+        UNIQUE (simulation_id, simulation_name, building_id, epw_climate_zone, time_resolution)
         );
         """
 

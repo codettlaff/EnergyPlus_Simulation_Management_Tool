@@ -264,13 +264,18 @@ def populate_simulations_table(conn, building_id, simulation_name='Unnamed Simul
                 """
                 INSERT INTO simulations (simulation_name, building_id, epw_climate_zone, time_resolution)
                 VALUES (%s, %s, %s, %s)
+                RETURNING simulation_id
                 """,
                 (simulation_name, building_id, epw_climate_zone, time_resolution)
             )
+            # Fetch the generated simulation_id
+            simulation_id = cursor.fetchone()[0]
 
         # Commit the transaction
         conn.commit()
         print("Simulation data successfully added to the simulations table.")
+
+        return simulation_id
 
     except ValueError as ve:
         print(f"Error: {ve}")
@@ -656,4 +661,5 @@ test_building_name = 'ASHRAE901_OfficeSmall_STD2013_Seattle'
 building_id = get_building_id(conn, 'Commercial', test_building_name)
 print(building_id)
 
-populate_simulations_table(conn, building_id)
+simulation_id = populate_simulations_table(conn, building_id)
+print(simulation_id)
