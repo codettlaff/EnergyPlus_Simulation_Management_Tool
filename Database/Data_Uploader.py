@@ -310,11 +310,13 @@ def get_equipment_levels(data_dict):
 
 def populate_zones_table(conn, data_dict, simulation_id):
     """
-    Populates the 'zones' table with unique zone names from the provided data dictionary.
-    
+    Populates the 'zones' table with unique zone names from the provided data dictionary
+    and returns the zone_ids of the inserted zones.
+
     :param conn: psycopg2 connection object
     :param data_dict: Dictionary where keys are zone names (some keys may contain metadata)
     :param simulation_id: ID to associate each record with the simulation
+    :return: List of zone_ids for the newly inserted zones
     """
 
     # Get Equipment Levels from data_dict
@@ -322,25 +324,38 @@ def populate_zones_table(conn, data_dict, simulation_id):
     # Convert the DataFrame to a list of tuples and add simulation_id as the first item
     zones_data = [(simulation_id, *tuple(row)) for row in equipment_levels.itertuples(index=False)]
 
+    zone_ids = []  # To store the fetched zone_ids
+
     try:
         with conn.cursor() as cursor:
-
-            # Insert zones into the table with conflict handling
+            # Insert zones into the table and return their zone_ids
             query = """
-                INSERT INTO zones (simulation_id, zone_name, equipment_level_people, equipment_level_lights, equipment_level_electric, equipment_level_gas, equipment_level_hot_water, equipment_level_steam, equipment_level_other)
+                INSERT INTO zones (simulation_id, zone_name, equipment_level_people, equipment_level_lights, equipment_level_electric,
+                                   equipment_level_gas, equipment_level_hot_water, equipment_level_steam, equipment_level_other)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                RETURNING zone_id
             """
 
-            cursor.executemany(query, zones_data)
+            # Execute the query for each row in zones_data and fetch the returned zone_id
+            for zone_data in zones_data:
+                cursor.execute(query, zone_data)
+                zone_id = cursor.fetchone()[0]  # Fetch the newly inserted zone_id
+                zone_ids.append(zone_id)
+
+            # Commit the transaction
             conn.commit()
             print(f"Successfully inserted {len(zones_data)} unique zones into the zones table.")
 
     except Exception as e:
+        # Rollback on error
         conn.rollback()
         print(f"Error inserting into zones table: {e}")
+        raise  # Re-raise exception after rollback to handle it properly
+
+    return zone_ids
 # Passed
 
-def get_zone_id(conn, building_id, zone_name):
+def get_zone_id(conn, simulation_id, zone_name):
     """
     Retrieves the zone_id for a given building_id and zone_name from the zones table.
 
@@ -351,7 +366,7 @@ def get_zone_id(conn, building_id, zone_name):
     """
     query = """
     SELECT zone_id FROM zones 
-    WHERE building_id = %s AND zone_name = %s;
+    WHERE simulation_id = %s AND zone_name = %s;
     """
 
     with conn.cursor() as cursor:
@@ -682,4 +697,5 @@ all_zone_aggregated_pickle_filepath = r"D:\Seattle_ASHRAE_2013_2day\ASHRAE901_Of
 file = open(all_zone_aggregated_pickle_filepath,"rb")
 data_dict = pickle.load(file)
 # get_equipment_levels(data_dict)
-populate_zones_table(conn, data_dict, simulation_id)
+zone_ids = populate_zones_table(conn, data_dict, simulation_id)
+print(zone_ids)
