@@ -29,7 +29,7 @@ def get_create_table_query(tablename):
 
     # Simulation Information Table
     # Each record corresponds to a unique Simulation
-    if tablename == "simulations":
+    elif tablename == "simulations":
         query = """
         CREATE TABLE simulations (
         simulation_id SERIAL PRIMARY KEY,

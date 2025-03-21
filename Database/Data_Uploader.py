@@ -72,7 +72,7 @@ def populate_buildings_table(conn):
     """
 
     # Define empty DataFrame with correct column names
-    buildings_df = pd.DataFrame(columns=["building_type", "prototype", "energy_code", "climate_zone", "heating_type", "foundation_type"])
+    buildings_df = pd.DataFrame(columns=["building_type", "prototype", "energy_code", "idf_climate_zone", "heating_type", "foundation_type"])
     
     # Define climate zones
     climate_zones = ["0A", "0B", "1A", "1B", "2A", "2B", "3A", "3B", "3C", "4A", "4B", "4C", "5A", "5B", "5C", "6A", "6B", "7", "8"]
@@ -153,7 +153,7 @@ def populate_buildings_table(conn):
 # Creates a record for each prototypical building IDF provided by PNNL.
 # Uploads this dataframe to Database.
 # This Function only needs to be run once.
-
+# Passed
 
 def get_building_id(conn, building_type, building_name):
     """
@@ -205,7 +205,7 @@ def get_building_id(conn, building_type, building_name):
     # Construct SQL query
     query = """
         SELECT building_id FROM building_prototypes
-        WHERE building_type = %s AND prototype = %s AND energy_code = %s AND climate_zone = %s
+        WHERE building_type = %s AND prototype = %s AND energy_code = %s AND idf_climate_zone = %s
     """
     params = [building_type, prototype, energy_code, climate_zone]
 
@@ -225,7 +225,7 @@ def get_building_id(conn, building_type, building_name):
         print(f"Error retrieving building ID: {e}")
         cursor.close()
         return None
-
+# Passed
 
 def populate_zones_table(conn, data_dict, building_name, building_id):
     """
@@ -594,4 +594,9 @@ host = "localhost"
 conn = psycopg2.connect(dbname=dbname, user=user, password=password, host=host)
 
 # populate_datetimes_table(conn)
+# populate_buildings_table(conn)
+
+#test_building_name = 'ASHRAE901_OfficeSmall_STD2013_Seattle'
+#building_id = get_building_id(conn, 'Commercial', test_building_name)
+#print(building_id)
 
