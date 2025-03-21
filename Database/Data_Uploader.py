@@ -286,9 +286,29 @@ def populate_simulations_table(conn, building_id, simulation_name='Unnamed Simul
         conn.rollback()  # Rollback in case of error
 # Passed
 
-##### Populate Simulations Table must be written before any of the below functions will work #####
+def get_equipment_levels(data_dict):
 
-def populate_zones_table(conn, data_dict, building_name, building_id):
+    equipment_zones = [zone for zone in data_dict.keys() if "DateTime_List" not in zone and "Equipment" in zone]
+
+    # make dataframe with columns "zone_name", "people", "lights", "electric", "gas", "hot_water", "steam" "other"
+    equipment_levels = pd.DataFrame(columns=["zone_name", "people", "lights", "electric", "gas", "hot_water", "steam", "other"])
+
+    for zone in equipment_zones:
+        zone_name = zone.replace("_Equipment", "")
+        people = float(data_dict[zone]["People_Level"].iloc[0]) if "People_Level" in data_dict[zone] and not data_dict[zone]["People_Level"].empty else 0.0
+        lights = float(data_dict[zone]["Lights_Level"].iloc[0]) if "Lights_Level" in data_dict[zone] and not data_dict[zone]["Lights_Level"].empty else 0.0
+        electric = float(data_dict[zone]["ElectricEquipment_Level"].iloc[0]) if "ElectricEquipment_Level" in data_dict[zone] and not data_dict[zone]["ElectricEquipment_Level"].empty else 0.0
+        gas = float(data_dict[zone]["GasEquipment_Level"].iloc[0]) if "GasEquipment_Level" in data_dict[zone] and not data_dict[zone]["GasEquipment_Level"].empty else 0.0
+        hot_water = float(data_dict[zone]["HotWaterEquipment_Level"].iloc[0]) if "HotWaterEquipment_Level" in data_dict[zone] and not data_dict[zone]["HotWaterEquipment_Level"].empty else 0.0
+        steam = float(data_dict[zone]["SteamEquipment_Level"].iloc[0]) if "SteamEquipment_Level" in data_dict[zone] and not data_dict[zone]["SteamEquipment_Level"].empty else 0.0
+        other = float(data_dict[zone]["OtherEquipment_Level"].iloc[0]) if "OtherEquipment_Level" in data_dict[zone] and not data_dict[zone]["OtherEquipment_Level"].empty else 0.0
+        # Add a row to the DataFrame
+        equipment_levels.loc[len(equipment_levels)] = [zone_name, people, lights, electric, gas, hot_water, steam, other]
+
+    return equipment_levels
+# Passed
+
+def populate_zones_table(conn, data_dict, simulation_id):
     """
     Populates the 'zones' table with unique zone names from the provided data dictionary.
     
@@ -297,6 +317,8 @@ def populate_zones_table(conn, data_dict, building_name, building_id):
     """
     
     zones = [zone for zone in data_dict.keys() if "DateTime_List" not in zone and "Equipment" not in zone]
+
+    # Get Equipment Levels from data_dict
     
     try:
         with conn.cursor() as cursor:
@@ -309,7 +331,7 @@ def populate_zones_table(conn, data_dict, building_name, building_id):
 
             # Insert zones into the table with conflict handling
             query = """
-            INSERT INTO zones (building_id, zone_name)
+            INSERT INTO zones (simulation_id, zone_name)
             VALUES (%s, %s)
             ON CONFLICT (building_id, zone_name) DO NOTHING;
             """
@@ -655,7 +677,7 @@ host = "localhost"
 conn = psycopg2.connect(dbname=dbname, user=user, password=password, host=host)
 
 # populate_datetimes_table(conn)
-# populate_buildings_table(conn)
+populate_buildings_table(conn)
 
 test_building_name = 'ASHRAE901_OfficeSmall_STD2013_Seattle'
 building_id = get_building_id(conn, 'Commercial', test_building_name)
@@ -663,3 +685,9 @@ print(building_id)
 
 simulation_id = populate_simulations_table(conn, building_id)
 print(simulation_id)
+
+all_zone_aggregated_pickle_filepath = r"D:\Seattle_ASHRAE_2013_2day\ASHRAE901_OfficeSmall_STD2013_Seattle\Sim_AggregatedData\Aggregation_Dict_AllZones.pickle"
+file = open(all_zone_aggregated_pickle_filepath,"rb")
+data_dict = pickle.load(file)
+get_equipment_levels(data_dict)
+# populate_zones_table(conn, data_dict, simulation_id)
