@@ -28,9 +28,9 @@ def get_climate_zone(location):
     }
 
     return climate_zones.get(location, "Climate Zone not found.")
-# Tested - Passed
+# Passed
 
-def populate_datetimes_table(conn, start_datetime=datetime(2013, 1, 1, 0, 0)):
+def populate_datetimes_table(conn, base_time_resolution=1, start_datetime=datetime(2013, 1, 1, 0, 0)):
     """
         Populates the 'datetimes' table with timestamps at 5-minute intervals for one year.
 
@@ -41,7 +41,7 @@ def populate_datetimes_table(conn, start_datetime=datetime(2013, 1, 1, 0, 0)):
         with conn.cursor() as cursor:
             # Generate timestamps for one year at 5-minute intervals
             end_datetime = start_datetime + timedelta(days=365)
-            timestamps = [start_datetime + timedelta(minutes=5 * i) for i in range((end_datetime - start_datetime).days * 24 * 12)]
+            timestamps = [start_datetime + timedelta(minutes=base_time_resolution * i) for i in range((end_datetime - start_datetime).days * 24 * 12)]
 
             # Convert list into a format suitable for insertion
             records = [(ts,) for ts in timestamps]
@@ -60,8 +60,8 @@ def populate_datetimes_table(conn, start_datetime=datetime(2013, 1, 1, 0, 0)):
     except Exception as e:
         conn.rollback()
         print(f"Error inserting into datetimes table: {e}")
-# Fills datetimes table with timestamps at 5-minute intervals for one year.
-# Tested - Passed
+# Fills datetimes table with timestamps at 1-minute intervals for one year.
+# Passed
 
 def populate_buildings_table(conn):
     """
@@ -153,7 +153,7 @@ def populate_buildings_table(conn):
 # Creates a record for each prototypical building IDF provided by PNNL.
 # Uploads this dataframe to Database.
 # This Function only needs to be run once.
-# Tested - Passed
+
 
 def get_building_id(conn, building_type, building_name):
     """
@@ -225,9 +225,7 @@ def get_building_id(conn, building_type, building_name):
         print(f"Error retrieving building ID: {e}")
         cursor.close()
         return None
-# Tested for Commercial Building - Passed
-# Tested for Residential Building - Passed
-# Tested for Manufactured Building - Passed
+
 
 def populate_zones_table(conn, data_dict, building_name, building_id):
     """
@@ -265,7 +263,7 @@ def populate_zones_table(conn, data_dict, building_name, building_id):
 # Creates a record for each zone in the data dictionary.
 # Uploads the zones database
 # Use for All-Zones Aggregation Only
-# Passed
+
 
 def get_zone_id(conn, building_id, zone_name):
     """
@@ -286,7 +284,7 @@ def get_zone_id(conn, building_id, zone_name):
         result = cursor.fetchone()  # Fetch one result
 
     return result[0] if result else None  # Return zone_id or None if not found
-# Passed
+
 
 def populate_aggregation_zones_table(conn, data_dict, building_name, building_id):
     
@@ -375,7 +373,7 @@ def populate_variables_table(conn, data_dict):
     with conn.cursor() as cursor:
         cursor.executemany(query, records)  # Batch insert
         conn.commit()
-# Passed
+
 
 def get_datetime_id_list(conn, data_dict):
     """
@@ -448,8 +446,7 @@ def get_datetime_id_list(conn, data_dict):
     except Exception as e:
         print(f"Error in get_datetime_id_list: {e}")
         return []
-# Under Construction
-# BUG: datetime_list is twice as long as it should be.
+
 
 def get_variables(conn, zone_id):
     """
@@ -481,7 +478,7 @@ def get_variables(conn, zone_id):
     except Exception as e:
         print(f"Error in get_variables: {e}")
         return []
-# Passed
+
 
 def populate_time_series_data_table(conn, data_dict, building_id):
     """
@@ -553,10 +550,41 @@ def populate_time_series_data_table(conn, data_dict, building_id):
         conn.rollback()
         print(f"Error in populate_time_series_data_table: {e}")
 
-# Under Construction
-# BUG: Datetime List assumes 1 year of datetimes - we are breaking for the 2day test data. Revise get_datetime_id_list function.
+def old_test_code():
+    # Test
+    dbname = "buildings"
+    user = "Casey"
+    password = "OfficeLarge"
+    host = "localhost"
 
-# Test
+    # Create the connection object
+    conn = psycopg2.connect(dbname=dbname, user=user, password=password, host=host)
+
+    #populate_datetimes_table(conn)
+    #populate_buildings_table(conn)
+
+    test_building_name = 'ASHRAE901_OfficeSmall_STD2013_Seattle'
+    building_id = get_building_id(conn, 'Commercial', test_building_name)
+
+    all_zone_aggregated_pickle_filepath = r"D:\Seattle_ASHRAE_2013_2day\ASHRAE901_OfficeSmall_STD2013_Seattle\Sim_AggregatedData\Aggregation_Dict_AllZones.pickle"
+    file = open(all_zone_aggregated_pickle_filepath,"rb")
+    data_dict = pickle.load(file)
+
+    #populate_zones_table(conn, data_dict, test_building_name, building_id)
+    #populate_variables_table(conn, data_dict)
+
+    zone_name = 'CORE_ZN'
+    zone_id = get_zone_id(conn, building_id, zone_name)
+    datetime_ids = get_datetime_id_list(conn, data_dict) # Returning Empty List
+
+    populate_time_series_data_table(conn, data_dict, building_id)
+
+    # Datetime_List in data_dict is duplicated (twice as long as it should be)
+    # Need to check that Values are not also duplicated.
+    # There may be a mistake in aggregation.
+
+# NEW TEST CODE
+
 dbname = "buildings"
 user = "Casey"
 password = "OfficeLarge"
@@ -565,25 +593,5 @@ host = "localhost"
 # Create the connection object
 conn = psycopg2.connect(dbname=dbname, user=user, password=password, host=host)
 
-#populate_datetimes_table(conn)
-#populate_buildings_table(conn)
+# populate_datetimes_table(conn)
 
-test_building_name = 'ASHRAE901_OfficeSmall_STD2013_Seattle'
-building_id = get_building_id(conn, 'Commercial', test_building_name)
-
-all_zone_aggregated_pickle_filepath = r"D:\Seattle_ASHRAE_2013_2day\ASHRAE901_OfficeSmall_STD2013_Seattle\Sim_AggregatedData\Aggregation_Dict_AllZones.pickle"
-file = open(all_zone_aggregated_pickle_filepath,"rb")
-data_dict = pickle.load(file)
-
-#populate_zones_table(conn, data_dict, test_building_name, building_id)
-#populate_variables_table(conn, data_dict)
-
-zone_name = 'CORE_ZN'
-zone_id = get_zone_id(conn, building_id, zone_name)
-datetime_ids = get_datetime_id_list(conn, data_dict) # Returning Empty List
-
-populate_time_series_data_table(conn, data_dict, building_id)
-
-# Datetime_List in data_dict is duplicated (twice as long as it should be)
-# Need to check that Values are not also duplicated.
-# There may be a mistake in aggregation.
