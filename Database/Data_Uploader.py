@@ -227,6 +227,62 @@ def get_building_id(conn, building_type, building_name):
         return None
 # Passed
 
+##### Below here Populated at Runtime #####
+
+def populate_simulations_table(conn, building_id, simulation_name='Unnamed Simulation', epw_climate_zone=None,
+                               time_resolution=5):
+    """
+    Populate the simulations table with a new simulation record.
+
+    :param conn: Database connection object.
+    :param building_id: The ID of the building for which the simulation is being added.
+    :param simulation_name: The name of the simulation (default: 'Unnamed Simulation').
+    :param epw_climate_zone: The climate zone for the simulation (default: None).
+    :param time_resolution: The time resolution for the simulation in minutes (default: 5).
+    """
+    try:
+        # If epw_climate_zone is not provided, fetch it from the 'building_prototypes' table
+        if epw_climate_zone is None:
+            with conn.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT idf_climate_zone 
+                    FROM building_prototypes 
+                    WHERE building_id = %s
+                    """,
+                    (building_id,)
+                )
+                result = cursor.fetchone()
+                if result:
+                    epw_climate_zone = result[0]
+                else:
+                    raise ValueError(f"Climate zone not found for building_id {building_id}")
+
+        # Insert simulation data into the simulations table
+        with conn.cursor() as cursor:
+            cursor.execute(
+                """
+                INSERT INTO simulations (simulation_name, building_id, epw_climate_zone, time_resolution)
+                VALUES (%s, %s, %s, %s)
+                """,
+                (simulation_name, building_id, epw_climate_zone, time_resolution)
+            )
+
+        # Commit the transaction
+        conn.commit()
+        print("Simulation data successfully added to the simulations table.")
+
+    except ValueError as ve:
+        print(f"Error: {ve}")
+        conn.rollback()  # Rollback in case of error
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        conn.rollback()  # Rollback in case of error
+# Passed
+
+##### Populate Simulations Table must be written before any of the below functions will work #####
+
 def populate_zones_table(conn, data_dict, building_name, building_id):
     """
     Populates the 'zones' table with unique zone names from the provided data dictionary.
@@ -596,7 +652,8 @@ conn = psycopg2.connect(dbname=dbname, user=user, password=password, host=host)
 # populate_datetimes_table(conn)
 # populate_buildings_table(conn)
 
-#test_building_name = 'ASHRAE901_OfficeSmall_STD2013_Seattle'
-#building_id = get_building_id(conn, 'Commercial', test_building_name)
-#print(building_id)
+test_building_name = 'ASHRAE901_OfficeSmall_STD2013_Seattle'
+building_id = get_building_id(conn, 'Commercial', test_building_name)
+print(building_id)
 
+populate_simulations_table(conn, building_id)
