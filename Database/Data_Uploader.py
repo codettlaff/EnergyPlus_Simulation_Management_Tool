@@ -314,39 +314,31 @@ def populate_zones_table(conn, data_dict, simulation_id):
     
     :param conn: psycopg2 connection object
     :param data_dict: Dictionary where keys are zone names (some keys may contain metadata)
+    :param simulation_id: ID to associate each record with the simulation
     """
-    
-    zones = [zone for zone in data_dict.keys() if "DateTime_List" not in zone and "Equipment" not in zone]
 
     # Get Equipment Levels from data_dict
-    
+    equipment_levels = get_equipment_levels(data_dict)
+    # Convert the DataFrame to a list of tuples and add simulation_id as the first item
+    zones_data = [(simulation_id, *tuple(row)) for row in equipment_levels.itertuples(index=False)]
+
     try:
         with conn.cursor() as cursor:
 
-            # Convert to DataFrame
-            zones_df = pd.DataFrame(zones, columns=["zone_name"])
-
-            # Prepare data for batch insertion
-            records = [(building_id, zone) for zone in zones_df["zone_name"].unique()]
-
             # Insert zones into the table with conflict handling
             query = """
-            INSERT INTO zones (simulation_id, zone_name)
-            VALUES (%s, %s)
-            ON CONFLICT (building_id, zone_name) DO NOTHING;
+                INSERT INTO zones (simulation_id, zone_name, equipment_level_people, equipment_level_lights, equipment_level_electric, equipment_level_gas, equipment_level_hot_water, equipment_level_steam, equipment_level_other)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
-            
-            cursor.executemany(query, records)
+
+            cursor.executemany(query, zones_data)
             conn.commit()
-            print(f"Successfully inserted {len(records)} unique zones into the zones table.")
+            print(f"Successfully inserted {len(zones_data)} unique zones into the zones table.")
 
     except Exception as e:
         conn.rollback()
         print(f"Error inserting into zones table: {e}")
-# Creates a record for each zone in the data dictionary.
-# Uploads the zones database
-# Use for All-Zones Aggregation Only
-
+# Passed
 
 def get_zone_id(conn, building_id, zone_name):
     """
@@ -689,5 +681,5 @@ print(simulation_id)
 all_zone_aggregated_pickle_filepath = r"D:\Seattle_ASHRAE_2013_2day\ASHRAE901_OfficeSmall_STD2013_Seattle\Sim_AggregatedData\Aggregation_Dict_AllZones.pickle"
 file = open(all_zone_aggregated_pickle_filepath,"rb")
 data_dict = pickle.load(file)
-get_equipment_levels(data_dict)
-# populate_zones_table(conn, data_dict, simulation_id)
+# get_equipment_levels(data_dict)
+populate_zones_table(conn, data_dict, simulation_id)
