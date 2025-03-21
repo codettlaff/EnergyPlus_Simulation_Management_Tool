@@ -13,8 +13,8 @@ def create_database():
     
 def get_create_table_query(tablename):
     
-    # Building And Simulation Information Tables
-            
+    # Building Information Tables
+    # Each Record corresponds to a unique IDF file.
     if tablename == "building_prototypes":
         query = """
             CREATE TABLE building_prototypes (
@@ -22,13 +22,27 @@ def get_create_table_query(tablename):
             building_type VARCHAR(100) NOT NULL,
             prototype VARCHAR(100) NOT NULL,
             energy_code VARCHAR(100) NOT NULL,
-            climate_zone VARCHAR(100) NOT NULL,
+            idf_climate_zone VARCHAR(100) NOT NULL,
             heating_type VARCHAR(100),
             foundation_type VARCHAR(100),
-            UNIQUE (building_id, building_type, prototype, energy_code, climate_zone, heating_type, foundation_type)); """
-        
-    # Variable Information Tables
-        
+            UNIQUE (building_id, building_type, prototype, energy_code, idf_climate_zone, heating_type, foundation_type)); """
+
+    # Simulation Information Table
+    # Each record corresponds to a unique Simulation
+    if tablename == "simulations":
+        query = """
+        CREATE TABLE simulations (
+        simulation_id SERIAL PRIMARY KEY,
+        simulation_name VARCHAR(100) NOT NULL,
+        building_id INT NOT NULL,
+        epw_climate_zone VARCHAR(100) NOT NULL,
+        time_resolution INT NOT NULL,
+        FOREIGN KEY (building_id) REFERENCES building_prototypes(building_id)
+        );
+        """
+
+    # Aggregation Zones Table
+    # Links an aggregated zone to its composite zones.
     elif tablename == "aggregation_zones":
         query = """
             CREATE TABLE aggregation_zones (
@@ -37,16 +51,25 @@ def get_create_table_query(tablename):
             FOREIGN KEY (aggregation_zone_id) REFERENCES zones(zone_id),
             FOREIGN KEY (composite_zone_id) REFERENCES zones(zone_id),
             PRIMARY KEY (aggregation_zone_id, composite_zone_id));"""
-        
+
+    # Zones Table
     elif tablename == "zones":
         query = """
             CREATE TABLE zones (
             zone_id SERIAL PRIMARY KEY,
-            building_id INT NOT NULL,
+            simulation_id INT NOT NULL,
             zone_name VARCHAR(100) NOT NULL,
-            FOREIGN KEY (building_id) REFERENCES building_prototypes(building_id),
-            UNIQUE (building_id, zone_name));"""
-        
+            equipment_level_people FLOAT,
+            equipment_level_lights FLOAT,
+            equipment_level_electric FLOAT,
+            equipment_level_gas FLOAT,
+            equipment_level_hot_water FLOAT,
+            equipment_level_steam FLOAT,
+            equipment_level_other FLOAT,
+            FOREIGN KEY (simulation_id) REFERENCES simulations(simulation_id),
+            UNIQUE (simulation_id, zone_name));"""
+
+    # Variables Table
     elif tablename == "variables":
         query = """
             CREATE TABLE variables (
@@ -89,7 +112,8 @@ def create_table(query):
 def create_tables():
     
     # tables must be created in the following order
-    tables = ["building_prototypes", 
+    tables = ["building_prototypes",
+              "simulations",
               "datetimes",
               "zones",
               "variables",
