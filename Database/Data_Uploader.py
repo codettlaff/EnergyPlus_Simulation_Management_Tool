@@ -369,7 +369,7 @@ def insert_aggregation_zone(conn, data_dict, simulation_id, aggregation_zones):
                               Values are lists of associated composite zone ids.
     :return: Dictionary mapping aggregation zone IDs to lists of composite zone IDs.
     """
-    aggregation_zones_ids = {}  # Initialize an empty dictionary to store results
+    aggregation_zones_ids_dict = {}  # Initialize an empty dictionary to store results
 
     # Step 1: Insert aggregation zones into the zones table
     aggregated_zone_ids = populate_zones_table(conn, data_dict, simulation_id)
@@ -378,7 +378,7 @@ def insert_aggregation_zone(conn, data_dict, simulation_id, aggregation_zones):
     i = 0
     for aggregation_zone, composite_zone_id_list in aggregation_zones.items():
         # Map the aggregation zone ID (indexed by i in aggregated_zone_ids) to the composite zone IDs
-        aggregation_zones_ids[aggregated_zone_ids[i]] = composite_zone_id_list
+        aggregation_zones_ids_dict[aggregated_zone_ids[i]] = composite_zone_id_list
         i += 1  # Increment the index to match the next aggregation zone
 
     # Step 2: Upload aggregation_zones_ids to the 'aggregation_zones' linking table
@@ -393,7 +393,7 @@ def insert_aggregation_zone(conn, data_dict, simulation_id, aggregation_zones):
 
             # Create a list of tuples for batch insertion
             linking_data = []
-            for aggregation_zone_id, composite_zone_ids in aggregation_zones_ids.items():
+            for aggregation_zone_id, composite_zone_ids in aggregation_zones_ids_dict.items():
                 for composite_zone_id in composite_zone_ids:
                     linking_data.append((aggregation_zone_id, composite_zone_id))
 
@@ -410,7 +410,7 @@ def insert_aggregation_zone(conn, data_dict, simulation_id, aggregation_zones):
         print(f"Error inserting into aggregation_zones table: {e}")
         raise  # Re-raise the exception to handle upstream
 
-    return aggregation_zones_ids
+    return aggregated_zone_ids
 # Passed
 
 def populate_aggregation_zones_table_old(conn, data_dict, building_name, building_id):
@@ -466,7 +466,7 @@ def populate_aggregation_zones_table_old(conn, data_dict, building_name, buildin
 # Use for Single-Zone Aggregation Only
 # Do This Later
 
-def populate_variables_table(conn, data_dict):
+def populate_variables_table(conn, data_dict, zone_ids):
 
     keys = list(data_dict.keys())  # Convert keys to a list
     zone_names = []
@@ -479,15 +479,16 @@ def populate_variables_table(conn, data_dict):
     insert_zone_ids = []
     insert_variable_names = []
 
+    i = 0
     for zone_name in zone_names:
 
-        zone_id = get_zone_id(conn, building_id, zone_name)
         variable_names = data_dict[zone_name].columns.tolist()
 
         for variable_name in variable_names:
 
-            insert_zone_ids.append(zone_id)
+            insert_zone_ids.append(zone_ids[i])
             insert_variable_names.append(variable_name)
+        i+= 1
 
     records = list(zip(insert_variable_names, insert_zone_ids))
 
@@ -500,7 +501,7 @@ def populate_variables_table(conn, data_dict):
     with conn.cursor() as cursor:
         cursor.executemany(query, records)  # Batch insert
         conn.commit()
-
+# passed
 
 def get_datetime_id_list(conn, data_dict):
     """
@@ -732,15 +733,18 @@ print(simulation_id)
 
 all_zone_aggregated_pickle_filepath = r"D:\Seattle_ASHRAE_2013_2day\ASHRAE901_OfficeSmall_STD2013_Seattle\Sim_AggregatedData\Aggregation_Dict_AllZones.pickle"
 with (open(all_zone_aggregated_pickle_filepath,"rb") as file):
-    data_dict = pickle.load(file)
+    all_zone_data_dict = pickle.load(file)
 
 #get_equipment_levels(data_dict)
-zone_ids = populate_zones_table(conn, data_dict, simulation_id)
+zone_ids = populate_zones_table(conn, all_zone_data_dict, simulation_id)
 #print(zone_ids)
 
 one_zone_aggregated_pickle_filepath = r"D:\Seattle_ASHRAE_2013_2day\ASHRAE901_OfficeSmall_STD2013_Seattle\Sim_AggregatedData\Aggregation_Dict_OneZone.pickle"
 with (open(one_zone_aggregated_pickle_filepath,"rb") as file):
-    data_dict = pickle.load(file)
+    one_zone_data_dict = pickle.load(file)
 
 aggregation_zones = {"aggregation_zone_1z": [1,2,3,4,5,6]}
-insert_aggregation_zone(conn, data_dict, simulation_id, aggregation_zones)
+aggregation_zone_ids = insert_aggregation_zone(conn, one_zone_data_dict, simulation_id, aggregation_zones)
+
+populate_variables_table(conn, all_zone_data_dict, zone_ids)
+populate_variables_table(conn, one_zone_data_dict, aggregation_zone_ids)
