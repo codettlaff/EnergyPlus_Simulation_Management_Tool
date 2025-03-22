@@ -355,28 +355,65 @@ def populate_zones_table(conn, data_dict, simulation_id):
     return zone_ids
 # Passed
 
-def get_zone_id(conn, simulation_id, zone_name):
+def insert_aggregation_zone(conn, data_dict, simulation_id, aggregation_zones):
     """
-    Retrieves the zone_id for a given building_id and zone_name from the zones table.
+    Inserts aggregation zones into the zones table and creates a mapping of
+    aggregation zone IDs to their corresponding composite zone IDs.
 
-    :param conn: psycopg2 connection object.
-    :param building_id: The ID of the building.
-    :param zone_name: The name of the zone.
-    :return: The corresponding zone_id if found, otherwise None.
+    :param conn: psycopg2 connection object
+    :param data_dict: Data dictionary containing zone information.
+    :param building_id: ID of the building to associate the zones.
+    :param simulation_id: ID to associate the zones with the simulation.
+    :param aggregation_zones: Dictionary of aggregation zones.
+                              Keys are aggregation zone names,
+                              Values are lists of associated composite zone ids.
+    :return: Dictionary mapping aggregation zone IDs to lists of composite zone IDs.
     """
-    query = """
-    SELECT zone_id FROM zones 
-    WHERE simulation_id = %s AND zone_name = %s;
-    """
+    aggregation_zones_ids = {}  # Initialize an empty dictionary to store results
 
-    with conn.cursor() as cursor:
-        cursor.execute(query, (building_id, zone_name))
-        result = cursor.fetchone()  # Fetch one result
+    # Step 1: Insert aggregation zones into the zones table
+    aggregated_zone_ids = populate_zones_table(conn, data_dict, simulation_id)
+    # Map these inserted zones to the aggregation zones dictionary
 
-    return result[0] if result else None  # Return zone_id or None if not found
+    i = 0
+    for aggregation_zone, composite_zone_id_list in aggregation_zones.items():
+        # Map the aggregation zone ID (indexed by i in aggregated_zone_ids) to the composite zone IDs
+        aggregation_zones_ids[aggregated_zone_ids[i]] = composite_zone_id_list
+        i += 1  # Increment the index to match the next aggregation zone
 
+    # Step 2: Upload aggregation_zones_ids to the 'aggregation_zones' linking table
+    # The linking table has columns 'aggregation_zone_id' and 'composite_zone_id'
+    try:
+        with conn.cursor() as cursor:
+            # Insert query for the aggregation_zones linking table
+            query = """
+                INSERT INTO aggregation_zones (aggregation_zone_id, composite_zone_id)
+                VALUES (%s, %s)
+            """
 
-def populate_aggregation_zones_table(conn, data_dict, building_name, building_id):
+            # Create a list of tuples for batch insertion
+            linking_data = []
+            for aggregation_zone_id, composite_zone_ids in aggregation_zones_ids.items():
+                for composite_zone_id in composite_zone_ids:
+                    linking_data.append((aggregation_zone_id, composite_zone_id))
+
+            # Execute batch insert using executemany
+            cursor.executemany(query, linking_data)
+
+            # Commit the transaction
+            conn.commit()
+            print(f"Successfully inserted {len(linking_data)} records into the aggregation_zones table.")
+
+    except Exception as e:
+        # Rollback the transaction in case of an error
+        conn.rollback()
+        print(f"Error inserting into aggregation_zones table: {e}")
+        raise  # Re-raise the exception to handle upstream
+
+    return aggregation_zones_ids
+# Passed
+
+def populate_aggregation_zones_table_old(conn, data_dict, building_name, building_id):
     
     zones = [zone for zone in data_dict.keys() if "DateTime_List" not in zone and "Equipment" not in zone]
     
@@ -694,8 +731,16 @@ simulation_id = populate_simulations_table(conn, building_id)
 print(simulation_id)
 
 all_zone_aggregated_pickle_filepath = r"D:\Seattle_ASHRAE_2013_2day\ASHRAE901_OfficeSmall_STD2013_Seattle\Sim_AggregatedData\Aggregation_Dict_AllZones.pickle"
-file = open(all_zone_aggregated_pickle_filepath,"rb")
-data_dict = pickle.load(file)
-# get_equipment_levels(data_dict)
+with (open(all_zone_aggregated_pickle_filepath,"rb") as file):
+    data_dict = pickle.load(file)
+
+#get_equipment_levels(data_dict)
 zone_ids = populate_zones_table(conn, data_dict, simulation_id)
-print(zone_ids)
+#print(zone_ids)
+
+one_zone_aggregated_pickle_filepath = r"D:\Seattle_ASHRAE_2013_2day\ASHRAE901_OfficeSmall_STD2013_Seattle\Sim_AggregatedData\Aggregation_Dict_OneZone.pickle"
+with (open(one_zone_aggregated_pickle_filepath,"rb") as file):
+    data_dict = pickle.load(file)
+
+aggregation_zones = {"aggregation_zone_1z": [1,2,3,4,5,6]}
+insert_aggregation_zone(conn, data_dict, simulation_id, aggregation_zones)
