@@ -311,20 +311,18 @@ def get_equipment_levels(data_dict):
 def populate_zones_table(conn, data_dict, simulation_id):
     """
     Populates the 'zones' table with unique zone names from the provided data dictionary
-    and returns the zone_ids of the inserted zones.
+    and returns a DataFrame with 'zone_id' and 'zone_name' columns for the inserted zones.
 
     :param conn: psycopg2 connection object
     :param data_dict: Dictionary where keys are zone names (some keys may contain metadata)
     :param simulation_id: ID to associate each record with the simulation
-    :return: List of zone_ids for the newly inserted zones
+    :return: DataFrame with columns 'zone_id' and 'zone_name'
     """
 
     # Get Equipment Levels from data_dict
-    equipment_levels = get_equipment_levels(data_dict)
+    equipment_levels = get_equipment_levels(data_dict)  # Assumes this returns a DataFrame with the required zone data
     # Convert the DataFrame to a list of tuples and add simulation_id as the first item
-    zones_data = [(simulation_id, *tuple(row)) for row in equipment_levels.itertuples(index=False)]
-
-    zone_ids = []  # To store the fetched zone_ids
+    zones_data = [(simulation_id, *row) for row in equipment_levels.itertuples(index=False, name=None)]
 
     try:
         with conn.cursor() as cursor:
@@ -333,52 +331,54 @@ def populate_zones_table(conn, data_dict, simulation_id):
                 INSERT INTO zones (simulation_id, zone_name, equipment_level_people, equipment_level_lights, equipment_level_electric,
                                    equipment_level_gas, equipment_level_hot_water, equipment_level_steam, equipment_level_other)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                RETURNING zone_id
+                ON CONFLICT DO NOTHING
+                RETURNING zone_id, zone_name
             """
 
-            # Execute the query for each row in zones_data and fetch the returned zone_id
-            for zone_data in zones_data:
-                cursor.execute(query, zone_data)
-                zone_id = cursor.fetchone()[0]  # Fetch the newly inserted zone_id
-                zone_ids.append(zone_id)
-
-            # Commit the transaction
+            # Execute the query for all rows and fetch the returned zone_ids
+            cursor.executemany(query, zones_data)
             conn.commit()
-            print(f"Successfully inserted {len(zones_data)} unique zones into the zones table.")
+
+            # Fetch zone_id and zone_name for the inserted zones
+            cursor.execute("SELECT zone_id, zone_name FROM zones WHERE simulation_id = %s", (simulation_id,))
+            result = cursor.fetchall()
+
+        # Convert to DataFrame
+        df = pd.DataFrame(result, columns=["zone_id", "zone_name"])
+        return df
 
     except Exception as e:
         # Rollback on error
         conn.rollback()
         print(f"Error inserting into zones table: {e}")
         raise  # Re-raise exception after rollback to handle it properly
-
-    return zone_ids
 # Passed
 
 def insert_aggregation_zones(conn, data_dict, simulation_id, aggregation_zones):
     """
     Inserts aggregation zones into the zones table and creates a mapping of
     aggregation zone IDs to their corresponding composite zone IDs.
+    Returns a DataFrame with columns 'zone_id' and 'zone_name' for the inserted zones.
 
     :param conn: psycopg2 connection object
     :param data_dict: Data dictionary containing zone information.
-    :param building_id: ID of the building to associate the zones.
     :param simulation_id: ID to associate the zones with the simulation.
     :param aggregation_zones: Dictionary of aggregation zones.
                               Keys are aggregation zone names,
                               Values are lists of associated composite zone ids.
-    :return: Dictionary mapping aggregation zone IDs to lists of composite zone IDs.
+    :return: DataFrame with columns 'zone_id' and 'zone_name'
     """
+
     aggregation_zones_ids_dict = {}  # Initialize an empty dictionary to store results
 
     # Step 1: Insert aggregation zones into the zones table
-    aggregated_zone_ids = populate_zones_table(conn, data_dict, simulation_id)
-    # Map these inserted zones to the aggregation zones dictionary
+    aggregated_zones_df = populate_zones_table(conn, data_dict, simulation_id)  # DataFrame with 'zone_id', 'zone_name'
 
     i = 0
     for aggregation_zone, composite_zone_id_list in aggregation_zones.items():
-        # Map the aggregation zone ID (indexed by i in aggregated_zone_ids) to the composite zone IDs
-        aggregation_zones_ids_dict[aggregated_zone_ids[i]] = composite_zone_id_list
+        # Map the aggregation zone ID (indexed by i in aggregated_zones_df) to the composite zone IDs
+        aggregation_zone_id = aggregated_zones_df.iloc[i]["zone_id"]
+        aggregation_zones_ids_dict[aggregation_zone_id] = composite_zone_id_list
         i += 1  # Increment the index to match the next aggregation zone
 
     # Step 2: Upload aggregation_zones_ids to the 'aggregation_zones' linking table
@@ -410,7 +410,8 @@ def insert_aggregation_zones(conn, data_dict, simulation_id, aggregation_zones):
         print(f"Error inserting into aggregation_zones table: {e}")
         raise  # Re-raise the exception to handle upstream
 
-    return aggregated_zone_ids
+    # Return the DataFrame with 'zone_id' and 'zone_name'
+    return aggregated_zones_df
 # Passed
 
 def populate_aggregation_zones_table_old(conn, data_dict, building_name, building_id):
@@ -495,7 +496,7 @@ def populate_variables_table(conn, data_dict, zone_ids):
     INSERT INTO variables (variable_name, zone_id)
     VALUES (%s, %s)
     ON CONFLICT DO NOTHING
-    RETURNING variable_id, variable_name;
+    RETURNING variable_id, variable_name, zone_id;
     """
 
     with conn.cursor() as cursor:
@@ -503,11 +504,11 @@ def populate_variables_table(conn, data_dict, zone_ids):
         conn.commit()
 
         # Fetch the variable_id and variable_name for the inserted/updated records
-        cursor.execute("SELECT variable_id, variable_name FROM variables ORDER BY variable_id;")
+        cursor.execute("SELECT variable_id, variable_name, zone_id FROM variables ORDER BY variable_id;")
         result = cursor.fetchall()
 
     # Convert to DataFrame
-    df = pd.DataFrame(result, columns=["variable_id", "variable_name"])
+    df = pd.DataFrame(result, columns=["variable_id", "variable_name", "zone_id"])
     return df
 
 def get_datetime_id_list(conn, data_dict):
@@ -615,77 +616,6 @@ def get_variables(conn, zone_id):
         return []
 # passed
 
-def populate_time_series_data_table_old(conn, data_dict, building_id):
-    """
-    Populates the 'timeseriesdata' table using data from data_dict for a given building_id.
-
-    :param conn: psycopg2 connection object
-    :param data_dict: Dictionary containing time-series data
-    :param building_id: ID of the building associated with the data
-    """
-
-    try:
-        cursor = conn.cursor()
-
-        # Extract zone names from data_dict, ignoring "Equipment" keys
-        keys = list(data_dict.keys())
-        zone_names = [key for key in keys[1:] if "Equipment" not in key]
-
-        # Get list of datetime_ids from datetimes table
-        datetime_ids = get_datetime_id_list(conn, data_dict)
-
-        for zone in zone_names:
-
-            # Get the zone_id for the given building_id and zone_name
-            zone_id = get_zone_id(conn, building_id, zone)
-
-            # Retrieve all variable_id and variable_name for this zone
-            variables = get_variables(conn, zone_id)
-
-            for variable in variables:
-                variable_id = variable[0]
-                variable_name = variable[1]
-
-                # Extract the corresponding values from the DataFrame in data_dict
-                if variable_name not in data_dict[zone].columns:
-                    print(f"Warning: Variable '{variable_name}' not found in data for zone '{zone}'")
-                    continue
-
-                values = data_dict[zone][variable_name].tolist()
-
-                # Check Values
-                # Schedule Values may be empty for some zones.
-                # If values are not empty, length should equal length of datetime list.
-                all_nan = all(
-                    pd.isna(x) if not isinstance(x, (list, np.ndarray, pd.Series)) else pd.isna(x).all() for x in
-                    values)
-                if all_nan:
-                    print(f"Warning: Variable '{variable_name}' data is empty for zone '{zone}'")
-                elif len(datetime_ids) != len(values):
-                    raise ValueError(f"Mismatch in data lengths for variable '{variable_name}' in zone '{zone}'")
-
-                # Do not Upload empty Values
-                if not all_nan:
-                    # Prepare data for batch upload
-                    data_to_insert = [(variable_id, datetime_id, value)
-                                      for datetime_id, value in zip(datetime_ids, values)]
-
-                    # Insert data using executemany for efficiency
-                    insert_query = """
-                    INSERT INTO timeseriesdata (variable_id, datetime_id, value)
-                    VALUES (%s, %s, %s);
-                    """
-
-                    cursor.executemany(insert_query, data_to_insert)
-
-        conn.commit()
-        cursor.close()
-        print("Successfully populated timeseriesdata table.")
-
-    except Exception as e:
-        conn.rollback()
-        print(f"Error in populate_time_series_data_table: {e}")
-
 def upload_time_series_data(conn, data_dict, simulation_name, building_id, epw_climate_zone=None, time_resolution=5, aggregation_zones=None):
 
     # Create new entry in the simulations table, returning simulation_id
@@ -693,15 +623,69 @@ def upload_time_series_data(conn, data_dict, simulation_name, building_id, epw_c
 
     # populate zones table
     if not aggregation_zones:
-        zone_ids = populate_zones_table(conn, data_dict, simulation_id)
+        zones = populate_zones_table(conn, data_dict, simulation_id)
     else:
-        zone_ids = insert_aggregation_zones(conn, data_dict, simulation_id, aggregation_zones)
+        zones = insert_aggregation_zones(conn, data_dict, simulation_id, aggregation_zones)
 
     # populate variables table
-    variable_ids = populate_variables_table(conn, data_dict, zone_ids)
+    variables = populate_variables_table(conn, data_dict, zones['zone_id'].tolist())
 
+    # zones has columns 'zone_id', 'zone_name'
+    # variables has columns 'variable_id, variable_name, zone_id'
+    # combine the dataframes by adding a 'zone_name' column to variables
+    variables_with_zone_name = variables.merge(zones, on='zone_id', how='left')
 
-    pass
+    # get datetime id list
+    datetime_ids = get_datetime_id_list(conn, data_dict)
+
+    # Extract zone names from data_dict, ignoring "Equipment" keys
+    keys = list(data_dict.keys())
+    zone_names = [key for key in keys[1:] if "Equipment" not in key]
+
+    for zone in zone_names:
+
+        zone_id = variables_with_zone_name[variables_with_zone_name["zone_name"] == zone]["zone_id"].tolist()[0]
+        variable_names = (variables_with_zone_name[variables_with_zone_name["zone_name"] == zone])["variable_name"].tolist()
+
+        for variable_name in variable_names:
+
+            values = data_dict[zone][variable_name].tolist()
+
+            # Check Values
+            # Schedule Values may be empty for some zones.
+            # If values are not empty, length should equal length of datetime list.
+            all_nan = all(
+                pd.isna(x) if not isinstance(x, (list, np.ndarray, pd.Series)) else pd.isna(x).all() for x in
+                values)
+            if all_nan:
+                print(f"Warning: Variable '{variable_name}' data is empty for zone '{zone}'")
+            elif len(datetime_ids) != len(values):
+                raise ValueError(f"Mismatch in data lengths for variable '{variable_name}' in zone '{zone}'")
+
+            variable_id = variables_with_zone_name[
+                (variables_with_zone_name["variable_name"] == variable_name) &
+                (variables_with_zone_name["zone_id"] == zone_id)
+                ]["variable_id"].tolist()[0]
+
+            # Do not Upload empty Values
+            if not all_nan:
+                # Prepare data for batch upload
+                data_to_insert = [(variable_id, datetime_id, value)
+                                  for datetime_id, value in zip(datetime_ids, values)]
+
+                try:
+
+                    cursor = conn.cursor()
+                    # Insert data using executemany for efficiency
+                    insert_query = """
+                                INSERT INTO timeseriesdata (variable_id, datetime_id, value)
+                                VALUES (%s, %s, %s);
+                                """
+
+                    cursor.executemany(insert_query, data_to_insert)
+
+                except Exception as e:
+                    print(f"Error in populate_time_series_data_table: {e}")
 
 # NEW TEST CODE
 
@@ -718,27 +702,16 @@ populate_buildings_table(conn)
 
 test_building_name = 'ASHRAE901_OfficeSmall_STD2013_Seattle'
 building_id = get_building_id(conn, 'Commercial', test_building_name)
-print(building_id)
-
-simulation_id = populate_simulations_table(conn, building_id)
-print(simulation_id)
 
 all_zone_aggregated_pickle_filepath = r"D:\Seattle_ASHRAE_2013_2day\ASHRAE901_OfficeSmall_STD2013_Seattle\Sim_AggregatedData\Aggregation_Dict_AllZones.pickle"
 with (open(all_zone_aggregated_pickle_filepath,"rb") as file):
     all_zone_data_dict = pickle.load(file)
-
-#get_equipment_levels(data_dict)
-zone_ids = populate_zones_table(conn, all_zone_data_dict, simulation_id)
-#print(zone_ids)
 
 one_zone_aggregated_pickle_filepath = r"D:\Seattle_ASHRAE_2013_2day\ASHRAE901_OfficeSmall_STD2013_Seattle\Sim_AggregatedData\Aggregation_Dict_OneZone.pickle"
 with (open(one_zone_aggregated_pickle_filepath,"rb") as file):
     one_zone_data_dict = pickle.load(file)
 
 #aggregation_zones = {"aggregation_zone_1z": [1,2,3,4,5,6]}
-#aggregation_zone_ids = insert_aggregation_zone(conn, one_zone_data_dict, simulation_id, aggregation_zones)
 
-#populate_variables_table(conn, all_zone_data_dict, zone_ids)
-#populate_variables_table(conn, one_zone_data_dict, aggregation_zone_ids)
-
+upload_time_series_data(conn, all_zone_data_dict, test_building_name, building_id)
 
