@@ -683,6 +683,8 @@ def upload_time_series_data(conn, data_dict, simulation_name, building_id, epw_c
                                 """
 
                     cursor.executemany(insert_query, data_to_insert)
+                    conn.commit()
+                    conn.close()
 
                 except Exception as e:
                     print(f"Error in populate_time_series_data_table: {e}")
@@ -711,7 +713,7 @@ one_zone_aggregated_pickle_filepath = r"D:\Seattle_ASHRAE_2013_2day\ASHRAE901_Of
 with (open(one_zone_aggregated_pickle_filepath,"rb") as file):
     one_zone_data_dict = pickle.load(file)
 
-#aggregation_zones = {"aggregation_zone_1z": [1,2,3,4,5,6]}
+# aggregation_zones = {"aggregation_zone_1z": [1,2,3,4,5,6]}
 
 upload_time_series_data(conn, all_zone_data_dict, test_building_name, building_id)
 
