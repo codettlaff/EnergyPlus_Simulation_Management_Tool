@@ -535,7 +535,7 @@ def get_datetime_id_list(conn, data_dict):
         start_datetime = datetime_list[0] - timedelta(minutes=time_resolution) # First timestamp in DateTime_List, shifted.
         end_datetime = datetime_list[-1] + timedelta(days=1) - timedelta(minutes=time_resolution) # Last timestamp in DateTime_List, shifted
 
-        step = time_resolution // 5  # Step size for selecting datetime_ids
+        step = time_resolution // 1 # Step size for selecting datetime_ids
 
         # Query the database to get the datetime_id of the first timestamp
         cursor.execute("SELECT datetime_id FROM datetimes WHERE datetime = %s;", (start_datetime,))
@@ -722,7 +722,7 @@ host = "localhost"
 conn = psycopg2.connect(dbname=dbname, user=user, password=password, host=host)
 
 # populate_datetimes_table(conn)
-populate_buildings_table(conn)
+# populate_buildings_table(conn)
 
 test_building_name = 'ASHRAE901_OfficeSmall_STD2013_Seattle'
 building_id = get_building_id(conn, 'Commercial', test_building_name)
@@ -743,8 +743,13 @@ one_zone_aggregated_pickle_filepath = r"D:\Seattle_ASHRAE_2013_2day\ASHRAE901_Of
 with (open(one_zone_aggregated_pickle_filepath,"rb") as file):
     one_zone_data_dict = pickle.load(file)
 
-aggregation_zones = {"aggregation_zone_1z": [1,2,3,4,5,6]}
-aggregation_zone_ids = insert_aggregation_zone(conn, one_zone_data_dict, simulation_id, aggregation_zones)
+#aggregation_zones = {"aggregation_zone_1z": [1,2,3,4,5,6]}
+#aggregation_zone_ids = insert_aggregation_zone(conn, one_zone_data_dict, simulation_id, aggregation_zones)
 
-populate_variables_table(conn, all_zone_data_dict, zone_ids)
-populate_variables_table(conn, one_zone_data_dict, aggregation_zone_ids)
+#populate_variables_table(conn, all_zone_data_dict, zone_ids)
+#populate_variables_table(conn, one_zone_data_dict, aggregation_zone_ids)
+
+populate_datetimes_table(conn)
+datetime_list = get_datetime_id_list(conn, all_zone_data_dict)
+
+print(datetime_list)

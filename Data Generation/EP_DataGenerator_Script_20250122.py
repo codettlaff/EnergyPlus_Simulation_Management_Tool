@@ -520,9 +520,9 @@ for root, dirs, files in os.walk(folderpath):
   
 idf_filepath_seattle_list = []
 for filepath in idf_filepath_list: 
-    if "SanDiego" in filepath: idf_filepath_seattle_list.append(filepath)
+    if "Honolulu" in filepath: idf_filepath_seattle_list.append(filepath)
     
-Weather_FilePath = os.path.join(script_directory, '..', '..', 'Data', 'TMY3_WeatherFiles_Commercial', 'USA_CA_San.Diego-Brown.Field.Muni.AP.722904_TMY3.epw')
+Weather_FilePath = os.path.join(script_directory, '..', '..', 'Data', 'TMY3_WeatherFiles_Commercial', 'USA_HI_Honolulu.Intl.AP.911820_TMY3.epw')
 
 # Storing Results in Folder Containing Application
 Results_FolderPath = os.path.join(script_directory, 'Results', 'Processed_BuildingSim_Data')
