@@ -355,7 +355,7 @@ def populate_zones_table(conn, data_dict, simulation_id):
     return zone_ids
 # Passed
 
-def insert_aggregation_zone(conn, data_dict, simulation_id, aggregation_zones):
+def insert_aggregation_zones(conn, data_dict, simulation_id, aggregation_zones):
     """
     Inserts aggregation zones into the zones table and creates a mapping of
     aggregation zone IDs to their corresponding composite zone IDs.
@@ -465,9 +465,9 @@ def populate_aggregation_zones_table_old(conn, data_dict, building_name, buildin
 # Each record has FK Composite Zone and FK Aggregation Zone  
 # Use for Single-Zone Aggregation Only
 # Do This Later
+# old
 
 def populate_variables_table(conn, data_dict, zone_ids):
-
     keys = list(data_dict.keys())  # Convert keys to a list
     zone_names = []
     for key in keys[1:]:
@@ -485,23 +485,30 @@ def populate_variables_table(conn, data_dict, zone_ids):
         variable_names = data_dict[zone_name].columns.tolist()
 
         for variable_name in variable_names:
-
             insert_zone_ids.append(zone_ids[i])
             insert_variable_names.append(variable_name)
-        i+= 1
+        i += 1
 
     records = list(zip(insert_variable_names, insert_zone_ids))
 
     query = """
     INSERT INTO variables (variable_name, zone_id)
     VALUES (%s, %s)
-    ON CONFLICT DO NOTHING;
+    ON CONFLICT DO NOTHING
+    RETURNING variable_id, variable_name;
     """
 
     with conn.cursor() as cursor:
         cursor.executemany(query, records)  # Batch insert
         conn.commit()
-# passed
+
+        # Fetch the variable_id and variable_name for the inserted/updated records
+        cursor.execute("SELECT variable_id, variable_name FROM variables ORDER BY variable_id;")
+        result = cursor.fetchall()
+
+    # Convert to DataFrame
+    df = pd.DataFrame(result, columns=["variable_id", "variable_name"])
+    return df
 
 def get_datetime_id_list(conn, data_dict):
     """
@@ -574,7 +581,7 @@ def get_datetime_id_list(conn, data_dict):
     except Exception as e:
         print(f"Error in get_datetime_id_list: {e}")
         return []
-
+# passed
 
 def get_variables(conn, zone_id):
     """
@@ -606,9 +613,9 @@ def get_variables(conn, zone_id):
     except Exception as e:
         print(f"Error in get_variables: {e}")
         return []
+# passed
 
-
-def populate_time_series_data_table(conn, data_dict, building_id):
+def populate_time_series_data_table_old(conn, data_dict, building_id):
     """
     Populates the 'timeseriesdata' table using data from data_dict for a given building_id.
 
@@ -628,6 +635,7 @@ def populate_time_series_data_table(conn, data_dict, building_id):
         datetime_ids = get_datetime_id_list(conn, data_dict)
 
         for zone in zone_names:
+
             # Get the zone_id for the given building_id and zone_name
             zone_id = get_zone_id(conn, building_id, zone)
 
@@ -678,38 +686,22 @@ def populate_time_series_data_table(conn, data_dict, building_id):
         conn.rollback()
         print(f"Error in populate_time_series_data_table: {e}")
 
-def old_test_code():
-    # Test
-    dbname = "buildings"
-    user = "Casey"
-    password = "OfficeLarge"
-    host = "localhost"
+def upload_time_series_data(conn, data_dict, simulation_name, building_id, epw_climate_zone=None, time_resolution=5, aggregation_zones=None):
 
-    # Create the connection object
-    conn = psycopg2.connect(dbname=dbname, user=user, password=password, host=host)
+    # Create new entry in the simulations table, returning simulation_id
+    simulation_id = populate_simulations_table(conn, building_id, simulation_name, epw_climate_zone)
 
-    #populate_datetimes_table(conn)
-    #populate_buildings_table(conn)
+    # populate zones table
+    if not aggregation_zones:
+        zone_ids = populate_zones_table(conn, data_dict, simulation_id)
+    else:
+        zone_ids = insert_aggregation_zones(conn, data_dict, simulation_id, aggregation_zones)
 
-    test_building_name = 'ASHRAE901_OfficeSmall_STD2013_Seattle'
-    building_id = get_building_id(conn, 'Commercial', test_building_name)
+    # populate variables table
+    variable_ids = populate_variables_table(conn, data_dict, zone_ids)
 
-    all_zone_aggregated_pickle_filepath = r"D:\Seattle_ASHRAE_2013_2day\ASHRAE901_OfficeSmall_STD2013_Seattle\Sim_AggregatedData\Aggregation_Dict_AllZones.pickle"
-    file = open(all_zone_aggregated_pickle_filepath,"rb")
-    data_dict = pickle.load(file)
 
-    #populate_zones_table(conn, data_dict, test_building_name, building_id)
-    #populate_variables_table(conn, data_dict)
-
-    zone_name = 'CORE_ZN'
-    zone_id = get_zone_id(conn, building_id, zone_name)
-    datetime_ids = get_datetime_id_list(conn, data_dict) # Returning Empty List
-
-    populate_time_series_data_table(conn, data_dict, building_id)
-
-    # Datetime_List in data_dict is duplicated (twice as long as it should be)
-    # Need to check that Values are not also duplicated.
-    # There may be a mistake in aggregation.
+    pass
 
 # NEW TEST CODE
 
@@ -721,8 +713,8 @@ host = "localhost"
 # Create the connection object
 conn = psycopg2.connect(dbname=dbname, user=user, password=password, host=host)
 
-# populate_datetimes_table(conn)
-# populate_buildings_table(conn)
+populate_datetimes_table(conn)
+populate_buildings_table(conn)
 
 test_building_name = 'ASHRAE901_OfficeSmall_STD2013_Seattle'
 building_id = get_building_id(conn, 'Commercial', test_building_name)
@@ -749,7 +741,4 @@ with (open(one_zone_aggregated_pickle_filepath,"rb") as file):
 #populate_variables_table(conn, all_zone_data_dict, zone_ids)
 #populate_variables_table(conn, one_zone_data_dict, aggregation_zone_ids)
 
-populate_datetimes_table(conn)
-datetime_list = get_datetime_id_list(conn, all_zone_data_dict)
 
-print(datetime_list)
