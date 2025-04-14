@@ -373,16 +373,19 @@ def insert_aggregation_zones(conn, data_dict, simulation_id, aggregation_zones):
 
     # Step 1: Insert aggregation zones into the zones table
     aggregated_zones_df = populate_zones_table(conn, data_dict, simulation_id)  # DataFrame with 'zone_id', 'zone_name'
+    aggregation_zone_id = aggregated_zones_df.at[0, "zone_id"]
 
     i = 0
-    for aggregation_zone, composite_zone_id_list in aggregation_zones.items():
+    for aggregation_zone, composite_zone_df in aggregation_zones.items():
+
         # Map the aggregation zone ID (indexed by i in aggregated_zones_df) to the composite zone IDs
-        aggregation_zone_id = aggregated_zones_df.iloc[i]["zone_id"]
-        aggregation_zones_ids_dict[aggregation_zone_id] = composite_zone_id_list
+        composite_zone_ids = composite_zone_df["zone_id"]
+        zone_names = composite_zone_df.iloc[i]["zone_name"]
+        aggregation_zones_ids_dict[aggregation_zone_id] = composite_zone_ids
         i += 1  # Increment the index to match the next aggregation zone
 
-    # Step 2: Upload aggregation_zones_ids to the 'aggregation_zones' linking table
-    # The linking table has columns 'aggregation_zone_id' and 'composite_zone_id'
+        # Step 2: Upload aggregation_zones_ids to the 'aggregation_zones' linking table
+        # The linking table has columns 'aggregation_zone_id' and 'composite_zone_id'
     try:
         with conn.cursor() as cursor:
             # Insert query for the aggregation_zones linking table
@@ -395,7 +398,7 @@ def insert_aggregation_zones(conn, data_dict, simulation_id, aggregation_zones):
             linking_data = []
             for aggregation_zone_id, composite_zone_ids in aggregation_zones_ids_dict.items():
                 for composite_zone_id in composite_zone_ids:
-                    linking_data.append((aggregation_zone_id, composite_zone_id))
+                    linking_data.append((int(aggregation_zone_id), int(composite_zone_id)))
 
             # Execute batch insert using executemany
             cursor.executemany(query, linking_data)
@@ -412,61 +415,6 @@ def insert_aggregation_zones(conn, data_dict, simulation_id, aggregation_zones):
 
     # Return the DataFrame with 'zone_id' and 'zone_name'
     return aggregated_zones_df
-# Passed
-
-def populate_aggregation_zones_table_old(conn, data_dict, building_name, building_id):
-    
-    zones = [zone for zone in data_dict.keys() if "DateTime_List" not in zone and "Equipment" not in zone]
-    
-    one_zone_aggregation_zone_name = building_name + "SingleZone"
-    
-    try:
-        with conn.cursor() as cur:
-            # Insert the one_zone_aggregation_zone_name into the zones table if it doesn't exist
-            cur.execute("""
-                INSERT INTO zones (zone_name) 
-                VALUES (%s) 
-                ON CONFLICT (zone_name) DO NOTHING 
-                RETURNING zone_id;
-            """, (one_zone_aggregation_zone_name,))
-            
-            one_zone_aggregation_zone_id = cur.fetchone()
-            
-            # If zone already exists, fetch its zone_id
-            if one_zone_aggregation_zone_id is None:
-                cur.execute("SELECT zone_id FROM zones WHERE zone_name = %s;", (one_zone_aggregation_zone_name,))
-                one_zone_aggregation_zone_id = cur.fetchone()[0]
-            else:
-                one_zone_aggregation_zone_id = one_zone_aggregation_zone_id[0]
-
-            # Fetch zone IDs for all extracted zones
-            cur.execute("SELECT zone_id, zone_name FROM zones WHERE zone_name = ANY(%s);", (zones,))
-            zone_id_map = {name: zone_id for zone_id, name in cur.fetchall()}
-
-            # Insert aggregation zone mappings
-            records = [
-                (zone_id, one_zone_aggregation_zone_id)
-                for zone_name, zone_id in zone_id_map.items()
-            ]
-
-            if records:
-                cur.executemany("""
-                    INSERT INTO aggregation_zones (composite_zone_id, aggregation_zone_id) 
-                    VALUES (%s, %s) 
-                    ON CONFLICT DO NOTHING;
-                """, records)
-
-            conn.commit()
-            print(f"Successfully populated aggregation_zones for building: {building_name}")
-
-    except Exception as e:
-        conn.rollback()
-        print(f"Error populating aggregation_zones: {e}")
-# Fills the Aggregation Zones Linking Table
-# Each record has FK Composite Zone and FK Aggregation Zone  
-# Use for Single-Zone Aggregation Only
-# Do This Later
-# old
 
 def populate_variables_table(conn, data_dict, zone_ids):
     keys = list(data_dict.keys())  # Convert keys to a list
@@ -624,6 +572,7 @@ def upload_time_series_data(conn, data_dict, simulation_name, building_id, epw_c
     # populate zones table
     if not aggregation_zones:
         zones = populate_zones_table(conn, data_dict, simulation_id)
+        return zones
     else:
         zones = insert_aggregation_zones(conn, data_dict, simulation_id, aggregation_zones)
 
@@ -713,7 +662,11 @@ one_zone_aggregated_pickle_filepath = r"D:\Seattle_ASHRAE_2013_2day\ASHRAE901_Of
 with (open(one_zone_aggregated_pickle_filepath,"rb") as file):
     one_zone_data_dict = pickle.load(file)
 
-# aggregation_zones = {"aggregation_zone_1z": [1,2,3,4,5,6]}
+# Upload All-Zones (un-aggregated) pickle file.
+zones = upload_time_series_data(conn, all_zone_data_dict, test_building_name, building_id)
 
-upload_time_series_data(conn, all_zone_data_dict, test_building_name, building_id)
-
+# Upload One-Zone (aggregated) pickle file.
+aggregation_zones = {
+    "aggregation_zone_1z": zones
+}
+zones = upload_time_series_data(conn, one_zone_data_dict, test_building_name, building_id, aggregation_zones=aggregation_zones)
