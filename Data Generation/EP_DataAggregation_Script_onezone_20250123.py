@@ -39,7 +39,7 @@ def get_csv_columns(filepath):
 # Getting Current File Directory Path
 script_directory = os.path.dirname(__file__)
 # results_folderpath = os.listdir(os.path.join(script_directory, 'Results', 'Processed_BuildingSim_Data'))
-results_folderpath = r"D:\Building_Results" # Overriding Default Path
+results_folderpath = r"F:\Building_Results" # Overriding Default Path
 
 Simulation_Name_List = []
 for filepath in os.listdir(results_folderpath):
