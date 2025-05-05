@@ -204,7 +204,7 @@ def get_building_id(conn, building_type, building_name):
 
     # Construct SQL query
     query = """
-        SELECT building_id FROM building_prototypes
+        SELECT id FROM building_prototypes
         WHERE building_type = %s AND prototype = %s AND energy_code = %s AND idf_climate_zone = %s
     """
     params = [building_type, prototype, energy_code, climate_zone]
@@ -243,12 +243,12 @@ def populate_simulations_table(conn, building_id, simulation_name='Unnamed Simul
     try:
         # If epw_climate_zone is not provided, fetch it from the 'building_prototypes' table
         if epw_climate_zone is None:
-            with conn.cursor() as cursor:
+            with conn.cursor() as cursor: # BUG here
                 cursor.execute(
                     """
                     SELECT idf_climate_zone 
                     FROM building_prototypes 
-                    WHERE building_id = %s
+                    WHERE id = %s
                     """,
                     (building_id,)
                 )
@@ -264,7 +264,7 @@ def populate_simulations_table(conn, building_id, simulation_name='Unnamed Simul
                 """
                 INSERT INTO simulations (simulation_name, building_id, epw_climate_zone, time_resolution)
                 VALUES (%s, %s, %s, %s)
-                RETURNING simulation_id
+                RETURNING id
                 """,
                 (simulation_name, building_id, epw_climate_zone, time_resolution)
             )
@@ -332,7 +332,7 @@ def populate_zones_table(conn, data_dict, simulation_id):
                                    equipment_level_gas, equipment_level_hot_water, equipment_level_steam, equipment_level_other)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT DO NOTHING
-                RETURNING zone_id, zone_name
+                RETURNING id, zone_name
             """
 
             # Execute the query for all rows and fetch the returned zone_ids
@@ -340,7 +340,7 @@ def populate_zones_table(conn, data_dict, simulation_id):
             conn.commit()
 
             # Fetch zone_id and zone_name for the inserted zones
-            cursor.execute("SELECT zone_id, zone_name FROM zones WHERE simulation_id = %s", (simulation_id,))
+            cursor.execute("SELECT id, zone_name FROM zones WHERE simulation_id = %s", (simulation_id,))
             result = cursor.fetchall()
 
         # Convert to DataFrame
@@ -444,7 +444,7 @@ def populate_variables_table(conn, data_dict, zone_ids):
     INSERT INTO variables (variable_name, zone_id)
     VALUES (%s, %s)
     ON CONFLICT DO NOTHING
-    RETURNING variable_id, variable_name, zone_id;
+    RETURNING id, variable_name, zone_id;
     """
 
     with conn.cursor() as cursor:
@@ -452,7 +452,7 @@ def populate_variables_table(conn, data_dict, zone_ids):
         conn.commit()
 
         # Fetch the variable_id and variable_name for the inserted/updated records
-        cursor.execute("SELECT variable_id, variable_name, zone_id FROM variables ORDER BY variable_id;")
+        cursor.execute("SELECT id, variable_name, zone_id FROM variables ORDER BY id;")
         result = cursor.fetchall()
 
     # Convert to DataFrame
@@ -494,7 +494,7 @@ def get_datetime_id_list(conn, data_dict):
         step = time_resolution // 1 # Step size for selecting datetime_ids
 
         # Query the database to get the datetime_id of the first timestamp
-        cursor.execute("SELECT datetime_id FROM datetimes WHERE datetime = %s;", (start_datetime,))
+        cursor.execute("SELECT id FROM datetimes WHERE datetime = %s;", (start_datetime,))
         result = cursor.fetchone()
         if not result:
             raise ValueError(f"Start datetime {start_datetime} not found in datetimes table")
@@ -502,7 +502,7 @@ def get_datetime_id_list(conn, data_dict):
         start_datetime_id = result[0]
 
         # Query the database to get the datetime_id of the first timestamp
-        cursor.execute("SELECT datetime_id FROM datetimes WHERE datetime = %s;", (end_datetime,))
+        cursor.execute("SELECT id FROM datetimes WHERE datetime = %s;", (end_datetime,))
         result = cursor.fetchone()
         if not result:
             raise ValueError(f"Start datetime {end_datetime} not found in datetimes table")
@@ -511,9 +511,9 @@ def get_datetime_id_list(conn, data_dict):
 
         # Retrieve all datetime_ids within the given time range
         cursor.execute("""
-            SELECT datetime_id FROM datetimes 
+            SELECT id FROM datetimes 
             WHERE datetime >= %s AND datetime <= %s 
-            ORDER BY datetime_id;
+            ORDER BY id;
         """, (start_datetime, end_datetime))
         all_datetime_ids = [row[0] for row in cursor.fetchall()]
 

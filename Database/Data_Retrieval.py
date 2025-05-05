@@ -46,7 +46,7 @@ def connect_to_db():
 # =============================================================================
 # Helper Functions
 # =============================================================================
-def get_building_id(conn, building_type, prototype, energy_code, climate_zone, heating_type=None, foundation_type=None):
+def get_building_id(conn, building_type, prototype, energy_code, idf_climate_zone, heating_type=None, foundation_type=None):
     """
     Retrieve the building_id given specific building metadata.
 
@@ -55,7 +55,7 @@ def get_building_id(conn, building_type, prototype, energy_code, climate_zone, h
         building_type (str): 'Commercial', 'Residential', or 'Manufactured'.
         prototype (str): The prototype name of the building.
         energy_code (str): The energy code of the building.
-        climate_zone (str): The climate zone of the building.
+        idf_climate_zone (str): The climate zone of the building.
         heating_type (optional, str): The heating type of the building.
         foundation_type (optional, str): The foundation type of the building.
 
@@ -73,9 +73,9 @@ def get_building_id(conn, building_type, prototype, energy_code, climate_zone, h
             WHERE building_type = %s
               AND prototype = %s
               AND energy_code = %s
-              AND climate_zone = %s
+              AND idf_climate_zone = %s
         """
-        parameters = [building_type, prototype, energy_code, climate_zone]
+        parameters = [building_type, prototype, energy_code, idf_climate_zone]
 
         # Add optional filters for heating_type and foundation_type
         if heating_type is not None:
@@ -105,6 +105,7 @@ def get_building_id(conn, building_type, prototype, energy_code, climate_zone, h
 # =============================================================================
 # Data Retrieval Functions
 # =============================================================================
+
 def get_variable_ids(conn, building_id='all', zone_name='all', variable_name='all'):
     """
     Retrieve a list of variable_ids based on building_id, zone_name, and variable_name.
