@@ -461,13 +461,6 @@ def simulate_building(IDF_FilePath, Weather_FilePath, Special_IDFFile_Path, Simu
 # Other User Inputs 
 # =============================================================================
 
-IDF_FileYear = 2013
-Sim_Start_Day = 1
-Sim_Start_Month = 1
-Sim_End_Day = 31
-Sim_End_Month = 12
-Sim_OutputVariable_ReportingFrequency = 'timestep'
-Sim_TimeStep = 5
 Simulation_VariableNames = ['Schedule Value',
                                   'Facility Total HVAC Electric Demand Power',
                                   'Site Diffuse Solar Radiation Rate per Area',
@@ -511,36 +504,91 @@ Simulation_VariableNames = ['Schedule Value',
 script_directory = os.path.dirname(__file__)
 Special_IDFFile_Path = os.path.join(script_directory, 'Special.idf')
 
-folderpath = os.path.abspath(os.path.join(script_directory, '..', '..', 'Data', 'Commercial_Prototypes', 'ASHRAE', '90_1_2013'))
+folderpath = os.path.abspath(os.path.join(r"D:\Building_Modeling_Code", 'Data', 'Commercial_Prototypes', 'ASHRAE', '90_1_2013'))
 idf_filepath_list = []
 for root, dirs, files in os.walk(folderpath):
     for file in files:
         if file.endswith('.idf'):
             idf_filepath_list.append(os.path.join(root, file))
-  
-idf_filepath_seattle_list = []
-for filepath in idf_filepath_list: 
-    if "PortAngeles" in filepath: idf_filepath_seattle_list.append(filepath)
-    
-Weather_FilePath = os.path.join(script_directory, '..', '..', 'Data', 'TMY3_WeatherFiles_Commercial', 'USA_WA_Port.Angeles-William.R.Fairchild.Intl.AP.727885_TMY3.epw')
 
-# Storing Results in Folder Containing Application
-Results_FolderPath = os.path.join(script_directory, 'Results', 'Processed_BuildingSim_Data')
+weather_folderpath = os.path.abspath(os.path.join(script_directory, '..', '..', 'Data', 'TMY3_WeatherFiles_Commercial'))
+weather_filepath_list = []
+for root, dirs, files in os.walk(weather_folderpath):
+    for files in files:
+        weather_filepath_list.append(os.path.join(root, files))
 
-# Storing Results Elsewhere
-Results_FolderPath = r"F:\Building_Results"
-            
-for idf_filepath in idf_filepath_seattle_list:
-    idf_filename = os.path.basename(idf_filepath)
-    Simulation_Name = idf_filename.split('.')[0] # remove 'idf extension
-    print("Simulating: " + Simulation_Name + '\n')
-    
-    try:
-        simulate_building(idf_filepath, Weather_FilePath, Special_IDFFile_Path, Simulation_Name, IDF_FileYear, Simulation_VariableNames, Sim_Start_Day, Sim_Start_Month, Sim_End_Day, Sim_End_Month, Sim_OutputVariable_ReportingFrequency, Sim_TimeStep, Results_FolderPath)
-    except Exception as e:
-        print(10 * " " + "Failed to Simulate\n")
-        print(10 * " " + str(e) + '\n')
+def automated_generation(idf_filepath_list):
+
+    IDF_FileYear = 2013
+    Sim_Start_Day = 1
+    Sim_Start_Month = 1
+    Sim_End_Day = 31
+    Sim_End_Month = 12
+    Sim_OutputVariable_ReportingFrequency = 'timestep'
+    Sim_TimeStep = 5
+
+    idf_filepath_location_list = []
+    for filepath in idf_filepath_list:
+        if "PortAngeles" in filepath: idf_filepath_location_list.append(filepath)
+
+    Weather_FilePath = os.path.join(r"D:\Building_Modeling_Code", 'TMY3_WeatherFiles_Commercial', 'USA_WA_Port.Angeles-William.R.Fairchild.Intl.AP.727885_TMY3.epw')
+
+    # Storing Results in Folder Containing Application
+    Results_FolderPath = os.path.join(script_directory, 'Results', 'Processed_BuildingSim_Data')
+
+    # Storing Results Elsewhere
+    Results_FolderPath = r"F:\Building_Results"
+
+    for idf_filepath in idf_filepath_location_list:
+        idf_filename = os.path.basename(idf_filepath)
+        Simulation_Name = idf_filename.split('.')[0] # remove 'idf extension
+        print("Simulating: " + Simulation_Name + '\n')
+
+        try:
+            simulate_building(idf_filepath, Weather_FilePath, Special_IDFFile_Path, Simulation_Name, IDF_FileYear, Simulation_VariableNames, Sim_Start_Day, Sim_Start_Month, Sim_End_Day, Sim_End_Month, Sim_OutputVariable_ReportingFrequency, Sim_TimeStep, Results_FolderPath)
+        except Exception as e:
+            print(10 * " " + "Failed to Simulate\n")
+            print(10 * " " + str(e) + '\n')
         
-         
+def idf_debugging(idf_filepath_list, weather_filepath_list):
 
-            
+    IDF_FileYear = 2013
+    Sim_Start_Day = 1
+    Sim_Start_Month = 1
+    Sim_End_Day = 1
+    Sim_End_Month = 1
+    Sim_OutputVariable_ReportingFrequency = 'timestep'
+    Sim_TimeStep = 720
+
+    idfs_to_simulate_list = []
+    for idf_filepath in idf_filepath_list:
+        if any(key in idf_filepath for key in ["OfficeLarge", "Hospital", "ApartmentHighRise", "ApartmentMidRise"]):
+            idfs_to_simulate_list.append(idf_filepath)
+
+    # Storing Results Elsewhere
+    Results_FolderPath = r"F:\Debugging_Results"
+
+    for idf_filepath in idfs_to_simulate_list:
+        idf_filename = os.path.basename(idf_filepath)
+        Simulation_Name = idf_filename.split('.')[0] # remove 'idf extension
+        idf_location = Simulation_Name.split('_')[-1]
+
+        for weather_filepath in weather_filepath_list:
+            epw_location = os.path.basename(weather_filepath).split('_')[2].split('-')[0].split('.')[0]
+            if epw_location == 'El': epw_location = 'ElPaso'
+            if epw_location == 'San': epw_location = 'SanDiego'
+            if epw_location == 'Great': epw_location = 'GreatFalls'
+            if epw_location == 'New': epw_location = 'NewYork'
+            if epw_location == 'Port': epw_location = 'PortAngeles'
+            if epw_location == idf_location:
+                Weather_FilePath = weather_filepath
+                break
+
+        try:
+            print(f'Simulating {Simulation_Name} with {Weather_FilePath}')
+            simulate_building(idf_filepath, Weather_FilePath, Special_IDFFile_Path, Simulation_Name, IDF_FileYear, Simulation_VariableNames, Sim_Start_Day, Sim_Start_Month, Sim_End_Day, Sim_End_Month, Sim_OutputVariable_ReportingFrequency, Sim_TimeStep, Results_FolderPath)
+        except Exception as e:
+            print(10 * " " + "Failed to Simulate\n")
+            print(10 * " " + str(e) + '\n')
+
+idf_debugging(idf_filepath_list, weather_filepath_list)
