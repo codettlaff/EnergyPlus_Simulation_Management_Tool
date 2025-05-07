@@ -8,7 +8,7 @@ Created on Fri 20240614
 
 # Set to generate data only seattle ashrae 2013 buildings 
 # only generates no error buildings
-# set to not delete CSV files
+# set to delete CSV files
 
 # =============================================================================
 # Import Required Modules
@@ -454,7 +454,7 @@ def simulate_building(IDF_FilePath, Weather_FilePath, Special_IDFFile_Path, Simu
     # =============================================================================   
                 
     # FOR LOOP: For Each .csv File in CSV_FilePath_List
-    #for file_path in CSV_FilePath_List:
+    for file_path in CSV_FilePath_List:
         os.remove(file_path)
 
 # =============================================================================
@@ -520,9 +520,9 @@ for root, dirs, files in os.walk(folderpath):
   
 idf_filepath_seattle_list = []
 for filepath in idf_filepath_list: 
-    if "Albuquerque" in filepath: idf_filepath_seattle_list.append(filepath)
+    if "PortAngeles" in filepath: idf_filepath_seattle_list.append(filepath)
     
-Weather_FilePath = os.path.join(script_directory, '..', '..', 'Data', 'TMY3_WeatherFiles_Commercial', 'USA_NM_Albuquerque.Intl.Sunport.723650_TMY3.epw')
+Weather_FilePath = os.path.join(script_directory, '..', '..', 'Data', 'TMY3_WeatherFiles_Commercial', 'USA_WA_Port.Angeles-William.R.Fairchild.Intl.AP.727885_TMY3.epw')
 
 # Storing Results in Folder Containing Application
 Results_FolderPath = os.path.join(script_directory, 'Results', 'Processed_BuildingSim_Data')

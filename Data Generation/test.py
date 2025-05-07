@@ -67,5 +67,20 @@ def make_one_zone_aggregation_csvs():
                 csv_filepath = os.path.join(aggregation_folderpath, csv_filename)
                 value.to_csv(csv_filepath, index=False)
 
-make_one_zone_aggregation_csvs()
-make_all_zones_aggregation_csvs()
+def delete_csvs(folderpath):
+    """
+    Walks through folderpath (including all subfolders) and deletes all files ending with .csv,
+    unless they are in a folder called 'Sim_OutputFiles'.
+
+    :param folderpath: The path to the folder to process.
+    """
+    for root, dirs, files in os.walk(folderpath):
+        if 'Sim_OutputFiles' in root:
+            continue  # Skip folders named 'Sim_OutputFiles'
+        for file in files:
+            if file.endswith('.csv'):
+                file_path = os.path.join(root, file)
+                os.remove(file_path)
+
+folderpath = r"F:\Results"
+delete_csvs(folderpath)
