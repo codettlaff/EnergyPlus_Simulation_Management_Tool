@@ -549,6 +549,9 @@ def automated_generation(idf_filepath_list):
         except Exception as e:
             print(10 * " " + "Failed to Simulate\n")
             print(10 * " " + str(e) + '\n')
+
+def edit_idf_file_version(idf_folderpath):
+    pass
         
 def idf_debugging(idf_filepath_list, weather_filepath_list):
 
@@ -562,8 +565,9 @@ def idf_debugging(idf_filepath_list, weather_filepath_list):
 
     idfs_to_simulate_list = []
     for idf_filepath in idf_filepath_list:
-        if any(key in idf_filepath for key in ["OfficeLarge", "Hospital", "ApartmentHighRise", "ApartmentMidRise"]):
+        if any(key in idf_filepath for key in ["Hospital"]):
             idfs_to_simulate_list.append(idf_filepath)
+    #["OfficeLarge", "Hospital", "ApartmentHighRise", "ApartmentMidRise"]
 
     # Storing Results Elsewhere
     Results_FolderPath = r"F:\Debugging_Results"
