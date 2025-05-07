@@ -529,12 +529,9 @@ def automated_generation(idf_filepath_list):
 
     idf_filepath_location_list = []
     for filepath in idf_filepath_list:
-        if "PortAngeles" in filepath: idf_filepath_location_list.append(filepath)
+        if "Tucson" in filepath: idf_filepath_location_list.append(filepath)
 
-    Weather_FilePath = os.path.join(r"D:\Building_Modeling_Code", 'TMY3_WeatherFiles_Commercial', 'USA_WA_Port.Angeles-William.R.Fairchild.Intl.AP.727885_TMY3.epw')
-
-    # Storing Results in Folder Containing Application
-    Results_FolderPath = os.path.join(script_directory, 'Results', 'Processed_BuildingSim_Data')
+    Weather_FilePath = os.path.join(r"D:\Building_Modeling_Code", 'Data', 'TMY3_WeatherFiles_Commercial', 'USA_AZ_Tucson-Davis-Monthan.AFB.722745_TMY3.epw')
 
     # Storing Results Elsewhere
     Results_FolderPath = r"F:\Building_Results"
@@ -595,4 +592,4 @@ def idf_debugging(idf_filepath_list, weather_filepath_list):
             print(10 * " " + "Failed to Simulate\n")
             print(10 * " " + str(e) + '\n')
 
-idf_debugging(idf_filepath_list, weather_filepath_list)
+automated_generation(idf_filepath_list)
