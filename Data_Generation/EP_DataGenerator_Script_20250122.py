@@ -16,6 +16,8 @@ Created on Fri 20240614
 
 # External Modules
 import os
+from os import mkdir
+
 import numpy as np
 import pandas as pd
 import scipy.io
@@ -149,6 +151,8 @@ def simulate_building(IDF_FilePath, Weather_FilePath, Special_IDFFile_Path, Simu
 
     # Getting Output Variable from Edited IDF File
     OutputVariable_QuerySet = epm_Edited_IDFFile.Output_Variable.one()
+
+    # if len(Simulation_VariableNames) == 0: op.simulate(Edited_IDFFile_Path, Edited_WeatherFile_Path, base_dir_path = Sim_OutputFiles_FolderPath) # Tying to make rdd file
 
     for OutputVariable_Name in Simulation_VariableNames:
 
@@ -456,6 +460,28 @@ def simulate_building(IDF_FilePath, Weather_FilePath, Special_IDFFile_Path, Simu
     # FOR LOOP: For Each .csv File in CSV_FilePath_List
     for file_path in CSV_FilePath_List:
         os.remove(file_path)
+
+# =============================================================================
+# Generate Variables
+# =============================================================================
+
+script_directory = os.path.dirname(__file__)
+Special_IDFFile_Path = os.path.join(script_directory, 'Special.idf')
+
+def generate_variables(IDF_Filepath, Weather_Filepath, Special_IDFFile_Path):
+
+    script_directory = os.path.dirname(__file__)
+    Temporary_FolderPath = os.path.join(script_directory, 'Temporary')
+    if not os.path.exists(Temporary_FolderPath):
+        os.makedirs(Temporary_FolderPath)
+
+    # Sim_Start_Day, Sim_Start_Month, Sim_End_Day, Sim_End_Month, Sim_OutputVariable_ReportingFrequency, Sim_TimeStep, Results_FolderPath
+
+    simulate_building(IDF_Filepath, Weather_Filepath, Special_IDFFile_Path, 'Initial_Sim', '2013', [], 1, 1, 1, 1, 'timestep', 60, Temporary_FolderPath)
+
+IDF_Filepath = r"D:\Building_Modeling_Code\Data\Commercial_Prototypes\ASHRAE\90_1_2013\ASHRAE901_OfficeSmall_STD2013_Seattle.idf"
+Weather_Filepath = r"D:\Building_Modeling_Code\Data\TMY3_WeatherFiles_Commercial\USA_WA_Seattle-Tacoma.Intl.AP.727930_TMY3.epw"
+generate_variables(IDF_Filepath, Weather_Filepath, Special_IDFFile_Path)
 
 # =============================================================================
 # Other User Inputs 
