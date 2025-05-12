@@ -20,11 +20,46 @@ default_simulation_settings = {
     "idf_year": 2013,
     "start_month": 1,
     "start_day": 1,
-    "end_month": 12,
-    "end_day": 31,
+    "end_month": 1,
+    "end_day": 3,
     "reporting_frequency": "timestep",
     "timestep_minutes": 5
 }
+default_simulation_variable_names = ['Schedule Value',
+                                  'Facility Total HVAC Electric Demand Power',
+                                  'Site Diffuse Solar Radiation Rate per Area',
+                                  'Site Direct Solar Radiation Rate per Area',
+                                  'Site Outdoor Air Drybulb Temperature',
+                                  'Site Solar Altitude Angle',
+                                  'Surface Inside Face Internal Gains Radiation Heat Gain Rate',
+                                  'Surface Inside Face Lights Radiation Heat Gain Rate',
+                                  'Surface Inside Face Solar Radiation Heat Gain Rate',
+                                  'Surface Inside Face Temperature',
+                                  'Zone Windows Total Transmitted Solar Radiation Rate',
+                                  'Zone Air Temperature',
+                                  'Zone People Convective Heating Rate',
+                                  'Zone Lights Convective Heating Rate',
+                                  'Zone Electric Equipment Convective Heating Rate',
+                                  'Zone Gas Equipment Convective Heating Rate',
+                                  'Zone Other Equipment Convective Heating Rate',
+                                  'Zone Hot Water Equipment Convective Heating Rate',
+                                  'Zone Steam Equipment Convective Heating Rate',
+                                  'Zone People Radiant Heating Rate',
+                                  'Zone Lights Radiant Heating Rate',
+                                  'Zone Electric Equipment Radiant Heating Rate',
+                                  'Zone Gas Equipment Radiant Heating Rate',
+                                  'Zone Other Equipment Radiant Heating Rate',
+                                  'Zone Hot Water Equipment Radiant Heating Rate',
+                                  'Zone Steam Equipment Radiant Heating Rate',
+                                  'Zone Lights Visible Radiation Heating Rate',
+                                  'Zone Total Internal Convective Heating Rate',
+                                  'Zone Total Internal Radiant Heating Rate',
+                                  'Zone Total Internal Total Heating Rate',
+                                  'Zone Total Internal Visible Radiation Heating Rate',
+                                  'Zone Air System Sensible Cooling Rate',
+                                  'Zone Air System Sensible Heating Rate',
+                                  'System Node Temperature',
+                                  'System Node Mass Flow Rate']
 
 # Test
 TEST_IDF_FILEPATH = r"D:\Building_Modeling_Code\Data\Commercial_Prototypes\ASHRAE\90_1_2013\ASHRAE901_OfficeSmall_STD2013_Seattle.idf"
@@ -79,6 +114,13 @@ def simulate_variables(idf_filepath, epw_filepath, variable_names, simulation_se
 
     shutil.copy(idf_filepath, edited_idf_filepath)
 
+    with open(SPECIAL_IDF_FILEPATH, "r") as special_idf_file:
+        special_idf_data = special_idf_file.read()
+
+    with open(edited_idf_filepath, "a") as edited_idf_file:
+        edited_idf_file.write("\n")
+        edited_idf_file.write(special_idf_data)
+
     current_idf = op.Epm.load(edited_idf_filepath)
 
     # Editing Run Period
@@ -100,7 +142,7 @@ def simulate_variables(idf_filepath, epw_filepath, variable_names, simulation_se
 
         data_csv_filename = variable.replace(' ', '_') + '.csv'
 
-        output_variable_query_set['key value'] = '*'
+        output_variable_query_set['key_value'] = '*'
         output_variable_query_set['reporting_frequency'] = simulation_settings["reporting_frequency"]
         output_variable_query_set['variable_name'] = variable
 
@@ -108,16 +150,19 @@ def simulate_variables(idf_filepath, epw_filepath, variable_names, simulation_se
         op.simulate(edited_idf_filepath, epw_filepath, base_dir_path=TEMPORARY_FOLDERPATH)
         os.remove(edited_idf_filepath)
 
+        from_csv_filepath = os.path.join(TEMPORARY_FOLDERPATH, 'eplusout.csv')
+        to_csv_filepath = os.path.join(sim_results_processed_data_folderpath, data_csv_filename)
+        if os.path.exists(from_csv_filepath):
+            shutil.copy(from_csv_filepath, to_csv_filepath)
+            os.remove(from_csv_filepath)
+        else: print(f"No Results for {variable}\n")
+
         for filename in os.listdir(TEMPORARY_FOLDERPATH):
 
             filepath = os.path.join(TEMPORARY_FOLDERPATH, filename)
-
-            if filepath.endswith('.csv'):
-                to_csv_filepath = os.path.join(sim_results_processed_data_folderpath, os.path.basename(filepath))
-                shutil.copy(filepath, to_csv_filepath)
-            else:
-                to_filepath = os.path.join(sim_results_output_folderpath, os.path.basename(filepath))
-                shutil.copy(filepath, to_filepath)
+            to_filepath = os.path.join(sim_results_output_folderpath, os.path.basename(filepath))
+            shutil.copy(filepath, to_filepath)
+            os.remove(filepath)
 
     # Process Time Series Data
     output_variable_data_dict = {}
@@ -142,9 +187,9 @@ def simulate_variables(idf_filepath, epw_filepath, variable_names, simulation_se
 
     # Format Datetimes
     formatted_datetime_list = []
-    for datetime in datetime_list:
+    for date_time in datetime_list:
 
-        datetime_split = datetime.split(' ')
+        datetime_split = date_time.split(' ')
 
         if (len(datetime_split) == 4):
             date_split = datetime_split[1].split('/')
@@ -160,11 +205,11 @@ def simulate_variables(idf_filepath, epw_filepath, variable_names, simulation_se
             time_split = datetime_split[1].split(':')
 
         if int(time_split[0]) == 24: # Handle conversion from 24th hour to 0th hour of next day.
-            current_date = datetime(simulation_settings["idf_year"], date_split[0], date_split[1], hour=0)
+            current_date = datetime(simulation_settings["idf_year"], int(date_split[0]), int(date_split[1]), hour=0)
             formatted_datetime = current_date + timedelta(days=1)
 
         else:
-            formatted_datetime = datetime(simulation_settings["idf_year"], date_split[0], date_split[1], hour=int(time_split[0]), minute=int(time_split[1]))
+            formatted_datetime = datetime(simulation_settings["idf_year"], int(date_split[0]), int(date_split[1]), hour=int(time_split[0]), minute=int(time_split[1]))
 
         formatted_datetime_list.append(formatted_datetime)
 
@@ -231,4 +276,6 @@ def simulate_variables(idf_filepath, epw_filepath, variable_names, simulation_se
 
                 eio_dict[key] = df_table
 
-            pickle.dump(eio_dict, open(eio_pickle_filepath, 'wb'))
+        pickle.dump(eio_dict, open(eio_pickle_filepath, 'wb'))
+
+simulate_variables(TEST_IDF_FILEPATH, TEST_EPW_FILEPATH, default_simulation_variable_names)
