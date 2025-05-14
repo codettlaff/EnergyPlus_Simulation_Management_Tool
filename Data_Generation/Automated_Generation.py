@@ -7,9 +7,37 @@ THIS_SCRIPT_DIR = os.path.dirname(__file__)
 default_data_folderpath = os.path.join(THIS_SCRIPT_DIR, '..', 'Data')
 
 # Test
-TEST_IDF_FILEPATH = r"C:\Users\codett\Downloads\ASHRAE901_OfficeLarge_STD2013_Seattle_debugging.idf"
+TEST_IDF_FILEPATH = r"C:\Users\codett\Downloads\ASHRAE901_OfficeLarge_STD2013_Seattle.idf"
 TEST_EPW_FILEPATH = r"D:\Building_Modeling_Code\Data\TMY3_WeatherFiles_Commercial\USA_WA_Seattle-Tacoma.Intl.AP.727930_TMY3.epw"
 TEST_DATA_FOLDERPATH = r"D:\Building_Modeling_Code\Data"
+
+def fix_office_large(idf_filepath):
+    # Open and read the contents of the IDF file
+    with open(idf_filepath, 'r') as file:
+        lines = file.readlines()
+
+    # Find and process 'FluidProperties:Name' and remove the line and the next 9 lines
+    i = 0
+    while i < len(lines):
+        if 'FluidProperties:Name' in lines[i]:
+            del lines[i:i + 10]  # Delete the current line and the next 9 lines
+            continue  # Restart loop without increasing index
+        i += 1
+
+    # Process 'EthyleneGlycol40Percent' and 'UserDefinedFluidType'
+    for i in range(len(lines)):
+        if 'EthyleneGlycol40Percent' in lines[i]:
+            # Replace 'EthyleneGlycol40Percent' with an empty string
+            lines[i] = lines[i].replace('EthyleneGlycol40Percent', '')
+
+            # Go one line up and replace 'UserDefinedFluidType' with 'WATER'
+            lines[i - 1] = lines[i - 1].replace('UserDefinedFluidType', 'Water')
+
+    # Save the edited IDF file to the same filepath
+    with open(idf_filepath, 'w') as file:
+        file.writelines(lines)
+
+fix_office_large(TEST_IDF_FILEPATH)
 
 def get_location_climate_zone(location=None, climate_zone=None):
 
@@ -92,8 +120,60 @@ def get_idf_weather_filepaths(building_type, idf_filter_list, idf_weather_df=Non
     # Return as a dataframe
     return pd.DataFrame(data)
 
-idf_filter_list = [['Seattle', 'ASHRAE901', 'STD2013']]
-df = get_idf_weather_filepaths('Commercial', idf_filter_list, data_folderpath=TEST_DATA_FOLDERPATH)
-idf_filter_list = [['Hospital'], ['ApartmentHighRise'], ['ApartmentMidRise']]
-df = get_idf_weather_filepaths('Commercial', idf_filter_list, idf_weather_df=df)
-print(df)
+def automated_generation():
+
+    idf_filter_list = [['Seattle', 'ASHRAE901', 'STD2013']]
+    df = get_idf_weather_filepaths('Commercial', idf_filter_list, data_folderpath=TEST_DATA_FOLDERPATH)
+    idf_filter_list = [['Hospital'], ['ApartmentHighRise'], ['ApartmentMidRise']]
+    df = get_idf_weather_filepaths('Commercial', idf_filter_list, idf_weather_df=df)
+
+    simulation_settings = {
+        "name": "new_simulation",
+        "idf_year": 2013,
+        "start_month": 1,
+        "start_day": 1,
+        "end_month": 1,
+        "end_day": 1,
+        "reporting_frequency": "timestep",
+        "timestep_minutes": 5
+    }
+
+    simulation_variable_names = ['Schedule Value',
+                                      'Facility Total Electricity Demand Rate',
+                                      'Site Diffuse Solar Radiation Rate per Area',
+                                      'Site Direct Solar Radiation Rate per Area',
+                                      'Site Outdoor Air Drybulb Temperature',
+                                      'Site Solar Altitude Angle',
+                                      'Surface Inside Face Internal Gains Radiation Heat Gain Rate',
+                                      'Surface Inside Face Lights Radiation Heat Gain Rate',
+                                      'Surface Inside Face Solar Radiation Heat Gain Rate',
+                                      'Surface Inside Face Temperature',
+                                      'Zone Windows Total Transmitted Solar Radiation Rate',
+                                      'Zone Air Temperature',
+                                      'Zone People Convective Heating Rate',
+                                      'Zone Lights Convective Heating Rate',
+                                      'Zone Electric Equipment Convective Heating Rate',
+                                      'Zone Gas Equipment Convective Heating Rate',
+                                      'Zone Other Equipment Convective Heating Rate',
+                                      'Zone Hot Water Equipment Convective Heating Rate',
+                                      'Zone Steam Equipment Convective Heating Rate',
+                                      'Zone People Radiant Heating Rate',
+                                      'Zone Lights Radiant Heating Rate',
+                                      'Zone Electric Equipment Radiant Heating Rate',
+                                      'Zone Gas Equipment Radiant Heating Rate',
+                                      'Zone Other Equipment Radiant Heating Rate',
+                                      'Zone Hot Water Equipment Radiant Heating Rate',
+                                      'Zone Steam Equipment Radiant Heating Rate',
+                                      'Zone Lights Visible Radiation Heating Rate',
+                                      'Zone Total Internal Convective Heating Rate',
+                                      'Zone Total Internal Radiant Heating Rate',
+                                      'Zone Total Internal Total Heating Rate',
+                                      'Zone Total Internal Visible Radiation Heating Rate',
+                                      'Zone Air System Sensible Cooling Rate',
+                                      'Zone Air System Sensible Heating Rate',
+                                      'System Node Temperature',
+                                      'System Node Mass Flow Rate']
+
+    for idf_filepath, epw_filepath in zip(df['filtered_idf_filepath'], df['filtered_epw_filepath']):
+        simulation_settings["name"] = os.path.basename(idf_filepath).replace('.idf', '')
+        EP_Gen.simulate_variables(idf_filepath, epw_filepath, variable_names=simulation_variable_names, simulation_settings=simulation_settings)

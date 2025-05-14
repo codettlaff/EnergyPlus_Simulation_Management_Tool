@@ -22,7 +22,7 @@ default_simulation_settings = {
     "start_month": 1,
     "start_day": 1,
     "end_month": 1,
-    "end_day": 3,
+    "end_day": 1,
     "reporting_frequency": "timestep",
     "timestep_minutes": 5
 }
@@ -97,7 +97,7 @@ def generate_variables(idf_filepath, epw_filepath):
 
     return variable_names
 
-def simulate_variables(idf_filepath, epw_filepath, variable_names, simulation_settings=default_simulation_settings, results_folderpath=default_results_folderpath):
+def simulate_variables(idf_filepath, epw_filepath, variable_names=default_simulation_variable_names, simulation_settings=default_simulation_settings, results_folderpath=default_results_folderpath):
 
     edited_idf_filepath = os.path.join(TEMPORARY_FOLDERPATH, "edited.idf")
     sim_results_folderpath = os.path.join(results_folderpath, simulation_settings["name"])
