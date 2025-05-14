@@ -3,7 +3,6 @@ import pandas as pd
 import EP_DataGenerator_Script_v2_20250512 as EP_Gen
 
 THIS_SCRIPT_DIR = os.path.dirname(__file__)
-
 default_data_folderpath = os.path.join(THIS_SCRIPT_DIR, '..', 'Data')
 
 # Test
@@ -120,9 +119,9 @@ def get_idf_weather_filepaths(building_type, idf_filter_list, idf_weather_df=Non
     # Return as a dataframe
     return pd.DataFrame(data)
 
-def automated_generation():
+def automated_generation1():
 
-    idf_filter_list = [['Seattle', 'ASHRAE901', 'STD2013']]
+    idf_filter_list = [['STD2013']]
     df = get_idf_weather_filepaths('Commercial', idf_filter_list, data_folderpath=TEST_DATA_FOLDERPATH)
     idf_filter_list = [['Hospital'], ['ApartmentHighRise'], ['ApartmentMidRise']]
     df = get_idf_weather_filepaths('Commercial', idf_filter_list, idf_weather_df=df)
@@ -132,8 +131,8 @@ def automated_generation():
         "idf_year": 2013,
         "start_month": 1,
         "start_day": 1,
-        "end_month": 1,
-        "end_day": 1,
+        "end_month": 12,
+        "end_day": 31,
         "reporting_frequency": "timestep",
         "timestep_minutes": 5
     }
@@ -177,3 +176,25 @@ def automated_generation():
     for idf_filepath, epw_filepath in zip(df['filtered_idf_filepath'], df['filtered_epw_filepath']):
         simulation_settings["name"] = os.path.basename(idf_filepath).replace('.idf', '')
         EP_Gen.simulate_variables(idf_filepath, epw_filepath, variable_names=simulation_variable_names, simulation_settings=simulation_settings)
+
+def automated_generation2():
+
+    simulation_settings = {
+        "name": "new_simulation",
+        "idf_year": 2013,
+        "start_month": 1,
+        "start_day": 1,
+        "end_month": 12,
+        "end_day": 31,
+        "reporting_frequency": "timestep",
+        "timestep_minutes": 5
+    }
+
+    idf_filter_list = [['STD2013', 'OfficeLarge']]
+    df = get_idf_weather_filepaths('Commercial', idf_filter_list, data_folderpath=TEST_DATA_FOLDERPATH)
+    for idf_filepath, epw_filepath in zip(df['filtered_idf_filepath'], df['filtered_epw_filepath']):
+        fix_office_large(idf_filepath)
+        simulation_settings["name"] = os.path.basename(idf_filepath).replace('.idf', '')
+        EP_Gen.simulate_variables(idf_filepath, epw_filepath, simulation_settings=simulation_settings)
+
+automated_generation2()
