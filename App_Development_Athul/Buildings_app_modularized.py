@@ -26,8 +26,12 @@ import MyDashApp_Module as AppFuncs
 import EPGenApp_Module_v2 as EPGen
 import EPAggApp_Module as EPAgg
 import EPVisApp_Module as EPVis
+from Data_Generation.EP_DataGenerator_Script_v2_20250512 import THIS_SCRIPT_DIR
 
-UPLOAD_DIRECTORY = os.path.join(os.getcwd(), "EP_APP_Uploads")
+THIS_SCRIPT_DIR = os.path.dirname(__file__)
+
+UPLOAD_DIRECTORY = os.path.join(THIS_SCRIPT_DIR, "EP_APP_Uploads")
+
 UPLOAD_DIRECTORY_AGG_PICKLE = os.path.join(UPLOAD_DIRECTORY, "Pickle_Upload")
 UPLOAD_DIRECTORY_AGG_EIO = os.path.join(UPLOAD_DIRECTORY, "EIO_Upload")
 UPLOAD_DIRECTORY_VIS = os.path.join(UPLOAD_DIRECTORY, "Visualization")
@@ -35,6 +39,10 @@ WORKSPACE_DIRECTORY = os.path.join(os.getcwd(), "EP_APP_Workspace")
 SIMULATION_FOLDERPATH = 'abc123'
 SIMULATION_FOLDERNAME = 'abc123'
 DATA_DIRECTORY =  os.path.join(os.getcwd(), "..", "..", "Data")
+
+# Reset Folders Upon new Run
+if os.path.exists(UPLOAD_DIRECTORY): shutil.rmtree(UPLOAD_DIRECTORY)
+if os.path.exists(WORKSPACE_DIRECTORY): shutil.rmtree(WORKSPACE_DIRECTORY)
 
 OUR_VARIABLE_LIST = ['Schedule_Value_',
                         'Facility_Total_HVAC_Electric_Demand_Power_',
