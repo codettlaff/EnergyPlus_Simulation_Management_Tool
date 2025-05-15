@@ -41,8 +41,12 @@ SIMULATION_FOLDERNAME = 'abc123'
 DATA_DIRECTORY =  os.path.join(os.getcwd(), "..", "..", "Data")
 
 # Reset Folders Upon new Run
-if os.path.exists(UPLOAD_DIRECTORY): shutil.rmtree(UPLOAD_DIRECTORY)
-if os.path.exists(WORKSPACE_DIRECTORY): shutil.rmtree(WORKSPACE_DIRECTORY)
+if os.path.exists(UPLOAD_DIRECTORY):
+    shutil.rmtree(UPLOAD_DIRECTORY)
+    os.makedirs(UPLOAD_DIRECTORY)
+if os.path.exists(WORKSPACE_DIRECTORY):
+    shutil.rmtree(WORKSPACE_DIRECTORY)
+    os.makedirs(WORKSPACE_DIRECTORY)
 
 OUR_VARIABLE_LIST = ['Schedule_Value_',
                         'Facility_Total_HVAC_Electric_Demand_Power_',

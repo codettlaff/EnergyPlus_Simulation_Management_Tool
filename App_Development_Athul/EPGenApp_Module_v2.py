@@ -35,9 +35,11 @@ UPLOAD_DIRECTORY_AGG_PICKLE = os.path.join(UPLOAD_DIRECTORY, "Pickle_Upload")
 UPLOAD_DIRECTORY_AGG_EIO = os.path.join(UPLOAD_DIRECTORY, "EIO_Upload")
 UPLOAD_DIRECTORY_VIS = os.path.join(UPLOAD_DIRECTORY, "Visualization")
 WORKSPACE_DIRECTORY = os.path.join(os.getcwd(), "EP_APP_Workspace")
-SIMULATION_FOLDERPATH = 'abc123'
+
 SIMULATION_FOLDERNAME = 'abc123'
-DATA_DIRECTORY =  os.path.join(os.getcwd(), "..", "..", "Data")
+
+#DATA_DIRECTORY =  os.path.join(THIS_SCRIPT_DIR, "..", "Data")
+DATA_DIRECTORY =  r"D:\Building_Modeling_Code\Data"
 
 OUR_VARIABLE_LIST = ['Schedule Value',
                                   'Facility Total HVAC Electric Demand Power',
@@ -76,8 +78,10 @@ OUR_VARIABLE_LIST = ['Schedule Value',
                                   'System Node Mass Flow Rate']
 
 def EPGen_Radiobutton_DatabaseSelection_Interaction_Function(folder_name, database_selection):
+
     global SIMULATION_FOLDERPATH
     global SIMULATION_FOLDERNAME
+
     if database_selection == 1:
         building_details = False
         upload_files = True
@@ -271,7 +275,7 @@ def EPGen_Dropdown_DownloadSelection_Interaction_Function(download_selection):
 def EPGen_Dropdown_BuildingType_Interaction_Function(buildingType_selection):
     # Listing next sub level of folders
     if buildingType_selection is not None:
-        FilePath = os.path.join(os.getcwd(), "../../Data/", buildingType_selection)
+        FilePath = os.path.join(DATA_DIRECTORY, buildingType_selection)
         level_1_list = AppFuncs.list_contents(FilePath)
         level_2_list = []
         level_3_list = []
@@ -302,7 +306,7 @@ def EPGen_Dropdown_BuildingType_Interaction_Function(buildingType_selection):
 def EPGen_Dropdown_SubLevel1_Interaction_Function(buildingType_selection, level_1):
     # Listing next sub level of folders
     if level_1 is not None:
-        FilePath = os.path.join(os.getcwd(), "../../Data/", buildingType_selection, level_1)
+        FilePath = os.path.join(DATA_DIRECTORY, buildingType_selection, level_1)
         level_2_list = AppFuncs.list_contents(FilePath)
         level_3_list = []
 
@@ -318,7 +322,7 @@ def EPGen_Dropdown_SubLevel1_Interaction_Function(buildingType_selection, level_
 def EPGen_Dropdown_SubLevel2_Interaction_Function(buildingType_selection, level_1, level_2):
     # Listing next sub level of folders
     if level_2 is not None:
-        FilePath = os.path.join(os.getcwd(), "../../Data/", buildingType_selection, level_1, level_2)
+        FilePath = os.path.join(DATA_DIRECTORY, buildingType_selection, level_1, level_2)
         level_3_list = AppFuncs.list_contents(FilePath)
         level_3_list = [file for file in level_3_list if file.endswith('.idf')]
 
