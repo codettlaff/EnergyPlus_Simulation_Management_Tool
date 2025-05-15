@@ -23,7 +23,7 @@ import dash_bootstrap_components as dbc
 
 # Importing User-Defined Modules
 import MyDashApp_Module as AppFuncs
-import EPGenApp_Module as EPGen
+import EPGenApp_Module_v2 as EPGen
 import EPAggApp_Module as EPAgg
 import EPVisApp_Module as EPVis
 

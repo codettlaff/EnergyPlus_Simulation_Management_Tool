@@ -6193,8 +6193,6 @@ OutputControl:ReportingTolerances,
 ! https://github.com/openergy/opyplus
 ! ---------------------------------------------
 
-
-
 Output:Variable,
     *,                             ! Key Value
     Air System Heating Coil Electric Energy,    ! Variable Name

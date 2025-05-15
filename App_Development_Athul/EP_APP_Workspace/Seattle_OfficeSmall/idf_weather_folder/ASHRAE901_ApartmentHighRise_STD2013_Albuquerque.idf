@@ -21553,8 +21553,6 @@ SET EtRated =  0.8, ! EMS Boiler Nominal Thermal Efficiency.  overriden by scrip
 ! https://github.com/openergy/opyplus
 ! ---------------------------------------------
 
-
-
 Output:Variable,
     *,                             ! Key Value
     Air System Heating Coil Electric Energy,    ! Variable Name

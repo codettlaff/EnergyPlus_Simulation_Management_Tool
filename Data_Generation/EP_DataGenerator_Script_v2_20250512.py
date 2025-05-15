@@ -93,6 +93,8 @@ def generate_variables(idf_filepath, epw_filepath):
                 variable_name = line.split(',')[2]
                 variable_names.append(variable_name)
 
+    variable_names.sort()
+
     shutil.rmtree(TEMPORARY_FOLDERPATH)
 
     return variable_names
