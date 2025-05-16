@@ -99,6 +99,63 @@ def generate_variables(idf_filepath, epw_filepath):
 
     return variable_names
 
+def parse_eio_file(filepath):
+
+    tables = {}  # Store parsed tables here
+
+    with open(filepath, "r") as file:
+
+        current_table_name = None
+        current_columns = None
+        rows = []
+
+        first_line = True
+        mismatch = False
+
+        for line in file:
+
+            line = line.strip()  # Remove leading/trailing whitespace
+
+            if first_line:
+                first_line = False
+                continue
+
+            if line.startswith("!"):  # Header line detected
+
+                # Printing results of previous table.
+                if mismatch:
+                    print(f"Mismatch in table '{current_table_name}' {len(current_columns)} columns are defined, but {len(row_values)} values were provided.")
+
+                # If there's an existing table's data, add it to `tables`
+                if current_table_name and current_columns and rows:
+                    tables[current_table_name] = pd.DataFrame(rows, columns=current_columns)
+
+                # Parse the table header
+                parts = line[1:].split(",")  # Ignore "!" and split by commas
+                current_table_name = parts[0].strip()  # Table name
+                current_columns = [col.strip() for col in parts[1:]]  # Column names
+                rows = []  # Reset rows for the new table
+
+                mismatch = False
+
+            elif line:  # Data lines
+                # Parse the data row and split by commas
+                line = line.rstrip(",") # Get rid of trailing comma, if it exists
+                row_values = [value.strip() for value in line.split(",")][1:]
+
+                # Ensure row length matches the number of columns
+                if len(row_values) == len(current_columns):
+                    rows.append(row_values)
+                else:
+                    mismatch = True
+
+
+        # Add the last table after EOF
+        if current_table_name and current_columns and rows:
+            tables[current_table_name] = pd.DataFrame(rows, columns=current_columns)
+
+    return tables
+
 def simulate_variables(idf_filepath, epw_filepath, variable_names=default_simulation_variable_names, simulation_settings=default_simulation_settings, results_folderpath=default_results_folderpath):
 
     edited_idf_filepath = os.path.join(TEMPORARY_FOLDERPATH, "edited.idf")

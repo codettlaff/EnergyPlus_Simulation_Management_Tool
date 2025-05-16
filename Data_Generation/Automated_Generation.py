@@ -197,4 +197,4 @@ def automated_generation2():
         simulation_settings["name"] = os.path.basename(idf_filepath).replace('.idf', '')
         EP_Gen.simulate_variables(idf_filepath, epw_filepath, simulation_settings=simulation_settings)
 
-automated_generation2()
+automated_generation1()
