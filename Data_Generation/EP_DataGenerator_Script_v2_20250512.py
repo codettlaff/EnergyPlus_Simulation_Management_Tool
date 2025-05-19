@@ -95,7 +95,7 @@ def generate_variables(idf_filepath, epw_filepath):
 
     variable_names.sort()
 
-    shutil.rmtree(TEMPORARY_FOLDERPATH)
+    # shutil.rmtree(TEMPORARY_FOLDERPATH)
 
     return variable_names
 
@@ -128,7 +128,8 @@ def parse_eio_file(filepath, category_key_list=None):
 
                 # If there's an existing table's data, add it to `tables`
                 if current_table_name and current_columns and rows:
-                    tables[current_table_name] = pd.DataFrame(rows, columns=current_columns)
+                    table_name = current_table_name.replace('<', '').replace('>', '')
+                    tables[table_name] = pd.DataFrame(rows, columns=current_columns)
 
                 # Parse the table header
                 parts = line[1:].split(",")  # Ignore "!" and split by commas
@@ -152,7 +153,8 @@ def parse_eio_file(filepath, category_key_list=None):
 
         # Add the last table after EOF
         if current_table_name and current_columns and rows:
-            tables[current_table_name] = pd.DataFrame(rows, columns=current_columns)
+            table_name = current_table_name.replace('<','').replace('>','')
+            tables[table_name] = pd.DataFrame(rows, columns=current_columns)
 
     if category_key_list:
         filtered_table_dict = {key: value for key, value in tables.items() if key in category_key_list}
