@@ -99,7 +99,7 @@ def generate_variables(idf_filepath, epw_filepath):
 
     return variable_names
 
-def parse_eio_file(filepath):
+def parse_eio_file(filepath, category_key_list=None):
 
     tables = {}  # Store parsed tables here
 
@@ -153,6 +153,9 @@ def parse_eio_file(filepath):
         # Add the last table after EOF
         if current_table_name and current_columns and rows:
             tables[current_table_name] = pd.DataFrame(rows, columns=current_columns)
+
+    if category_key_list:
+        filtered_table_dict = {key: value for key, value in tables.items() if key in category_key_list}
 
     return tables
 
