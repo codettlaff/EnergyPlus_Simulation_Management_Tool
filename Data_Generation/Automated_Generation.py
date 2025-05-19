@@ -126,6 +126,14 @@ def automated_generation1():
     idf_filter_list = [['Hospital'], ['ApartmentHighRise'], ['ApartmentMidRise']]
     df = get_idf_weather_filepaths('Commercial', idf_filter_list, idf_weather_df=df)
 
+    completed_idf_filter_list = [['STD2013', 'Hospital']]
+    completed_df = get_idf_weather_filepaths('Commercial', completed_idf_filter_list, data_folderpath=TEST_DATA_FOLDERPATH)
+    completed_idf_filter_list = [['Albuquerque'], ['Atlanta'], ['Buffalo'], ['Denver']]
+    completed_df = get_idf_weather_filepaths('Commercial', completed_idf_filter_list, idf_weather_df=completed_df)
+
+    mask = df.isin(completed_df.to_dict(orient='list')).all(axis=1)
+    df_result = df[~mask]
+
     simulation_settings = {
         "name": "new_simulation",
         "idf_year": 2013,
@@ -174,8 +182,14 @@ def automated_generation1():
                                       'System Node Mass Flow Rate']
 
     for idf_filepath, epw_filepath in zip(df['filtered_idf_filepath'], df['filtered_epw_filepath']):
+
         simulation_settings["name"] = os.path.basename(idf_filepath).replace('.idf', '')
-        EP_Gen.simulate_variables(idf_filepath, epw_filepath, variable_names=simulation_variable_names, simulation_settings=simulation_settings)
+
+        try:
+            EP_Gen.simulate_variables(idf_filepath, epw_filepath, variable_names=simulation_variable_names, simulation_settings=simulation_settings)
+        except Exception as e:
+            print(f"Error occurred for {idf_filepath}: {e}")
+            continue
 
 def automated_generation2():
 
