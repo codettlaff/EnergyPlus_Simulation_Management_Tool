@@ -443,7 +443,7 @@ def EPGen_Dropdown_SubLevel2_Interaction_Function(buildingType_selection, level_
 def EPGen_Button_GenerateVariables_Interaction_Function(database_selection, buildingType_selection, level_1, level_2, level_3, location_selection, n_clicks):
 
     # Selecting IDF and Weather Files from Provided Dataset of PNNL Prototypes
-    if database_selection == 1:
+    if database_selection == 1: # Our Database
         idf_filepath = os.path.join(DATA_DIRECTORY, buildingType_selection, level_1, level_2, level_3)
         weather_filepath = os.path.join(DATA_DIRECTORY, "TMY3_WeatherFiles_" + buildingType_selection.split('_')[0], location_selection)
 
