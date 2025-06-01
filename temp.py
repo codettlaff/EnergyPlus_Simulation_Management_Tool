@@ -1,5 +1,6 @@
 import os
 import shutil
+import requests
 
 THIS_SCRIPT_DIR = os.path.dirname(__file__)
 
@@ -44,5 +45,5 @@ def download_github_file(file_path, save_to):
     except requests.exceptions.RequestException as e:
         print(f"Failed to download {file_path}: {e}")
 
-download_github_file(data_url, save_to)
+# download_github_file(data_url, save_to)
 

@@ -440,6 +440,7 @@ def EPGen_Dropdown_SubLevel2_Interaction_Function(buildingType_selection, level_
 
     return level_3_list, level_3_value
 
+# Need to Call Get IDF and Weather Files Function Here
 def EPGen_Button_GenerateVariables_Interaction_Function(database_selection, buildingType_selection, level_1, level_2, level_3, location_selection, n_clicks):
 
     # Selecting IDF and Weather Files from Provided Dataset of PNNL Prototypes
