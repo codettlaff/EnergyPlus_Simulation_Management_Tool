@@ -3,8 +3,11 @@
 
 import psycopg2
 
+# Casey, OfficeLarge - LabPC
+# casey, OfficeLarge - Laptop
+
 def create_database():
-    conn = psycopg2.connect(dbname="postgres", user="Casey", password="OfficeLarge", host="localhost")
+    conn = psycopg2.connect(dbname="postgres", user="casey", password="OfficeLarge", host="localhost")
     conn.autocommit = True
     cursor = conn.cursor()
     cursor.execute("CREATE DATABASE Buildings;")
@@ -103,7 +106,7 @@ def get_create_table_query(tablename):
     return query
 
 def create_table(query):
-    conn = psycopg2.connect(dbname="buildings", user="Casey", password="OfficeLarge", host="localhost")
+    conn = psycopg2.connect(dbname="buildings", user="casey", password="OfficeLarge", host="localhost")
     cursor = conn.cursor()
     cursor.execute(query)
     conn.commit()
@@ -153,5 +156,5 @@ def delete_all_tables(dbname="buildings", user="Casey", password="OfficeLarge", 
                   
 #Main
 # create_database()
-delete_all_tables()
-create_tables()
+#delete_all_tables()
+# create_tables()
