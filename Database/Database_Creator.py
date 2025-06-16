@@ -2,22 +2,26 @@
 # Created: 20250203
 
 import psycopg2
+import time
 
 # Casey, OfficeLarge - LabPC
 # casey, OfficeLarge - Laptop
 
 # conn = psycopg2.connect(dbname="postgres", user="casey", password="OfficeLarge", host="localhost")
 
-def create_database(username="user", password="password", port="localhost", dbname="New Database"):
+def create_database(username="user", password="password", port="localhost", database_name="New Database"):
     conn = psycopg2.connect(dbname="postgres", user=username, password=password, host=port)
     conn.autocommit = True
     cursor = conn.cursor()
     try:
-        cursor.execute(f"CREATE DATABASE dbname;")
+        cursor.execute(f"CREATE DATABASE {database_name};")
     except Exception as e:
         print(e)
     cursor.close()
-    conn.autocommit = False
+    conn.close()
+
+    time.sleep(0.5)
+    conn = psycopg2.connect(dbname=database_name, user=username, password=password, host=port)
     return conn
 
 def delete_database(conn, dbname):
@@ -119,15 +123,13 @@ def get_create_table_query(tablename):
     
     return query
 
-def create_table(query):
-    conn = psycopg2.connect(dbname="buildings", user="casey", password="OfficeLarge", host="localhost")
+def create_table(conn, query):
     cursor = conn.cursor()
     cursor.execute(query)
     conn.commit()
     cursor.close()
-    conn.close()
     
-def create_tables():
+def create_tables(conn):
     
     # tables must be created in the following order
     tables = ["building_prototypes",
@@ -141,7 +143,7 @@ def create_tables():
     for table in tables:
         try:
             query = get_create_table_query(table)
-            create_table(query)
+            create_table(conn, query)
             print(f"Table '{table}' created successfully.\n")
         except Exception as e:
             print(f"Error creating table '{table}': {e}\n")

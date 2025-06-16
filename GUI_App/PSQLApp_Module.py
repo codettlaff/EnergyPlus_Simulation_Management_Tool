@@ -307,7 +307,11 @@ def create_database(username, password, port, dbname):
     2. add current database as row in databases csv
     """
 
-    conn = Database_Creator.create_database(username, password, port, dbname)
+    try:
+        conn = Database_Creator.create_database(username, password, port, dbname)
+        Database_Creator.create_tables(conn)
+    except Exception as e:
+        print(e)
 
     if not os.path.isfile(DATABASES_CSV_FILEPATH):
         pd.DataFrame(columns=["username", "password", "port", "database_name"]).to_csv(DATABASES_CSV_FILEPATH, index=False)
