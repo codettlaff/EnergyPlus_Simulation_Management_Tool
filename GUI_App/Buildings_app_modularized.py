@@ -88,7 +88,7 @@ OUR_VARIABLE_LIST = [
 # Themes - https://dash-bootstrap-components.opensource.faculty.ai/docs/themes/#available-themes
 # Themes - https://dash-bootstrap-components.opensource.faculty.ai/docs/themes/explorer/
 # hackerthemes.com/bootstrap-cheatsheet/
-app = Dash(__name__, external_stylesheets=[dbc.themes.LITERA])
+app = Dash(__name__, external_stylesheets=[dbc.themes.LITERA], suppress_callback_exceptions=True)
 
 # App Layout using Dash Bootstrap
 app.layout = dbc.Container([
@@ -687,6 +687,15 @@ def on_create_database(n_clicks, username, password, port, dbname):
 def populate_existing_db_dropdown(selection):
     dropdown_options = PSQL.populate_existing_db_dropdown(selection)
     return dropdown_options
+
+@app.callback(
+    Output('PSQL_Div_CreateStatus', 'children'),  # or some other feedback/output
+    Input('PSQL_Dropdown_ExistDbList', 'value'),
+    #prevent_initial_call=True
+)
+def handle_existing_db_selection(selected_dbname):
+    conn = PSQL.get_conn_from_dbname(selected_dbname)
+    if conn: return conn
 
 # Running the App
 if __name__ == '__main__':

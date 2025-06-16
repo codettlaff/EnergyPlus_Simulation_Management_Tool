@@ -8,6 +8,7 @@ Created on Mon Jun 09 10:42:28 2025
 import os
 import sys
 import pandas as pd
+import psycopg2
 from datetime import date
 from dash import Dash, dcc, html, Input, Output, State, dash_table
 import dash_daq as daq
@@ -239,9 +240,10 @@ tab_layout = [
                     }
                 ),
                 dcc.Dropdown(
-                    ['Db1', 'Db2', 'Db3'],
-                    '',
+                    options=[],
+                    placeholder="Select...",
                     id='PSQL_Dropdown_ExistDbList',
+                    value=None,
                     style={
                         'width': '94%',
                         'margin': '0 3% 2% 3%'  # top, right, bottom, left
@@ -343,3 +345,22 @@ def populate_existing_db_dropdown(selection):
         return []
     dbnames = df["database_name"].dropna().unique().tolist()
     return [{"label": name, "value": name} for name in dbnames]
+
+def get_conn_from_dbname(database_name):
+
+    try:
+        df = pd.read_csv(DATABASES_CSV_FILEPATH)
+        record = df[df["database_name"] == database_name].iloc[0]
+
+        conn = psycopg2.connect(
+            dbname=record["database_name"],
+            user=record["username"],
+            password=record["password"],
+            host="localhost",  # change if stored in CSV
+            port=record["port"]
+        )
+        print(f"Connected to {database_name}")
+        return conn
+    except Exception as e:
+        print(f"Could not connect to {database_name}: {e}")
+        return None
