@@ -664,8 +664,22 @@ def PSQL_Radiobutton_CreateSelectDatabase_Interaction(selection):
     enterinfo_hidden, existdblist_hidden = PSQL.PSQL_Radiobutton_CreateSelectDatabase_Interaction_Function(selection)
     return enterinfo_hidden, existdblist_hidden
 
+### Casey's Code ###
 
+@app.callback(
+    Output('PSQL_Div_EnterInfo', 'children'),  # You can also use a different feedback div
+    Input('PSQL_Button_CreateDatabase', 'n_clicks'),
+    State('PSQL_Textarea_Username', 'value'),
+    State('PSQL_Textarea_Password', 'value'),
+    State('PSQL_Textarea_PortNumber', 'value'),
+    State('PSQL_Textarea_DbName', 'value'),
+    prevent_initial_call=True
+)
+def on_create_database(n_clicks, username, password, port, dbname):
+    print(f"Creating database {dbname}\n Username: {username}\n Password: {password}\n Port: {port}")
 
 # Running the App
 if __name__ == '__main__':
     app.run(port=4050)
+
+
