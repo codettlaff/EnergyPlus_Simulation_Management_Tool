@@ -45,6 +45,8 @@ SIMULATION_FOLDERNAME = 'abc123'
 # Data Directory
 DATA_DIRECTORY = os.path.join(os.getcwd(), "..", "..", "Data")
 
+CONN = None
+
 # Pre Selected Variables
 OUR_VARIABLE_LIST = [
     'Schedule_Value_',
@@ -689,13 +691,14 @@ def populate_existing_db_dropdown(selection):
     return dropdown_options
 
 @app.callback(
-    Output('PSQL_Div_CreateStatus', 'children'),  # or some other feedback/output
+    #Output('PSQL_Div_CreateStatus', 'children'),  # or some other feedback/output
     Input('PSQL_Dropdown_ExistDbList', 'value'),
     #prevent_initial_call=True
 )
 def handle_existing_db_selection(selected_dbname):
+    global CONN
     conn = PSQL.get_conn_from_dbname(selected_dbname)
-    if conn: return conn
+    CONN = conn
 
 # Running the App
 if __name__ == '__main__':
