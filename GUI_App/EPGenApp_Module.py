@@ -69,6 +69,518 @@ OUR_VARIABLE_LIST = ['Schedule_Value_',
                         'System_Node_Temperature_',
                         'System_Node_Mass_Flow_Rate_']
 
+# Tab Layout
+tab_layout=[
+    # Row 1
+            dbc.Row([
+
+                # Column 1
+                dbc.Col([
+
+                    html.Br(),
+
+                    # Box 11 C1
+                    html.Div([
+                        dcc.Input(
+                            id='folder_name',
+                            type='text',
+                            value='',
+                            placeholder='Enter simulation name',
+                            className="center-placeholder center-input",
+                            style={
+                                'width':'100%',
+                                'height':'50px',
+                                'margin':'0%',
+                                'text-align': 'center',
+                                'font-size': '24px'
+                                },),
+
+                        ],id = 'create_directory',
+                        style = {
+                            # 'borderWidth': '1px',
+                            # 'borderStyle': 'solid',
+                            # 'borderRadius': '5px',
+                            },),
+
+                    html.Br(),
+
+                    # Box 1 C1
+                    # Database selection
+                    dcc.RadioItems(
+                        id = 'database_selection',
+                        labelStyle = {'display': 'block'},
+                        value = '1',
+                        options = [
+                            {'label' : " Our Database", 'value' : 1},
+                            {'label' : " Your Files", 'value' : 2}
+                            ]  ,
+                        className = 'ps-4 p-3',
+                        style = {
+                            'width': '100%',
+                            'borderWidth': '1px',
+                            'borderStyle': 'solid',
+                            'borderRadius': '5px',
+                            }
+                        ),
+
+                    html.Br(),
+
+                    # Box 2 C1
+                    html.Div([
+
+                        # Upload IDF file
+                        dcc.Upload(['Upload IDF file'],
+                            id = 'upload_idf',
+                            className = 'center',
+                            style = {
+                                'width': '90%',
+                                'height': '40px',
+                                'lineHeight': '40px',
+                                'borderWidth': '1px',
+                                'borderStyle': 'dashed',
+                                'borderRadius': '5px',
+                                'textAlign': 'center',
+                                'margin-left': '5%',
+                                'margin-top': '5%'
+                                }),
+
+                        # Upload EPW file
+                        dcc.Upload(['Upload EPW file'],
+                            id = 'upload_epw',
+                            className = 'center',
+                            style = {
+                                'width': '90%',
+                                'height': '40px',
+                                'lineHeight': '40px',
+                                'borderWidth': '1px',
+                                'borderStyle': 'dashed',
+                                'borderRadius': '5px',
+                                'textAlign': 'center',
+                                'margin': '5%',
+                                }),
+
+                        # Version selection
+                        dbc.Stack([
+                            html.Label("Energy Plus Version:",
+                                className = 'text'),
+                            dcc.Dropdown(['8.0.0','9.0.0','22.0.0','23.0.0'], '',
+                                id='version_selection',
+                                style = {
+                                    'width':'60%',
+                                    'margin-left':'8%'
+                                }),
+                            ],direction="horizontal",
+                            style = {
+                                'width': '90%',
+                                'margin': '5%',
+                                }),
+
+                        ],id = 'upload_files',
+                        hidden = True,
+                        style = {
+                            'borderWidth': '1px',
+                            'borderStyle': 'solid',
+                            'borderRadius': '5px',
+                            }),
+
+                    html.Br(),
+
+                    # Box 3 C1
+                    html.Div([
+
+                        # Time-step selection
+                        dbc.Stack([
+                            html.Label("Time Step:",
+                                className = 'text'),
+                            daq.NumericInput(
+                                id='sim_TimeStep',
+                                value=5,
+                                style={'margin-left':'28%'}
+                            ),
+                            ],direction = "horizontal",
+                            style = {'margin': '5%'}
+                        ),
+
+                        # Simulation run period
+                        html.Label("Simulation Run Period:",
+                                className = 'text', style={'margin-left': '5%'}),
+                        dcc.DatePickerRange(
+                            id='sim_run_period',
+                            min_date_allowed=date(2000, 1, 1),
+                            max_date_allowed=date(2021, 12, 31),
+                            #initial_visible_month=date(2020, 1, 1),
+                            start_date=date(2020, 1, 1),
+                            end_date=date(2020, 12, 31),
+                            display_format='M/D',
+                            style = {
+                                'width': '100%',
+                                'margin': '5%',
+                                'display': 'block'
+                                },
+                        ),
+                        # html.Div(id='sim-run-period2'),
+
+
+                        # Simulation reporting frequency selection
+                        dbc.Stack([
+                            html.Label("Simulation Reporting Frequency:",
+                                className = 'text'),
+                            dcc.Dropdown(['timestep','hourly','detailed','daily','monthly','runperiod','environment','annual'],
+                                '',
+                                id = 'simReportFreq_selection',
+                                style = {
+                                    'width':'70%',
+                                    'margin':'2%'
+                                    }),
+                            ],direction = "horizontal",
+                            style = {
+                                'margin': '5%',
+                                }),
+
+                        ],id = 'simulation_details',
+                        hidden = True,
+                        style = {
+                            'borderWidth': '1px',
+                            'borderStyle': 'solid',
+                            'borderRadius': '5px',
+                            },),
+
+                    html.Br(),
+
+                    ], xs = 12, sm = 12, md = 4, lg = 4, xl = 4), # width = 12
+
+                # Column 2
+                dbc.Col([
+
+                    # Box 2 C2
+                    html.Div([
+                        html.Button('Generate Variables',
+                            id = 'EPGen_Button_GenerateVariables',
+                            className = "btn btn-secondary btn-lg col-12",
+                            n_clicks = 0,
+                            style = {
+                                'width':'90%',
+                                'margin':'5%'
+                                },),
+
+                        html.Label("Select Custom Variables",
+                            className = 'text-left ms-4'),
+                        dcc.Dropdown(options = [],
+                            value = '',
+                            id = 'your_variable_selection',
+                            multi = True,
+                            style = {
+                                'width':'95%',
+                                'margin-left':'2.5%',
+                                'margin-bottom':'5%'
+                                }),
+
+                        html.Label("Preselected variables",
+                            className = 'text-left ms-4 mt-0'),
+                        dcc.Dropdown(options = [],
+                            value = '',
+                            id = 'our_variable_selection',
+                            style = {
+                                'width':'95%',
+                                'margin-left':'2.5%',
+                                'margin-bottom':'5%'
+                                }),
+
+                        dcc.RadioItems(
+                            id = 'EPGen_Radiobutton_VariableSelection',
+                            labelStyle = {'display': 'block'},
+                            value = '',
+                            options = [
+                                {'label' : " Preselected Variables", 'value' : 1},
+                                {'label' : " Custom Variable Selection", 'value' : 2}
+                                ]  ,
+                            className = 'ps-4 p-3',
+                            style = {
+                                'margin-left':'2.5%',
+                                'margin-bottom':'5%'
+                                }
+                            ),
+
+                        dcc.RadioItems(
+                            id = 'EPGen_Radiobutton_EditSchedules',
+                            labelStyle = {'display': 'block'},
+                            value = '',
+                            options = [
+                                {'label' : " Edit Schedules", 'value' : 1},
+                                {'label' : " Keep Original Schedules", 'value' : 2}
+                                ]  ,
+                            className = 'ps-4 p-3',
+                            style = {
+                                'margin-left':'2.5%',
+                                'margin-bottom':'5%'
+                                }
+                            ),
+
+                            ],id = 'generate_variables',
+                            hidden = True,
+                            style = {
+                                'borderWidth': '1px',
+                                'borderStyle': 'solid',
+                                'borderRadius': '5px',
+                            },),
+
+                    html.Br(),
+
+                    # Box 1 C2
+                    html.Div([
+                        html.H3("Edit Schedules",
+                            className = 'text-center mt-1'),
+                        html.H6("People",
+                            className = 'ms-4'),
+                        dcc.Dropdown(options = [],
+                            value = '',
+                            id = 'people_schedules',
+                            style = {
+                                'width':'95%',
+                                'margin-left':'2.5%',
+                                'margin-bottom':'5%'
+                                }),
+
+                        html.H6("Equipment",
+                            className = 'ms-4'),
+                        dcc.Dropdown(options = [],
+                            value = '',
+                            id = 'equip_schedules',
+                            style = {
+                                'width':'95%',
+                                'margin-left':'2.5%',
+                                'margin-bottom':'5%'
+                                }),
+
+                        html.H6("Light",
+                            className = 'ms-4'),
+                        dcc.Dropdown(options = [],
+                            value = '',
+                            id = 'light_schedules',
+                            style = {
+                                'width':'95%',
+                                'margin-left':'2.5%',
+                                'margin-bottom':'5%'
+                                }),
+
+                        html.H6("Heating",
+                            className = 'ms-4'),
+                        dcc.Dropdown(options = [],
+                            value = '',
+                            id = 'heating_schedules',
+                            style = {
+                                'width':'95%',
+                                'margin-left':'2.5%',
+                                'margin-bottom':'5%'
+                                }),
+
+                        html.H6("Cooling",
+                            className = 'ms-4'),
+                        dcc.Dropdown(options = [],
+                            value = '',
+                            id = 'cooling_schedules',
+                            style = {
+                                'width':'95%',
+                                'margin-left':'2.5%',
+                                'margin-bottom':'5%'
+                                }),
+
+                        html.H6("Temperature",
+                            className = 'ms-4'),
+                        dcc.Dropdown(options = [],
+                            value = '',
+                            id = 'temperature_schedules',
+                            style = {
+                                'width':'95%',
+                                'margin-left':'2.5%',
+                                'margin-bottom':'5%'
+                                }),
+
+                        html.H6("Paste your custom schedule",
+                            className = 'ms-4'),
+                        dcc.Textarea(
+                            id='schedule_input',
+                            value='',
+                            style={'width': '90%',
+                                   'margin-left':'5%',
+                                   'height': 100},
+                        ),
+
+                        html.Button('Select single schedule',
+                            id = 'update_selected_schedule',
+                            className = "btn btn-secondary btn-lg col-12",
+                            style = {
+                                'width':'90%',
+                                'margin':'5%'
+                                },),
+
+                        html.Button('Done Updating Schedule',
+                            id = 'done_updating_schedule',
+                            className = "btn btn-secondary btn-lg col-12",
+                            style = {
+                                'width':'90%',
+                                'margin':'5%'
+                                },),
+
+                        ],id = 'schedules',
+                        hidden = True,
+                        style = {
+                            'borderWidth': '1px',
+                            'borderStyle': 'solid',
+                            'borderRadius': '5px',
+                            },),
+
+                    html.Br(),
+
+                    # Box 3 C2
+                    html.Div([
+
+                        dcc.Checklist([
+                            {'label' : " Simulation Variables", 'value' : 1},
+                            {'label' : " EIO", 'value' : 2}
+                            ],
+                            '',
+                            id = 'download_selection',
+                            style = {
+                                'width':'95%',
+                                'margin':'5%',
+                            }),
+
+                        ],id = 'download_variables',
+                        hidden = True,
+                        style = {
+                            'borderWidth': '1px',
+                            'borderStyle': 'solid',
+                            'borderRadius': '5px',
+                            },),
+
+                    html.Br(),
+
+                            ], xs = 12, sm = 12, md = 4, lg = 4, xl = 4,),
+
+                # Column 3
+                dbc.Col([
+
+                    html.Br(),
+
+                    # Box 1 C3
+                    html.Div([
+
+                        # Building type selection
+                        html.Label("Building Type",
+                            className = 'text-left ms-4 mt-1'),
+                        dcc.Dropdown(['Commercial_Prototypes','Manufactured_Prototypes','Residential_Prototypes'], '',
+                            id='buildingType_selection',
+                            style = {
+                                'width': '95%',
+                                'margin-left': '2.5%',   
+                                }),
+
+                        # Sub Level 1
+                        html.Label("Sub Level 1",
+                            className = 'text-left ms-4'),
+                        dcc.Dropdown(options = [],
+                            value = None,
+                            id = 'level_1',
+                            style = {
+                                'width': '95%',
+                                'margin-left': '2.5%',   
+                                }),
+
+                        # Sub Level 2
+                        html.Label("Sub Level 2",
+                            className = 'text-left ms-4'),
+                        dcc.Dropdown(options = [],
+                            value = None,
+                            id='level_2',
+                            style = {
+                                'width': '95%',
+                                'margin-left': '2.5%',   
+                                }),
+
+                        # Sub Level 3
+                        html.Label("Sub Level 3",
+                            className = 'text-left ms-4'),
+                        dcc.Dropdown(options = [],
+                            value = None,
+                            id = 'level_3',
+                            style = {
+                                'width': '95%',
+                                'margin-left': '2.5%',   
+                                }),
+
+                        # Location selection
+                        html.Label("Location",
+                            className = 'text-left ms-4'),
+                        dcc.Dropdown(options = [],
+                            value = None,
+                            id = 'location_selection',
+                            style = {
+                                'width': '95%',
+                                'margin-left': '2.5%',
+                                'margin-bottom': '3%',   
+                                },),
+
+                        ],id = 'building_details',
+                        hidden = True,
+                        style = {
+                            'borderWidth': '1px',
+                            'borderStyle': 'solid',
+                            'borderRadius': '5px',
+                            }),
+
+                    html.Br(),
+
+                    # Box 2 C3
+                    html.Div([
+
+                        html.Button('Generate Data',
+                            id = 'EPGen_Button_GenerateData',
+                            className = "btn btn-secondary btn-lg col-12",
+                            style = {
+                                'width':'90%',
+                                'margin':'5%'
+                                },),
+
+                        html.Button('Upload to Database',
+                            id = 'EPGen_Button_UploadtoDb',
+                            className = "btn btn-secondary btn-lg col-12",
+                            style = {
+                                'width':'90%',
+                                'margin':'5%'
+                                },),
+
+                        html.Button('Download Files',
+                            id = 'EPGen_Button_DownloadFiles',
+                            className = "btn btn-primary btn-lg col-12",
+                            style = {
+                                'width':'90%',
+                                'margin-left':'5%',
+                                'margin-bottom':'5%'
+                                },),
+                        dcc.Download(id = 'EPGen_Download_DownloadFiles'),
+
+                        ],id = 'final_download',
+                        hidden = True,
+                        style = {
+                            'borderWidth': '1px',
+                            'borderStyle': 'solid',
+                            'borderRadius': '5px',
+                            },),
+
+                    ], xs = 12, sm = 12, md = 4, lg = 4, xl = 4,),
+
+                html.Button('End Session',
+                    id = 'EPGen_Button_EndSession',
+                    className = "btn btn-primary btn-lg col-12",
+                    style = {
+                        'width':'98%',
+                        },),
+
+                ], justify = "center", align = "center"),
+
+]
+
 def EPGen_Radiobutton_DatabaseSelection_Interaction_Function(folder_name, database_selection):
     global SIMULATION_FOLDERPATH
     global SIMULATION_FOLDERNAME

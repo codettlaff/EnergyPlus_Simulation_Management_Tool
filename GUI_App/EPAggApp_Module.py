@@ -69,6 +69,240 @@ OUR_VARIABLE_LIST = ['Schedule_Value_',
                         'System_Node_Temperature_',
                         'System_Node_Mass_Flow_Rate_']
 
+tab_layout =[
+    
+            dbc.Row([
+
+                # First Column
+                dbc.Col([
+
+                    # Input selection
+                    dcc.RadioItems(
+                    id = 'EPAgg_RadioButton_InputSelection',
+                    labelStyle = {'display': 'block'},
+                    options = [
+                        {'label' : " Continue Session", 'value' : 1},
+                        {'label' : " Upload Files", 'value' : 2}
+                        ]  ,
+                    value = '',
+                    className = 'ps-4 p-3',
+                    style = {
+                        'width': '100%',
+                        'borderWidth': '1px',
+                        'borderStyle': 'solid',
+                        'borderRadius': '5px',
+                        }
+                    ),
+
+                    html.Br(),
+
+                    # Box 2 C1
+                    html.Div([
+
+                        # Upload Pickled Variable file
+                        dcc.Upload(['Upload Pickled Variable file'],
+                            className = 'center',
+                            id = 'EPAgg_Upload_Pickle',
+                            style = {
+                                'width': '90%',
+                                'height': '40px',
+                                'lineHeight': '40px',
+                                'borderWidth': '1px',
+                                'borderStyle': 'dashed',
+                                'borderRadius': '5px',
+                                'textAlign': 'center',
+                                'margin-left': '5%',
+                                'margin-top': '5%'
+                                }),
+
+                        # Upload EIO file
+                        dcc.Upload(['Upload EIO file'],
+                            className = 'center',
+                            id = 'EPAgg_Upload_EIO',
+                            style = {
+                                'width': '90%',
+                                'height': '40px',
+                                'lineHeight': '40px',
+                                'borderWidth': '1px',
+                                'borderStyle': 'dashed',
+                                'borderRadius': '5px',
+                                'textAlign': 'center',
+                                'margin': '5%',
+                                }),
+
+                        ],id = 'EPAgg_Div_UploadFiles',
+                        hidden = True,
+                        style = {
+                            'borderWidth': '1px',
+                            'borderStyle': 'solid',
+                            'borderRadius': '5px',
+                            #'display':'none'
+                            }),
+
+                    html.Br(),
+
+                    # Aggregation Variables
+                    html.Div([
+                        dcc.RadioItems(
+                            id = 'EPAgg_RadioButton_AggregationVariables',
+                            labelStyle = {'display': 'block'},
+                            options = [
+                                {'label' : " Preselected Variables", 'value' : 1},
+                                {'label' : " Custom Variables", 'value' : 2}
+                                ]  ,
+                            value = '',
+                            className = 'ps-4 p-3',
+                        ),
+
+                        html.Label("Preselected Variables",
+                            className = 'text-left ms-4'),
+                        dcc.Dropdown(['Var1','Var2','Var3'], '',
+                            id='EPAgg_DropDown_PreselectedVariables',
+                            style = {
+                                'width': '95%',
+                                'margin-left': '2.5%',
+                                'margin-bottom': '2.5%'
+                                }),
+
+                        html.Label("Select custom variables",
+                            className = 'text-left ms-4'),
+                        dcc.Dropdown(['Var1','Var2','Var3'], '',
+                            id='EPAgg_DropDown_CustomVariables',
+                            multi = True,
+                            style = {
+                                'width': '95%',
+                                'margin-left': '2.5%',
+                                'margin-bottom': '2.5%'
+                                }),
+
+                    ],id = 'EPAgg_Div_AggregationVariables',
+                    hidden = True,
+                    style = {
+                        'borderWidth': '1px',
+                        'borderStyle': 'solid',
+                        'borderRadius': '5px',
+                        },),
+
+                    html.Br(),
+
+                ], xs = 12, sm = 12, md = 6, lg = 6, xl = 6,),
+
+
+                # Second Column
+                dbc.Col([
+
+                    # Box 1 C2
+                    html.Div([
+
+                        # Zone selection
+                        html.Label("Zone Lists",
+                            className = 'text-left ms-4 mt-1'),
+                        dcc.Dropdown(['Zone list 1','Zone list 2','Zone list 3'], '',
+                            id='EPAgg_DropDown_ZoneList',
+                            style = {
+                                'width': '95%',
+                                'margin-left': '2.5%',   
+                                }),
+
+                        dcc.RadioItems(
+                            id = 'EPAgg_RadioButton_AggregateTo',
+                            labelStyle = {'display': 'block'},
+                            options = [
+                                {'label' : " Aggregate to one", 'value' : 1},
+                                {'label' : " Custom Aggregation", 'value' : 2}
+                                ]  ,
+                            value = '',
+                            className = 'ps-4 p-3',
+                        ),
+
+                        html.Label("Input Custom Aggregation Zone List (No spaces, only \",\" and \";\" for seperators)",
+                            className = 'text-left ms-4 mt-1'),
+                        dcc.Textarea(
+                            id='EPAgg_DropDown_CustomAggregationZoneList',
+                            value='',
+                            style={'width': '90%',
+                                   'margin-left':'5%',
+                                   'height': 30},
+                        ),
+
+                        # Type of Aggregation
+                        html.Label("Type of Aggregation",
+                            className = 'text-left ms-4 mt-1'),
+                        dcc.Dropdown([
+                            {'label' : " Average", 'value' : 1},
+                            {'label' : " Weighted Floor Area Average", 'value' : 2},
+                            {'label' : " Weighted Volume Average", 'value' : 3},
+                            ], '',
+                            id='EPAgg_DropDown_TypeOfAggregation',
+                            style = {
+                                'width': '95%',
+                                'margin-left': '2.5%', 
+                                'margin-bottom': '2.5%'  
+                                }),
+
+                    ],id = 'EPAgg_Div_AggregationDetails',
+                    hidden = True,
+                    style = {
+                        'borderWidth': '1px',
+                        'borderStyle': 'solid',
+                        'borderRadius': '5px',
+                        },),
+
+                    html.Br(),
+
+                    # Box 2 C2
+                    html.Div([
+
+                        html.Button('Aggregate',
+                            id = 'EPAgg_Button_Aggregate',
+                            className = "btn btn-secondary btn-lg col-12",
+                            style = {
+                                'width':'90%',
+                                'margin':'5%'
+                                },),
+
+                        html.Button('Upload to Database',
+                            id = 'EPAgg_Button_UploadtoDb',
+                            className = "btn btn-secondary btn-lg col-12",
+                            style = {
+                                'width':'90%',
+                                'margin':'5%'
+                                },),
+
+                        html.Button('Download',
+                            id = 'EPAgg_Button_Download',
+                            className = "btn btn-primary btn-lg col-12",
+                            style = {
+                                'width':'90%',
+                                'margin-left':'5%',
+                                'margin-bottom':'5%'
+                                },),
+                        dcc.Download(id = 'EPAgg_Download_DownloadFiles'),
+
+                    ],id = 'EPAgg_Div_FinalDownload',
+                    hidden = True,
+                    style = {
+                        'borderWidth': '1px',
+                        'borderStyle': 'solid',
+                        'borderRadius': '5px',
+                        },),
+
+                    html.Br(),
+
+                ], xs = 12, sm = 12, md = 6, lg = 6, xl = 6,),
+
+                html.Button('End Session',
+                    id = 'Button_es_aggregation',
+                    className = "btn btn-primary btn-lg col-12",
+                    style = {
+                        'width':'98%',
+                        'margin-left':'1%'
+                        },),
+
+                ])
+            
+]
+
 def EPAgg_RadioButton_InputSelection_Interaction_Function(value):
 
     if value == 1:
