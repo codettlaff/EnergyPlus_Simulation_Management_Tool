@@ -679,6 +679,15 @@ def on_create_database(n_clicks, username, password, port, dbname):
     print(f"Creating database {dbname}\n Username: {username}\n Password: {password}\n Port: {port}")
     conn = PSQL.create_database(username, password, port, dbname)
 
+@app.callback(
+    Output('PSQL_Dropdown_ExistDbList', 'options'),
+    Input('PSQL_RadioButton_CreateSelectDatabase', 'value'),
+    prevent_initial_call=True
+)
+def populate_existing_db_dropdown(selection):
+    dropdown_options = PSQL.populate_existing_db_dropdown(selection)
+    return dropdown_options
+
 # Running the App
 if __name__ == '__main__':
     app.run(port=4050)

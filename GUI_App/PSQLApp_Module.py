@@ -328,3 +328,18 @@ def create_database(username, password, port, dbname):
     df.to_csv(DATABASES_CSV_FILEPATH, index=False)
 
     return conn
+
+def populate_existing_db_dropdown(selection):
+    # Only update the dropdown if "Select Database" was chosen (value = 2)
+    if selection != 2:
+        return []
+
+    # Load database names from CSV
+    if not os.path.isfile(DATABASES_CSV_FILEPATH):
+        return []
+
+    df = pd.read_csv(DATABASES_CSV_FILEPATH)
+    if "database_name" not in df.columns:
+        return []
+    dbnames = df["database_name"].dropna().unique().tolist()
+    return [{"label": name, "value": name} for name in dbnames]
