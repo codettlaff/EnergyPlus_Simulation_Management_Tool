@@ -5,6 +5,7 @@ Created on Mon Jun 09 10:42:28 2025
 """
 
 # Importing Required Modules
+import os
 from datetime import date
 from dash import Dash, dcc, html, Input, Output, State, dash_table
 import dash_daq as daq
@@ -12,6 +13,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import dash_bootstrap_components as dbc
 
+DATABASES_CSV_FILEPATH = os.path.join(os.path.dirname('__file__'), 'databases.csv')
 
 # Layout
 tab_layout = [
@@ -290,3 +292,12 @@ def PSQL_Radiobutton_CreateSelectDatabase_Interaction_Function(data_source):
     # Default to (True, True) if data_source is not 1 or 2
     return options.get(data_source, (True, True))
 
+# Casey's Code
+
+def create_database(username, password, port, dbname):
+    """
+    1. call create_database function in database_creator script, which returns a conn object. if this was done sucessfully, continue.
+    1. if databases csv file does not exist, create it (have global variable DATABASES_CSV_FILEPATH)
+    2. add current database as row in databases csv
+    """
+    pass

@@ -6,13 +6,16 @@ import psycopg2
 # Casey, OfficeLarge - LabPC
 # casey, OfficeLarge - Laptop
 
-def create_database():
-    conn = psycopg2.connect(dbname="postgres", user="casey", password="OfficeLarge", host="localhost")
+# conn = psycopg2.connect(dbname="postgres", user="casey", password="OfficeLarge", host="localhost")
+
+def create_database(username="user", password="password", port="localhost", dbname="New Database"):
+    conn = psycopg2.connect(dbname=dbname, user=username, password=password, host=port)
     conn.autocommit = True
     cursor = conn.cursor()
     cursor.execute("CREATE DATABASE Buildings;")
     cursor.close()
     conn.close()
+    return conn
     
 def get_create_table_query(tablename):
     
