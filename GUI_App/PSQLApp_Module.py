@@ -6,12 +6,17 @@ Created on Mon Jun 09 10:42:28 2025
 
 # Importing Required Modules
 import os
+import sys
 from datetime import date
 from dash import Dash, dcc, html, Input, Output, State, dash_table
 import dash_daq as daq
 import plotly.express as px
 import plotly.graph_objects as go
 import dash_bootstrap_components as dbc
+
+database_creator_script_dir = os.path.join(os.path.dirname(__file__), '..', 'Database')
+sys.path.append(database_creator_script_dir)
+import Database_Creator
 
 DATABASES_CSV_FILEPATH = os.path.join(os.path.dirname('__file__'), 'databases.csv')
 
@@ -300,4 +305,9 @@ def create_database(username, password, port, dbname):
     1. if databases csv file does not exist, create it (have global variable DATABASES_CSV_FILEPATH)
     2. add current database as row in databases csv
     """
-    pass
+
+    conn = Database_Creator.create_database(username, password, port, dbname)
+    # print("Database Created")
+    #Database_Creator.delete_database(conn, dbname)
+
+    return conn

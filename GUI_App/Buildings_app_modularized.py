@@ -677,6 +677,7 @@ def PSQL_Radiobutton_CreateSelectDatabase_Interaction(selection):
 )
 def on_create_database(n_clicks, username, password, port, dbname):
     print(f"Creating database {dbname}\n Username: {username}\n Password: {password}\n Port: {port}")
+    conn = PSQL.create_database(username, password, port, dbname)
 
 # Running the App
 if __name__ == '__main__':

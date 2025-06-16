@@ -9,13 +9,24 @@ import psycopg2
 # conn = psycopg2.connect(dbname="postgres", user="casey", password="OfficeLarge", host="localhost")
 
 def create_database(username="user", password="password", port="localhost", dbname="New Database"):
-    conn = psycopg2.connect(dbname=dbname, user=username, password=password, host=port)
+    conn = psycopg2.connect(dbname="postgres", user=username, password=password, host=port)
     conn.autocommit = True
     cursor = conn.cursor()
-    cursor.execute("CREATE DATABASE Buildings;")
+    try:
+        cursor.execute(f"CREATE DATABASE dbname;")
+    except Exception as e:
+        print(e)
     cursor.close()
-    conn.close()
+    conn.autocommit = False
     return conn
+
+def delete_database(conn, dbname):
+
+    conn.autocommit = True
+    cur = conn.cursor()
+    cur.execute(f"DROP DATABASE IF EXISTS {dbname};")
+    cur.close()
+    conn.autocommit = False
     
 def get_create_table_query(tablename):
     
