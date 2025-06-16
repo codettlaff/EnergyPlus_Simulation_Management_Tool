@@ -7,6 +7,7 @@ Created on Mon Jun 09 10:42:28 2025
 # Importing Required Modules
 import os
 import sys
+import pandas as pd
 from datetime import date
 from dash import Dash, dcc, html, Input, Output, State, dash_table
 import dash_daq as daq
@@ -307,7 +308,19 @@ def create_database(username, password, port, dbname):
     """
 
     conn = Database_Creator.create_database(username, password, port, dbname)
-    # print("Database Created")
-    #Database_Creator.delete_database(conn, dbname)
+
+    if not os.path.isfile(DATABASES_CSV_FILEPATH):
+        pd.DataFrame(columns=["username", "password", "port", "database_name"]).to_csv(DATABASES_CSV_FILEPATH, index=False)
+
+    new_record = {
+        "username": username,
+        "password": password,
+        "port": port,
+        "database_name": dbname
+    }
+
+    df = pd.read_csv(DATABASES_CSV_FILEPATH)
+    df = pd.concat([df, pd.DataFrame([new_record])], ignore_index=True)
+    df.to_csv(DATABASES_CSV_FILEPATH, index=False)
 
     return conn
