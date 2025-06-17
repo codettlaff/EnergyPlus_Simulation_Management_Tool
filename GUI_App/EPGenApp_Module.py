@@ -6,6 +6,7 @@ Created on Tue Jan 30 15:32:25 2024
 
 # Importing Required Modules
 import shutil
+import sys
 import os
 import re
 import datetime
@@ -23,6 +24,10 @@ import dash_bootstrap_components as dbc
 
 # Importing User-Defined Modules
 import MyDashApp_Module as AppFuncs
+
+database_creator_script_dir = os.path.join(os.path.dirname(__file__), '..', 'Data_Generation')
+sys.path.append(database_creator_script_dir)
+import EP_DataGenerator_Script_v2_20250512 as EP_Gen
 
 UPLOAD_DIRECTORY = os.path.join(os.getcwd(), "EP_APP_Uploads")
 UPLOAD_DIRECTORY_AGG_PICKLE = os.path.join(UPLOAD_DIRECTORY, "Pickle_Upload")
@@ -835,96 +840,22 @@ def EPGen_Dropdown_SubLevel2_Interaction_Function(buildingType_selection, level_
 
 def EPGen_Button_GenerateVariables_Interaction_Function(database_selection, buildingType_selection, level_1, level_2, level_3, location_selection, n_clicks):
 
-    # Creating idf_weather_folder
-    idf_weather_folder_path = os.path.join(SIMULATION_FOLDERPATH, "idf_weather_folder")
-    if os.path.isdir(idf_weather_folder_path):
-        z = 0
-    else:
-        os.mkdir(idf_weather_folder_path)
+    # Selecting IDF and Weather Files from Provided Dataset of PNNL Prototypes
+    if database_selection == 1: # Our Database
+        idf_filepath = os.path.join(DATA_DIRECTORY, buildingType_selection, level_1, level_2, level_3)
+        weather_filepath = os.path.join(DATA_DIRECTORY, "TMY3_WeatherFiles_" + buildingType_selection.split('_')[0], location_selection)
 
-    # Copying files to idf_weather_folder
-    if database_selection == 1:
-        idf_original_path = os.path.join(DATA_DIRECTORY, buildingType_selection, level_1, level_2, level_3)
-        shutil.copy(idf_original_path, idf_weather_folder_path)
-        if buildingType_selection == 'Commercial_Prototypes':
-            Weather_original_path = os.path.join(DATA_DIRECTORY, "TMY3_WeatherFiles_Commercial", location_selection)
-        elif buildingType_selection == 'Manufactured_Prototypes':
-            Weather_original_path = os.path.join(DATA_DIRECTORY, "TMY3_WeatherFiles_Manufactured", location_selection)
-        elif buildingType_selection == 'Residential_Prototypes':
-            Weather_original_path = os.path.join(DATA_DIRECTORY, "TMY3_WeatherFiles_Residential", location_selection)
-        shutil.copy(Weather_original_path, idf_weather_folder_path)
-
+    # Selecting Own IDF and Weather Files
     elif database_selection == 2:
         for item in os.listdir(UPLOAD_DIRECTORY):
-            if os.path.isfile(os.path.join(UPLOAD_DIRECTORY,item)):
-                shutil.copy(os.path.join(UPLOAD_DIRECTORY,item), idf_weather_folder_path)
+            item_filepath = os.path.join(UPLOAD_DIRECTORY, item)
+            if os.path.isfile(item_filepath):
+                if item.endswith('.idf'): idf_filepath = item_filepath
+                if item.endswith('.epw'): weather_filepath = item_filepath
 
-    # Appending Special.idf to selected idf file
-    for file in os.listdir(idf_weather_folder_path):
-        if file.endswith(".idf"):
-            file1_path = os.path.join(idf_weather_folder_path, file)
-            file2_path = os.path.join(DATA_DIRECTORY, "Special.idf")
-            with open(file2_path, 'r') as file2:
-                with open(file1_path, 'a') as file1:
-                    shutil.copyfileobj(file2, file1)
+    your_variable_selection = EP_Gen.generate_variables(idf_filepath, weather_filepath)
 
-    # Creating inirial_run_folder
-    initial_run_folder_path = os.path.join(SIMULATION_FOLDERPATH, 'Initial_run_folder')
-    if os.path.isdir(initial_run_folder_path):
-        z = 0
-    else:
-        os.mkdir(initial_run_folder_path)
-
-    # Copying updated idf and epw to initial run folder
-    for item in os.listdir(idf_weather_folder_path):
-        shutil.copy(os.path.join(idf_weather_folder_path,item), initial_run_folder_path)
-
-    # Finding directory of .idf and .epw files
-    for file in os.listdir(initial_run_folder_path):
-        if file.endswith(".idf"):
-            Temporary_IDF_FilePath = os.path.join(initial_run_folder_path, file)
-
-    for file in os.listdir(initial_run_folder_path):
-        if file.endswith(".epw"):
-            Temporary_Weather_FilePath = os.path.join(initial_run_folder_path, file)
-
-    # This section is for initial run to get .eio file and variables
-    Initial_IDF_Run = op.simulate(Temporary_IDF_FilePath, Temporary_Weather_FilePath, base_dir_path = initial_run_folder_path)
-
-    # Collecting Simulation Variable List
-    with open(os.path.join(initial_run_folder_path, 'eplusout.rdd')) as f:
-        lines = f.readlines()
-
-    Simulation_VariableNames = []
-
-    Counter_Lines = 0
-
-    for line in lines:
-        if (Counter_Lines > 1):
-            split_line = line.split(',')
-            Simulation_VariableNames.append(split_line[2].split('[')[0])
-
-        Counter_Lines = Counter_Lines + 1
-        # Simulation_VariableNames.append(split_line[2])
-        # split_line_unit = split_line[3].split('[')[1]
-        # split_line_unit = split_line_unit[0].split(']')[0]
-        # Simulation_VariableNames.append(split_line_unit)
-
-    Simulation_VariableNames.sort()
-
-    modified_OUR_VARIABLE_LIST = []
-    for item in OUR_VARIABLE_LIST:
-        # Remove the last underscore
-        item = item.rstrip('_')
-        # Replace remaining underscores with spaces
-        item = item.replace('_', ' ')
-        modified_OUR_VARIABLE_LIST.append(item)
-
-    modified_OUR_VARIABLE_LIST.sort()
-
-    your_variable_selection = Simulation_VariableNames
-    our_variable_selection = modified_OUR_VARIABLE_LIST
-    return your_variable_selection, our_variable_selection
+    return your_variable_selection, OUR_VARIABLE_LIST
 
 def EPGen_Dropdown_EditSchedule_Interaction_Function(people_schedules, equip_schedules, light_schedules, heating_schedules, cooling_schedules, temperature_schedules):
     if (not (people_schedules is None)) or (not (equip_schedules is None)) or (not (light_schedules is None)) or (not (heating_schedules is None)) or (not (cooling_schedules is None)) or (not (temperature_schedules is None)):
