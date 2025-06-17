@@ -9,8 +9,10 @@ import time
 
 # conn = psycopg2.connect(dbname="postgres", user="casey", password="OfficeLarge", host="localhost")
 
-def create_database(username="user", password="password", port="localhost", database_name="New Database"):
-    conn = psycopg2.connect(dbname="postgres", user=username, password=password, host=port)
+def create_database(username="user", password="password", host="localhost", database_name="New Database"):
+
+    if host == "localhost": conn = psycopg2.connect(dbname="postgres", user=username, password=password, host=host)
+    else: conn = psycopg2.connect(dbname="postgres", user=username, password=password, port=host)
     conn.autocommit = True
     cursor = conn.cursor()
     try:
@@ -21,7 +23,8 @@ def create_database(username="user", password="password", port="localhost", data
     conn.close()
 
     time.sleep(0.5)
-    conn = psycopg2.connect(dbname=database_name, user=username, password=password, host=port)
+    if host == "localhost": conn = psycopg2.connect(dbname=database_name, user=username, password=password, host=host)
+    else: conn = psycopg2.connect(dbname=database_name, user=username, password=password, port=host)
     return conn
 
 def delete_database(conn, dbname):
