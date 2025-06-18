@@ -42,41 +42,42 @@ DATA_IDF_FILEPATH = None
 DATA_WEATHER_FILEPATH = None
 
 YOUR_VARIABLE_LIST = []
-OUR_VARIABLE_LIST = ['Schedule_Value_',
-                        'Facility_Total_HVAC_Electric_Demand_Power_',
-                        'Site_Diffuse_Solar_Radiation_Rate_per_Area_',
-                        'Site_Direct_Solar_Radiation_Rate_per_Area_',
-                        'Site_Outdoor_Air_Drybulb_Temperature_',
-                        'Site_Solar_Altitude_Angle_',
-                        'Surface_Inside_Face_Internal_Gains_Radiation_Heat_Gain_Rate_',
-                        'Surface_Inside_Face_Lights_Radiation_Heat_Gain_Rate_',
-                        'Surface_Inside_Face_Solar_Radiation_Heat_Gain_Rate_',
-                        'Surface_Inside_Face_Temperature_',
-                        'Zone_Windows_Total_Transmitted_Solar_Radiation_Rate_',
-                        'Zone_Air_Temperature_',
-                        'Zone_People_Convective_Heating_Rate_',
-                        'Zone_Lights_Convective_Heating_Rate_',
-                        'Zone_Electric_Equipment_Convective_Heating_Rate_',
-                        'Zone_Gas_Equipment_Convective_Heating_Rate_',
-                        'Zone_Other_Equipment_Convective_Heating_Rate_',
-                        'Zone_Hot_Water_Equipment_Convective_Heating_Rate_',
-                        'Zone_Steam_Equipment_Convective_Heating_Rate_',
-                        'Zone_People_Radiant_Heating_Rate_',
-                        'Zone_Lights_Radiant_Heating_Rate_',
-                        'Zone_Electric_Equipment_Radiant_Heating_Rate_',
-                        'Zone_Gas_Equipment_Radiant_Heating_Rate_',
-                        'Zone_Other_Equipment_Radiant_Heating_Rate_',
-                        'Zone_Hot_Water_Equipment_Radiant_Heating_Rate_',
-                        'Zone_Steam_Equipment_Radiant_Heating_Rate_',
-                        'Zone_Lights_Visible_Radiation_Heating_Rate_',
-                        'Zone_Total_Internal_Convective_Heating_Rate_',
-                        'Zone_Total_Internal_Radiant_Heating_Rate_',
-                        'Zone_Total_Internal_Total_Heating_Rate_',
-                        'Zone_Total_Internal_Visible_Radiation_Heating_Rate_',
-                        'Zone_Air_System_Sensible_Cooling_Rate_',
-                        'Zone_Air_System_Sensible_Heating_Rate_',
-                        'System_Node_Temperature_',
-                        'System_Node_Mass_Flow_Rate_']
+OUR_VARIABLE_LIST = ['Schedule Value',
+                                  'Facility Total HVAC Electric Demand Power',
+                                  'Site Diffuse Solar Radiation Rate per Area',
+                                  'Site Direct Solar Radiation Rate per Area',
+                                  'Site Outdoor Air Drybulb Temperature',
+                                  'Site Solar Altitude Angle',
+                                  'Surface Inside Face Internal Gains Radiation Heat Gain Rate',
+                                  'Surface Inside Face Lights Radiation Heat Gain Rate',
+                                  'Surface Inside Face Solar Radiation Heat Gain Rate',
+                                  'Surface Inside Face Temperature',
+                                  'Zone Windows Total Transmitted Solar Radiation Rate',
+                                  'Zone Air Temperature',
+                                  'Zone People Convective Heating Rate',
+                                  'Zone Lights Convective Heating Rate',
+                                  'Zone Electric Equipment Convective Heating Rate',
+                                  'Zone Gas Equipment Convective Heating Rate',
+                                  'Zone Other Equipment Convective Heating Rate',
+                                  'Zone Hot Water Equipment Convective Heating Rate',
+                                  'Zone Steam Equipment Convective Heating Rate',
+                                  'Zone People Radiant Heating Rate',
+                                  'Zone Lights Radiant Heating Rate',
+                                  'Zone Electric Equipment Radiant Heating Rate',
+                                  'Zone Gas Equipment Radiant Heating Rate',
+                                  'Zone Other Equipment Radiant Heating Rate',
+                                  'Zone Hot Water Equipment Radiant Heating Rate',
+                                  'Zone Steam Equipment Radiant Heating Rate',
+                                  'Zone Lights Visible Radiation Heating Rate',
+                                  'Zone Total Internal Convective Heating Rate',
+                                  'Zone Total Internal Radiant Heating Rate',
+                                  'Zone Total Internal Total Heating Rate',
+                                  'Zone Total Internal Visible Radiation Heating Rate',
+                                  'Zone Air System Sensible Cooling Rate',
+                                  'Zone Air System Sensible Heating Rate',
+                                  'System Node Temperature',
+                                  'System Node Mass Flow Rate']
+SIMULATION_VARIABLE_LIST = []
 
 # Tab Layout
 tab_layout=[
@@ -1016,7 +1017,7 @@ def EPGen_Checkbox_DownloadSelection_Interaction_Function(download_selection):
 
     return final_download
 
-def EPGen_Button_GenerateData_Interaction_Function(download_selection, start_date, end_date, Sim_TimeStep, Sim_OutputVariable_ReportingFrequency, Var_selection, your_vars, n_clicks):
+def EPGen_Button_GenerateData_Interaction_Function(download_selection, start_date, end_date, Sim_TimeStep, Sim_OutputVariable_ReportingFrequency, n_clicks):
 
     print("generating_data")
     simulation_settings = {
@@ -1032,7 +1033,7 @@ def EPGen_Button_GenerateData_Interaction_Function(download_selection, start_dat
 
     idf_filepath = DATA_IDF_FILEPATH
     weather_filepath = DATA_WEATHER_FILEPATH
-    results_folderpath = EP_Gen.simulate_variables(DATA_IDF_FILEPATH, DATA_WEATHER_FILEPATH, variable_names=Var_selection, simulation_settings=simulation_settings)
+    results_folderpath = EP_Gen.simulate_variables(DATA_IDF_FILEPATH, DATA_WEATHER_FILEPATH, variable_names=SIMULATION_VARIABLE_LIST, simulation_settings=simulation_settings)
     print(results_folderpath)
 
 """

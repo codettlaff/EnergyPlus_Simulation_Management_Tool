@@ -37,7 +37,7 @@ UPLOAD_DIRECTORY_AGG_EIO = os.path.join(UPLOAD_DIRECTORY, "EIO_Upload")
 UPLOAD_DIRECTORY_VIS = os.path.join(UPLOAD_DIRECTORY, "Visualization")
 WORKSPACE_DIRECTORY = os.path.join(os.getcwd(), "EP_APP_Workspace")
 
-TEMPORARY_FOLDERPATH = os.path.join(THIS_SCRIPT_DIR, "..", 'Data_Generation', 'Temporary Folder')
+TEMPORARY_FOLDERPATH = os.path.join(THIS_SCRIPT_DIR, "..", 'Data_Generation', 'Temporary_Folder')
 
 SIMULATION_FOLDERNAME = 'abc123'
 

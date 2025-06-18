@@ -44,10 +44,10 @@ def simulate_building(IDF_FilePath, Weather_FilePath, Special_IDFFile_Path, Simu
     Weather_FileName = os.path.basename(Weather_FilePath)
     
     # =============================================================================
-    # Copying IDF and Weather Files to Temporary Folder
+    # Copying IDF and Weather Files to Temporary_Folder
     # =============================================================================
 
-    # Getting Temporary Folder Path
+    # Getting Temporary_Folder Path
     Temporary_FolderPath = r"D:\Building_Modeling_Code\Results\TemporaryFolder"
     
     # Getting Temporary IDF/Weather File Paths
@@ -437,10 +437,10 @@ def simulate_building(IDF_FilePath, Weather_FilePath, Special_IDFFile_Path, Simu
     pickle.dump(Eio_OutputFile_Dict, open(os.path.join(Sim_IDFProcessedData_FolderPath,"Eio_OutputFile.pickle"), "wb"))
 
     # =============================================================================
-    # Deleting all files from Temporary Folder
+    # Deleting all files from Temporary_Folder
     # =============================================================================    
 
-    # Deleting all files and sub-folders in Temporary Folder
+    # Deleting all files and sub-folders in Temporary_Folder
     for files in os.listdir(Temporary_FolderPath):
                     
         path = os.path.join(Temporary_FolderPath, files)

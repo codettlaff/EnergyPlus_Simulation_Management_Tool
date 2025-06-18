@@ -48,6 +48,10 @@ SIMULATION_FOLDERNAME = 'abc123'
 # Data Directory
 DATA_DIRECTORY = os.path.join(os.getcwd(), "..", "..", "Data")
 
+TEMPORARY_FOLDERPATH = os.path.join(os.getcwd(), '..', "Data_Generation", "Temporary_Folder")
+if os.path.exists(TEMPORARY_FOLDERPATH): shutil.rmtree(TEMPORARY_FOLDERPATH)
+os.makedirs(TEMPORARY_FOLDERPATH)
+
 DATA_IDF_FILEPATH = None
 DATA_EPW_FILEPATH = None
 
@@ -378,7 +382,7 @@ def EPGen_Checkbox_DownloadSelection_Interaction(download_selection):
     Input(component_id = 'EPGen_Button_GenerateData', component_property = 'n_clicks'),
     prevent_initial_call = True)
 def EPGen_Button_GenerateData_Interaction(download_selection, start_date, end_date, Sim_TimeStep, Sim_OutputVariable_ReportingFrequency, Var_selection, your_vars, n_clicks):
-    button_text = EPGen.EPGen_Button_GenerateData_Interaction_Function(download_selection, start_date, end_date, Sim_TimeStep, Sim_OutputVariable_ReportingFrequency, Var_selection, your_vars, n_clicks)
+    button_text = EPGen.EPGen_Button_GenerateData_Interaction_Function(download_selection, start_date, end_date, Sim_TimeStep, Sim_OutputVariable_ReportingFrequency, n_clicks)
     return button_text
 
 @app.callback(

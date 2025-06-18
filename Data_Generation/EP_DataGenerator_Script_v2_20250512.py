@@ -13,7 +13,7 @@ import requests
 
 THIS_SCRIPT_DIR = os.path.dirname(__file__)
 SPECIAL_IDF_FILEPATH = os.path.join(THIS_SCRIPT_DIR, '..', '..', 'Data', 'Special.idf')
-TEMPORARY_FOLDERPATH = os.path.join(THIS_SCRIPT_DIR, 'Temporary Folder')
+TEMPORARY_FOLDERPATH = os.path.join(THIS_SCRIPT_DIR, 'Temporary_Folder')
 
 default_data_folderpath = os.path.join(THIS_SCRIPT_DIR, '..', 'Data')
 default_results_folderpath = os.path.join(THIS_SCRIPT_DIR, '..', 'Results')
@@ -96,7 +96,7 @@ def generate_variables(idf_filepath, epw_filepath):
 
     variable_names.sort()
 
-    # shutil.rmtree(TEMPORARY_FOLDERPATH)
+    shutil.rmtree(initial_run_folderpath)
 
     return variable_names
 
@@ -345,4 +345,4 @@ def simulate_variables(idf_filepath, epw_filepath, variable_names=default_simula
 
         pickle.dump(eio_dict, open(eio_pickle_filepath, 'wb'))
 
-    return results_folderpath
+    return os.path.join(results_folderpath, simulation_settings["name"])

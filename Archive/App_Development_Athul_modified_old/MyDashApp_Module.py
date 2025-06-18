@@ -62,17 +62,17 @@ def create_simulation_folder(simName_FilePath, IDF_FilePath, Weather_FilePath):
     # Create the main folder
     os.makedirs(simName_FilePath, exist_ok=True)
     
-    # Create the Temporary Folder inside the main folder
-    temp_folder = os.path.join(simName_FilePath, "Temporary Folder")
+    # Create the Temporary_Folder inside the main folder
+    temp_folder = os.path.join(simName_FilePath, "Temporary_Folder")
     os.makedirs(temp_folder, exist_ok=True)
     
-    # Copy the IDF file to the Temporary Folder
+    # Copy the IDF file to the Temporary_Folder
     if os.path.isfile(IDF_FilePath):
         shutil.copy(IDF_FilePath, temp_folder)
     else:
         print(f"IDF file not found: {IDF_FilePath}")
     
-    # Copy the Weather file to the Temporary Folder
+    # Copy the Weather file to the Temporary_Folder
     if os.path.isfile(Weather_FilePath):
         shutil.copy(Weather_FilePath, temp_folder)
     else:
