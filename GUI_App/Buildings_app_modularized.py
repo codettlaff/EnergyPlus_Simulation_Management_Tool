@@ -275,19 +275,9 @@ def Update_IDF_Weather_Files(buildingType, level1, level2, level3, location):
     global DATA_IDF_FILEPATH
     global DATA_WEATHER_FILEPATH
 
-    if None in [buildingType, level1, level2, level3, location]:
-        return ""  # Wait until all inputs are present and selected
-
-    idf_filepath = os.path.join(DATA_DIRECTORY, buildingType, level1, level2, level3)
-    weather_subfolder = "TMY3_WeatherFiles_" + buildingType.split('_')[0]
-    weather_filepath = os.path.join(DATA_DIRECTORY, weather_subfolder, location)
-
-    if os.path.exists(idf_filepath):
-        DATA_IDF_FILEPATH = idf_filepath
-    if os.path.exists(weather_filepath):
-        DATA_WEATHER_FILEPATH = weather_filepath
-
-    return ""
+    idf_filepath, weather_filepath = EPGen.Update_IDF_Weather_Files(buildingType, level1, level2, level3, location)
+    if idf_filepath is not None: DATA_IDF_FILEPATH = idf_filepath
+    if weather_filepath is not None: DATA_WEATHER_FILEPATH = weather_filepath
 
 # Generate Variable List Button (Initial Run)
 @app.callback(

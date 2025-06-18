@@ -38,6 +38,9 @@ SIMULATION_FOLDERPATH = 'abc123'
 SIMULATION_FOLDERNAME = 'abc123'
 DATA_DIRECTORY =  os.path.join(os.getcwd(), "..", "..", "Data")
 
+DATA_IDF_FILEPATH = None
+DATA_WEATHER_FILEPATH = None
+
 OUR_VARIABLE_LIST = ['Schedule_Value_',
                         'Facility_Total_HVAC_Electric_Demand_Power_',
                         'Site_Diffuse_Solar_Radiation_Rate_per_Area_',
@@ -673,7 +676,14 @@ def EPGen_Dropdown_SimReportFreq_Interaction_Function(simReportFreq_selection):
 
 # An error is occuring in this function near the bottom
 def EPGen_RadioButton_EditSchedule_Interaction_Function(EPGen_Radiobutton_VariableSelection):
+
     initial_run_folder_path = os.path.join(SIMULATION_FOLDERPATH, 'Initial_run_folder')
+
+    if not os.path.exists(initial_run_folder_path):
+        os.mkdir(initial_run_folder_path)
+        shutil.copy(DATA_IDF_FILEPATH, os.path.join(initial_run_folder_path, os.path.basename(DATA_IDF_FILEPATH)))
+        shutil.copy(DATA_WEATHER_FILEPATH, os.path.join(initial_run_folder_path, os.path.basename(DATA_WEATHER_FILEPATH)))
+
     if EPGen_Radiobutton_VariableSelection == 1:
         schedules = False
         eio_FilePath = os.path.join(initial_run_folder_path, "eplusout.eio")
@@ -838,6 +848,25 @@ def EPGen_Dropdown_SubLevel2_Interaction_Function(buildingType_selection, level_
     level_3_value = None
 
     return level_3_list, level_3_value
+
+def Update_IDF_Weather_Files(buildingType, level1, level2, level3, location):
+
+    global DATA_IDF_FILEPATH
+    global DATA_WEATHER_FILEPATH
+
+    if None in [buildingType, level1, level2, level3, location]:
+     return None, None  # Wait until all inputs are present and selected
+
+    idf_filepath = os.path.join(DATA_DIRECTORY, buildingType, level1, level2, level3)
+    weather_subfolder = "TMY3_WeatherFiles_" + buildingType.split('_')[0]
+    weather_filepath = os.path.join(DATA_DIRECTORY, weather_subfolder, location)
+
+    if os.path.exists(idf_filepath):
+     DATA_IDF_FILEPATH = idf_filepath
+    if os.path.exists(weather_filepath):
+     DATA_WEATHER_FILEPATH = weather_filepath
+
+    return DATA_IDF_FILEPATH, DATA_WEATHER_FILEPATH
 
 def EPGen_Button_GenerateVariables_Interaction_Function(database_selection, buildingType_selection, level_1, level_2, level_3, location_selection, n_clicks):
 

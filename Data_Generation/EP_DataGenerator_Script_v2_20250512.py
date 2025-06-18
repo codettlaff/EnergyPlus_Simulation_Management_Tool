@@ -11,10 +11,6 @@ import pickle
 from datetime import datetime, timedelta
 import requests
 
-PROTOTYPES_URL = "https://raw.githubusercontent.com/codettlaff/PNNL_Prototypical_Building_Models/main/Data"
-AUTH_TOKEN = "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"
-HEADERS = {"Authorization": f"Bearer {AUTH_TOKEN}"}
-
 THIS_SCRIPT_DIR = os.path.dirname(__file__)
 SPECIAL_IDF_FILEPATH = os.path.join('Special.idf')
 TEMPORARY_FOLDERPATH = os.path.join(THIS_SCRIPT_DIR, 'Temporary Folder')
@@ -71,25 +67,6 @@ default_simulation_variable_names = ['Schedule Value',
 TEST_IDF_FILEPATH = r"C:\Users\codett\Downloads\ASHRAE901_OfficeLarge_STD2013_Seattle_debugging.idf"
 TEST_EPW_FILEPATH = r"D:\Building_Modeling_Code\Data\TMY3_WeatherFiles_Commercial\USA_WA_Seattle-Tacoma.Intl.AP.727930_TMY3.epw"
 TEST_DATA_FOLDERPATH = r"D:\Building_Modeling_Code\Data"
-
-def download_idf_weather_file(filepath):
-
-    filename = os.path.basename(filepath)
-    filepath = filepath.replace('\\', '/')
-    url = PROTOTYPES_URL + '/' + filepath
-    os.makedirs(os.path.dirname(TEMPORARY_FOLDERPATH), exist_ok=True)
-    save_to = os.path.join(TEMPORARY_FOLDERPATH, filename)
-
-    try:
-        response = requests.get(url, headers=HEADERS)
-        response.raise_for_status()
-        with open(save_to, 'wb') as f:
-            f.write(response.content)
-    except requests.exceptions.RequestException as e:
-        print(f"Failed to download {filepath}: {e}")
-
-    new_filepath = os.path.join(TEMPORARY_FOLDERPATH, filename)
-    return new_filepath
 
 def generate_variables(idf_filepath, epw_filepath):
 
