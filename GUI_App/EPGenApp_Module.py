@@ -79,6 +79,8 @@ OUR_VARIABLE_LIST = ['Schedule Value',
                                   'System Node Mass Flow Rate']
 SIMULATION_VARIABLE_LIST = []
 
+SIMULATION_RESULTS_FOLDERPATH = None
+
 # Tab Layout
 tab_layout=[
     # Row 1
@@ -1019,6 +1021,8 @@ def EPGen_Checkbox_DownloadSelection_Interaction_Function(download_selection):
 
 def EPGen_Button_GenerateData_Interaction_Function(download_selection, start_date, end_date, Sim_TimeStep, Sim_OutputVariable_ReportingFrequency, n_clicks):
 
+    global SIMULATION_RESULTS_FOLDERPATH
+
     print("generating_data")
     simulation_settings = {
         "name": SIMULATION_FOLDERNAME,
@@ -1034,11 +1038,8 @@ def EPGen_Button_GenerateData_Interaction_Function(download_selection, start_dat
     idf_filepath = DATA_IDF_FILEPATH
     weather_filepath = DATA_WEATHER_FILEPATH
     results_folderpath = EP_Gen.simulate_variables(DATA_IDF_FILEPATH, DATA_WEATHER_FILEPATH, variable_names=SIMULATION_VARIABLE_LIST, simulation_settings=simulation_settings)
-    print(results_folderpath)
 
-    pickle_list = [os.path.join(results_folderpath, 'Sim_ProcessedData', "IDF_OutputVariables_DictDF.pickle"),
-                   os.path.join(results_folderpath, 'Sim_ProcessedData', "Eio_OutputFile.pickle")]
-    # AppFuncs.compress(pickle_list, os.path.join(results_folderpath, 'Sim_ProcessedData'))
+    SIMULATION_RESULTS_FOLDERPATH = results_folderpath
 
     button_text = "Data Generated"
     return button_text
@@ -1601,6 +1602,16 @@ def EPGen_Button_GenerateData_Interaction_Function(download_selection, start_dat
 
 def EPGen_Button_DownloadFiles_Interaction_Function(download_selection, n_clicks):
 
+    variables_pickle_filepath = os.path.join(SIMULATION_RESULTS_FOLDERPATH, "Sim_ProcessedData", "Output_Variables.pickle")
+    eio_pickle_filepath = os.path.join(SIMULATION_RESULTS_FOLDERPATH, "Sim_ProcessedData", "eio.pickle")
+    if download_selection == [1]:
+        return dcc.send_file(variables_pickle_filepath)
+    elif download_selection == [2]:
+        return dcc.send_file(eio_pickle_filepath)
+
+"""
+def EPGen_Button_DownloadFiles_Interaction_Function(download_selection, n_clicks):
+
     Sim_IDFProcessedData_FolderName = 'Sim_ProcessedData'
     Sim_IDFProcessedData_FolderPath = os.path.join(SIMULATION_FOLDERPATH, "Final_run_folder", Sim_IDFProcessedData_FolderName)
 
@@ -1612,6 +1623,7 @@ def EPGen_Button_DownloadFiles_Interaction_Function(download_selection, n_clicks
             if item.endswith(".zip"):
                 download_path = os.path.join(Sim_IDFProcessedData_FolderPath,item)
     return dcc.send_file(download_path)
+"""
 
 def EPGen_Button_EndSession_Interaction_Function(n_clicks):
 
