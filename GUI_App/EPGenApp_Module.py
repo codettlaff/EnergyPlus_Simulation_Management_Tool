@@ -41,6 +41,7 @@ DATA_DIRECTORY =  os.path.join(os.getcwd(), "..", "..", "Data")
 DATA_IDF_FILEPATH = None
 DATA_WEATHER_FILEPATH = None
 
+YOUR_VARIABLE_LIST = []
 OUR_VARIABLE_LIST = ['Schedule_Value_',
                         'Facility_Total_HVAC_Electric_Demand_Power_',
                         'Site_Diffuse_Solar_Radiation_Rate_per_Area_',
@@ -274,7 +275,7 @@ tab_layout=[
                         html.Label("Select Custom Variables",
                             className = 'text-left ms-4'),
                         dcc.Dropdown(options = [],
-                            value = '',
+                            value = [],
                             id = 'your_variable_selection',
                             multi = True,
                             style = {
@@ -286,7 +287,8 @@ tab_layout=[
                         html.Label("Preselected variables",
                             className = 'text-left ms-4 mt-0'),
                         dcc.Dropdown(options = [],
-                            value = '',
+                            multi = True,
+                            value = [],
                             id = 'our_variable_selection',
                             style = {
                                 'width':'95%',
@@ -297,7 +299,7 @@ tab_layout=[
                         dcc.RadioItems(
                             id = 'EPGen_Radiobutton_VariableSelection',
                             labelStyle = {'display': 'block'},
-                            value = '',
+                            value = 0,
                             options = [
                                 {'label' : " Preselected Variables", 'value' : 1},
                                 {'label' : " Custom Variable Selection", 'value' : 2}
@@ -870,6 +872,8 @@ def Update_IDF_Weather_Files(buildingType, level1, level2, level3, location):
 
 def EPGen_Button_GenerateVariables_Interaction_Function(database_selection, buildingType_selection, level_1, level_2, level_3, location_selection, n_clicks):
 
+    global YOUR_VARIABLE_FILEPATH
+
     # Selecting IDF and Weather Files from Provided Dataset of PNNL Prototypes
     if database_selection == 1: # Our Database
         idf_filepath = os.path.join(DATA_DIRECTORY, buildingType_selection, level_1, level_2, level_3)
@@ -884,8 +888,22 @@ def EPGen_Button_GenerateVariables_Interaction_Function(database_selection, buil
                 if item.endswith('.epw'): weather_filepath = item_filepath
 
     your_variable_selection = EP_Gen.generate_variables(idf_filepath, weather_filepath)
+    YOUR_VARIABLE_LIST = your_variable_selection
 
     return your_variable_selection, OUR_VARIABLE_LIST
+
+def update_simulation_variables_list(your_variable_selection, our_variable_selection, variable_selection_button):
+
+    global SIMULATION_VARIABLE_LIST
+
+    if variable_selection_button == 1: # Preselected Variables
+        sim_variables_list = our_variable_selection
+    elif variable_selection_button == 2: # Preselected Variables
+        sim_variables_list = your_variable_selection
+    else: sim_variables_list = []
+
+    SIMULATION_VARIABLE_LIST = sim_variables_list
+
 
 def EPGen_Dropdown_EditSchedule_Interaction_Function(people_schedules, equip_schedules, light_schedules, heating_schedules, cooling_schedules, temperature_schedules):
     if (not (people_schedules is None)) or (not (equip_schedules is None)) or (not (light_schedules is None)) or (not (heating_schedules is None)) or (not (cooling_schedules is None)) or (not (temperature_schedules is None)):

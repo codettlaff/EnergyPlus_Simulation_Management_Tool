@@ -53,6 +53,10 @@ DATA_EPW_FILEPATH = None
 
 CONN = None
 
+SIM_VARIABLE_LIST = []
+
+YOUR_VARIABLE_LIST = []
+
 # Pre Selected Variables
 OUR_VARIABLE_LIST = [
     'Schedule_Value_',
@@ -295,6 +299,20 @@ def EPGen_Button_GenerateVariables_Interaction(database_selection, buildingType_
     your_variable_selection, our_variable_selection = EPGen.EPGen_Button_GenerateVariables_Interaction_Function(database_selection, buildingType_selection, level_1, level_2, level_3, location_selection, n_clicks)
     return your_variable_selection, our_variable_selection
 
+# User Variable Selection Interaction
+@app.callback(
+    Input(component_id = 'your_variable_selection', component_property = 'value'),
+    Input(component_id = 'our_variable_selection', component_property = 'value'),
+    Input('EPGen_Radiobutton_VariableSelection', 'value'),
+    prevent_initial_call = True
+)
+def update_simulation_variables_list(your_variable_selection, our_variable_selection, variable_selection_button):
+
+    global SIMULATION_VARIABLE_LIST
+    sim_variable_list = EPGen.update_simulation_variables_list(your_variable_selection, our_variable_selection, variable_selection_button)
+    SIMULATION_VARIABLE_LIST = sim_variable_list
+
+# Edit Schedules
 @app.callback(
     Output(component_id = 'update_selected_schedule', component_property = 'children', allow_duplicate = True),
     Input(component_id = 'people_schedules', component_property = 'value'),
