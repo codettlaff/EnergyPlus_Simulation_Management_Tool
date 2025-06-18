@@ -286,7 +286,7 @@ tab_layout=[
 
                         html.Label("Preselected variables",
                             className = 'text-left ms-4 mt-0'),
-                        dcc.Dropdown(options = [],
+                        dcc.Dropdown(options = OUR_VARIABLE_LIST,
                             multi = True,
                             value = [],
                             id = 'our_variable_selection',
