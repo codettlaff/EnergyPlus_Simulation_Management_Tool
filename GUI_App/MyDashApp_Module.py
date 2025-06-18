@@ -15,8 +15,6 @@ import re
 import zlib
 import zipfile
 
-
-
 # My App Module
 
 def CreateTimeVector(TimeDuration, TimeStep):
@@ -55,8 +53,6 @@ def Compute_with_Sines(TimeVector, Sine1, Sine2, Computation_Option):
     Sines_DF = pd.DataFrame(Combined_Array, columns = ['Time','Sine_1','Sine_2','Sine_New'])
     
     return Sines_DF
-
-
 
 def create_simulation_folder(simName_FilePath, IDF_FilePath, Weather_FilePath):
     # Create the main folder

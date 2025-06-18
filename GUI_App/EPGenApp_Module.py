@@ -1036,6 +1036,13 @@ def EPGen_Button_GenerateData_Interaction_Function(download_selection, start_dat
     results_folderpath = EP_Gen.simulate_variables(DATA_IDF_FILEPATH, DATA_WEATHER_FILEPATH, variable_names=SIMULATION_VARIABLE_LIST, simulation_settings=simulation_settings)
     print(results_folderpath)
 
+    pickle_list = [os.path.join(results_folderpath, 'Sim_ProcessedData', "IDF_OutputVariables_DictDF.pickle"),
+                   os.path.join(results_folderpath, 'Sim_ProcessedData', "Eio_OutputFile.pickle")]
+    # AppFuncs.compress(pickle_list, os.path.join(results_folderpath, 'Sim_ProcessedData'))
+
+    button_text = "Data Generated"
+    return button_text
+
 """
 def EPGen_Button_GenerateData_Interaction_Function(download_selection, start_date, end_date, Sim_TimeStep, Sim_OutputVariable_ReportingFrequency, Var_selection, your_vars, n_clicks):
 

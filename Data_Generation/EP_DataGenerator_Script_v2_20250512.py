@@ -237,20 +237,21 @@ def simulate_variables(idf_filepath, epw_filepath, variable_names=default_simula
 
     for csv_filename in os.listdir(sim_results_processed_data_folderpath):
 
-        csv_filepath = os.path.join(sim_results_processed_data_folderpath, csv_filename)
-        current_df = pd.read_csv(csv_filepath)
+        if csv_filename.endswith(".csv"):
+            csv_filepath = os.path.join(sim_results_processed_data_folderpath, csv_filename)
+            current_df = pd.read_csv(csv_filepath)
 
-        # Get Datetime List from first variable
-        if i == 0:
-            datetime_list = current_df['Date/Time'].tolist()
-            i += 1
+            # Get Datetime List from first variable
+            if i == 0:
+                datetime_list = current_df['Date/Time'].tolist()
+                i += 1
 
-        current_df = current_df.drop(columns=['Date/Time'], axis=1)
+            current_df = current_df.drop(columns=['Date/Time'], axis=1)
 
-        variable_name = csv_filename.replace('_', ' ').replace('.csv', '')
-        output_variable_data_dict[variable_name] = current_df
+            variable_name = csv_filename.replace('_', ' ').replace('.csv', '')
+            output_variable_data_dict[variable_name] = current_df
 
-        os.remove(csv_filepath)
+            os.remove(csv_filepath)
 
     # Format Datetimes
     formatted_datetime_list = []
