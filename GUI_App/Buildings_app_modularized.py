@@ -48,6 +48,9 @@ SIMULATION_FOLDERNAME = 'abc123'
 # Data Directory
 DATA_DIRECTORY = os.path.join(os.getcwd(), "..", "..", "Data")
 
+DATA_IDF_FILEPATH = None
+DATA_EPW_FILEPATH = None
+
 CONN = None
 
 # Pre Selected Variables
@@ -258,6 +261,33 @@ def EPGen_Dropdown_SubLevel1_Interaction(buildingType_selection, level_1):
 def EPGen_Dropdown_SubLevel2_Interaction(buildingType_selection, level_1, level_2):
     level_3_list, level_3_value = EPGen.EPGen_Dropdown_SubLevel2_Interaction_Function(buildingType_selection, level_1, level_2)
     return level_3_list, level_3_value
+
+# Update IDF and Weather File Selection
+@ app.callback(
+    Input('buildingType_selection', 'value'),
+    Input('level_1', 'value'),
+    Input('level_2', 'value'),
+    Input('level_3', 'value'),
+    Input('location_selection', 'value'),
+    prevent_initial_call=True
+)
+def Update_IDF_Weather_Files(buildingType, level1, level2, level3, location):
+    global DATA_IDF_FILEPATH
+    global DATA_WEATHER_FILEPATH
+
+    if None in [buildingType, level1, level2, level3, location]:
+        return ""  # Wait until all inputs are present and selected
+
+    idf_filepath = os.path.join(DATA_DIRECTORY, buildingType, level1, level2, level3)
+    weather_subfolder = "TMY3_WeatherFiles_" + buildingType.split('_')[0]
+    weather_filepath = os.path.join(DATA_DIRECTORY, weather_subfolder, location)
+
+    if os.path.exists(idf_filepath):
+        DATA_IDF_FILEPATH = idf_filepath
+    if os.path.exists(weather_filepath):
+        DATA_WEATHER_FILEPATH = weather_filepath
+
+    return ""
 
 # Generate Variable List Button (Initial Run)
 @app.callback(

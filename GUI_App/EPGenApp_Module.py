@@ -38,9 +38,6 @@ SIMULATION_FOLDERPATH = 'abc123'
 SIMULATION_FOLDERNAME = 'abc123'
 DATA_DIRECTORY =  os.path.join(os.getcwd(), "..", "..", "Data")
 
-DATA_IDF_FILEPATH = None
-DATA_EPW_FILEPATH = None
-
 OUR_VARIABLE_LIST = ['Schedule_Value_',
                         'Facility_Total_HVAC_Electric_Demand_Power_',
                         'Site_Diffuse_Solar_Radiation_Rate_per_Area_',
@@ -809,8 +806,6 @@ def EPGen_Dropdown_BuildingType_Interaction_Function(buildingType_selection):
     level_2_value = None
     level_3_value = None
     Weather_value = None
-
-    # If all values are filled out and the constructed IDF and weather filepaths point to real files, set the global filepath variables
 
     return level_1_list, level_2_list, level_3_list, Weather_list, level_1_value, level_2_value, level_3_value, Weather_value
 
