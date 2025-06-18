@@ -862,9 +862,9 @@ def Update_IDF_Weather_Files(buildingType, level1, level2, level3, location):
     weather_filepath = os.path.join(DATA_DIRECTORY, weather_subfolder, location)
 
     if os.path.exists(idf_filepath):
-     DATA_IDF_FILEPATH = idf_filepath
+        DATA_IDF_FILEPATH = idf_filepath
     if os.path.exists(weather_filepath):
-     DATA_WEATHER_FILEPATH = weather_filepath
+        DATA_WEATHER_FILEPATH = weather_filepath
 
     return DATA_IDF_FILEPATH, DATA_WEATHER_FILEPATH
 
@@ -998,6 +998,26 @@ def EPGen_Checkbox_DownloadSelection_Interaction_Function(download_selection):
 
     return final_download
 
+def EPGen_Button_GenerateData_Interaction_Function(download_selection, start_date, end_date, Sim_TimeStep, Sim_OutputVariable_ReportingFrequency, Var_selection, your_vars, n_clicks):
+
+    print("generating_data")
+    simulation_settings = {
+        "name": SIMULATION_FOLDERNAME,
+        "idf_year": 2013,
+        "start_month": int(start_date.split("-")[1]),
+        "start_day": int(start_date.split("-")[2]),
+        "end_month": int(end_date.split("-")[1]),
+        "end_day": int(end_date.split("-")[2]),
+        "reporting_frequency": Sim_OutputVariable_ReportingFrequency,
+        "timestep_minutes": Sim_TimeStep,
+    }
+
+    idf_filepath = DATA_IDF_FILEPATH
+    weather_filepath = DATA_WEATHER_FILEPATH
+    results_folderpath = EP_Gen.simulate_variables(DATA_IDF_FILEPATH, DATA_WEATHER_FILEPATH, variable_names=Var_selection, simulation_settings=simulation_settings)
+    print(results_folderpath)
+
+"""
 def EPGen_Button_GenerateData_Interaction_Function(download_selection, start_date, end_date, Sim_TimeStep, Sim_OutputVariable_ReportingFrequency, Var_selection, your_vars, n_clicks):
 
     edited_idf_folder_path = os.path.join(SIMULATION_FOLDERPATH,"Edited_idf_folder")
@@ -1551,6 +1571,7 @@ def EPGen_Button_GenerateData_Interaction_Function(download_selection, start_dat
     button_text = "Data Generated"
 
     return button_text
+"""
 
 def EPGen_Button_DownloadFiles_Interaction_Function(download_selection, n_clicks):
 

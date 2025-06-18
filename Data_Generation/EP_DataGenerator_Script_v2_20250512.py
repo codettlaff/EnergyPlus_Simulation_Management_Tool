@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 import requests
 
 THIS_SCRIPT_DIR = os.path.dirname(__file__)
-SPECIAL_IDF_FILEPATH = os.path.join('Special.idf')
+SPECIAL_IDF_FILEPATH = os.path.join(THIS_SCRIPT_DIR, '..', '..', 'Data', 'Special.idf')
 TEMPORARY_FOLDERPATH = os.path.join(THIS_SCRIPT_DIR, 'Temporary Folder')
 
 default_data_folderpath = os.path.join(THIS_SCRIPT_DIR, '..', 'Data')
@@ -345,3 +345,4 @@ def simulate_variables(idf_filepath, epw_filepath, variable_names=default_simula
 
         pickle.dump(eio_dict, open(eio_pickle_filepath, 'wb'))
 
+    return results_folderpath
