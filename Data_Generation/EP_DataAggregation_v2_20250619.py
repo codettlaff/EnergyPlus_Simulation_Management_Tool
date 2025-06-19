@@ -7,13 +7,13 @@ import pickle
 import datetime
 import copy
 
-def get_zone_list():
-
-    pass
-
 def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_results_folderpath, simulation_settings, simulation_variable_list, aggregation_type=1, aggregation_zone_list='all_zones'):
 
-    zone_list = get_zone_list()
+    # Read Pickle Files
+    IDF_OutputVariable_Dict = pickle.load(variables_pickle_filepath)
+    Eio_OutputFile_Dict = pickle.load(eio_pickle_filepath)
+
+    zone_list = Eio_OutputFile_Dict['Zone Information']['Zone Name'].columns.tolist()
 
     if aggregation_zone_list == 'all_zones': Aggregation_Zone_List = [[item] for item in zone_list]
     if aggregation_zone_list == 'one_zone': Aggregation_Zone_List = [zone_list]
@@ -22,9 +22,6 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_re
     Aggregation_File_Name = 'Aggregation_Dict_AllZones.pickle'
 
     SystemNode_Name = 'DIRECT AIR INLET NODE'
-
-    IDF_OutputVariable_Dict = pickle.load(variables_pickle_filepath)
-    Eio_OutputFile_Dict = pickle.load(eio_pickle_filepath)
 
     DateTime_List = IDF_OutputVariable_Dict['DateTime_List']
 
