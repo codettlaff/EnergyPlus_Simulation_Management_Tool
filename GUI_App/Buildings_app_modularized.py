@@ -14,6 +14,7 @@ import pickle
 import copy
 import datetime
 from datetime import date
+from datetime import datetime
 
 import numpy as np
 import pandas as pd
@@ -43,7 +44,7 @@ os.makedirs(WORKSPACE_DIRECTORY)
 
 # Simulation Configuration
 SIMULATION_FOLDERPATH = 'abc123'
-SIMULATION_FOLDERNAME = 'abc123'
+SIMULATION_FOLDERNAME = 'abc123' # Simulation Name
 
 # Data Directory
 DATA_DIRECTORY = os.path.join(os.getcwd(), "..", "..", "Data")
@@ -100,6 +101,8 @@ OUR_VARIABLE_LIST = [
     'System_Node_Mass_Flow_Rate_'
 ]
 
+SIMULATION_SETTINGS = None
+
 # Instantiate our App and incorporate BOOTSTRAP theme Stylesheet
 # Themes - https://dash-bootstrap-components.opensource.faculty.ai/docs/themes/#available-themes
 # Themes - https://dash-bootstrap-components.opensource.faculty.ai/docs/themes/explorer/
@@ -148,6 +151,14 @@ app.layout = dbc.Container([
 ], fluid = False)
 
 # App Callbacks - Providing Functionality
+
+# Simulation Name
+@app.callback(
+    Input(component_id = 'folder_name', component_property = 'value')
+)
+def update_simulation_name(simulation_name):
+    global SIMULATION_FOLDERNAME
+    SIMULATION_FOLDERNAME = simulation_name
 
 @app.callback(
     Output(component_id = 'building_details', component_property = 'hidden'),
@@ -353,7 +364,6 @@ def EPGen_RadioButton_EditSchedules_Interaction_2(EPGen_Radiobutton_VariableSele
     download_variables = EPGen.EPGen_RadioButton_EditSchedules_Interaction_2_Function(EPGen_Radiobutton_VariableSelection)
     return download_variables
 
-
 @app.callback(
     Output(component_id = 'download_variables', component_property = 'hidden', allow_duplicate = True),
     Input(component_id = 'done_updating_schedule', component_property = 'n_clicks'),
@@ -370,6 +380,31 @@ def EPGen_Checkbox_DownloadSelection_Interaction(download_selection):
     final_download = EPGen.EPGen_Checkbox_DownloadSelection_Interaction_Function(download_selection)
     return final_download
 
+# Simulation Settings Box
+@app.callback(
+    Input(component_id = 'sim_run_period', component_property = 'start_date'),
+    Input(component_id = 'sim_run_period', component_property = 'end_date'),
+    Input(component_id = 'sim_TimeStep', component_property = 'value'),
+    Input(component_id = 'simReportFreq_selection', component_property = 'value')
+)
+def update_simulation_settings(start_date, end_date, sim_TimeStep, simReportFreq_selection):
+
+    global SIMULATION_SETTINGS
+    start_date = datetime.fromisoformat(start_date)
+    end_date = datetime.fromisoformat(end_date)
+    SIMULATION_SETTINGS = {
+    "name": SIMULATION_FOLDERNAME,
+    "idf_year": start_date.year,
+    "start_month": start_date.month,
+    "start_day": start_date.day,
+    "end_month": end_date.month,
+    "end_day": end_date.day,
+    "reporting_frequency": simReportFreq_selection,
+    "timestep_minutes": sim_TimeStep
+    }
+    print(SIMULATION_SETTINGS)
+
+# Generate Data Button
 @app.callback(
     Output(component_id = 'EPGen_Button_GenerateData', component_property = 'children'),
     State(component_id = 'download_selection', component_property = 'value'),

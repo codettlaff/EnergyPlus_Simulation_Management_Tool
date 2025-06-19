@@ -19,6 +19,7 @@ import dash_bootstrap_components as dbc
 database_creator_script_dir = os.path.join(os.path.dirname(__file__), '..', 'Database')
 sys.path.append(database_creator_script_dir)
 import Database_Creator
+import Data_Uploader
 
 DATABASES_CSV_FILEPATH = os.path.join(os.path.dirname('__file__'), 'databases.csv')
 
@@ -312,6 +313,7 @@ def create_database(username, password, port, dbname):
     try:
         conn = Database_Creator.create_database(username, password, port, dbname)
         Database_Creator.create_tables(conn)
+        # Data_Uploader.populate_datetimes_table(conn, base_time_resolution=1, start_datetime=datetime(2013, 1, 1, 0, 0))
     except Exception as e:
         print(e)
 
