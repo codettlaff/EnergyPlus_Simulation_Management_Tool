@@ -313,7 +313,6 @@ def create_database(username, password, port, dbname):
     try:
         conn = Database_Creator.create_database(username, password, port, dbname)
         Database_Creator.create_tables(conn)
-        # Data_Uploader.populate_datetimes_table(conn, base_time_resolution=1, start_datetime=datetime(2013, 1, 1, 0, 0))
     except Exception as e:
         print(e)
 
