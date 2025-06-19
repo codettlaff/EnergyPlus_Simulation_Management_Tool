@@ -28,6 +28,7 @@ import MyDashApp_Module as AppFuncs
 database_creator_script_dir = os.path.join(os.path.dirname(__file__), '..', 'Data_Generation')
 sys.path.append(database_creator_script_dir)
 import EP_DataGenerator_Script_v2_20250512 as EP_Gen
+import EP_DataAggregation_v2_20250619 as EP_Agg
 
 UPLOAD_DIRECTORY = os.path.join(os.getcwd(), "EP_APP_Uploads")
 UPLOAD_DIRECTORY_AGG_PICKLE = os.path.join(UPLOAD_DIRECTORY, "Pickle_Upload")
@@ -80,6 +81,8 @@ OUR_VARIABLE_LIST = ['Schedule Value',
 SIMULATION_VARIABLE_LIST = []
 
 SIMULATION_RESULTS_FOLDERPATH = None
+VARIABLES_PICKLE_FILEPATH = None
+EIO_PICKLE_FILEPATH = None
 
 # Tab Layout
 tab_layout=[
@@ -1040,9 +1043,11 @@ def EPGen_Button_GenerateData_Interaction_Function(download_selection, start_dat
     results_folderpath = EP_Gen.simulate_variables(DATA_IDF_FILEPATH, DATA_WEATHER_FILEPATH, variable_names=SIMULATION_VARIABLE_LIST, simulation_settings=simulation_settings)
 
     SIMULATION_RESULTS_FOLDERPATH = results_folderpath
+    VARIABLES_PICKLE_FILEPATH = os.path.join(SIMULATION_RESULTS_FOLDERPATH, 'Sim_ProcessedData', 'Output_Variables.pickle')
+    EIO_PICKLE_FILEPATH = os.path.join(SIMULATION_RESULTS_FOLDERPATH, 'Sim_ProcessedData', 'eio.pickle')
 
     button_text = "Data Generated"
-    return button_text
+    return button_text, SIMULATION_RESULTS_FOLDERPATH, VARIABLES_PICKLE_FILEPATH, EIO_PICKLE_FILEPATH
 
 """
 def EPGen_Button_GenerateData_Interaction_Function(download_selection, start_date, end_date, Sim_TimeStep, Sim_OutputVariable_ReportingFrequency, Var_selection, your_vars, n_clicks):
@@ -1624,6 +1629,12 @@ def EPGen_Button_DownloadFiles_Interaction_Function(download_selection, n_clicks
                 download_path = os.path.join(Sim_IDFProcessedData_FolderPath,item)
     return dcc.send_file(download_path)
 """
+
+def upload_to_db(variables_pickle_filepath, eio_pickle_filepath, simulation_results_folderpath, simulation_settings, simulation_variable_list):
+
+    all_zone_aggregation_pickle_filepath = EP_Agg.aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_results_folderpath, simulation_settings, simulation_variable_list)
+
+    return('Data Uploaded')
 
 def EPGen_Button_EndSession_Interaction_Function(n_clicks):
 

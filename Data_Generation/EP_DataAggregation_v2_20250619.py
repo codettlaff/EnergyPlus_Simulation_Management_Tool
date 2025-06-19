@@ -562,5 +562,8 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_re
     # =============================================================================
 
     aggregation_folderpath = os.path.join(simulation_results_folderpath, 'Sim_Aggregated_Data')
+    aggregation_pickle_filepath = os.path.join(aggregation_folderpath, Aggregation_File_Name)
     if not os.path.exists(aggregation_folderpath): os.makedirs(aggregation_folderpath)
-    pickle.dump(Aggregation_Dict, open(os.path.join(aggregation_folderpath, Aggregation_File_Name), "wb"))
+    pickle.dump(Aggregation_Dict, open(aggregation_pickle_filepath, "wb"))
+
+    return aggregation_pickle_filepath

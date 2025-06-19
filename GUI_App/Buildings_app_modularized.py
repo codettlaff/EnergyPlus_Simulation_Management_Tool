@@ -103,6 +103,10 @@ OUR_VARIABLE_LIST = [
 
 SIMULATION_SETTINGS = None
 
+SIMULATION_RESULTS_FOLDERPATH = None
+VARIABLES_PICKLE_FILEPATH = None
+EIO_PICKLE_FILEPATH = None
+
 # Instantiate our App and incorporate BOOTSTRAP theme Stylesheet
 # Themes - https://dash-bootstrap-components.opensource.faculty.ai/docs/themes/#available-themes
 # Themes - https://dash-bootstrap-components.opensource.faculty.ai/docs/themes/explorer/
@@ -417,7 +421,8 @@ def update_simulation_settings(start_date, end_date, sim_TimeStep, simReportFreq
     Input(component_id = 'EPGen_Button_GenerateData', component_property = 'n_clicks'),
     prevent_initial_call = True)
 def EPGen_Button_GenerateData_Interaction(download_selection, start_date, end_date, Sim_TimeStep, Sim_OutputVariable_ReportingFrequency, Var_selection, your_vars, n_clicks):
-    button_text = EPGen.EPGen_Button_GenerateData_Interaction_Function(download_selection, start_date, end_date, Sim_TimeStep, Sim_OutputVariable_ReportingFrequency, n_clicks)
+    global SIMULATION_RESULTS_FOLDERPATH, VARIABLES_PICKLE_FILEPATH, EIO_PICKLE_FILEPATH
+    button_text, SIMULATION_RESULTS_FOLDERPATH, VARIABLES_PICKLE_FILEPATH, EIO_PICKLE_FILEPATH = EPGen.EPGen_Button_GenerateData_Interaction_Function(download_selection, start_date, end_date, Sim_TimeStep, Sim_OutputVariable_ReportingFrequency, n_clicks)
     return button_text
 
 @app.callback(
@@ -779,6 +784,16 @@ def handle_existing_db_selection(selected_dbname):
     global CONN
     conn = PSQL.get_conn_from_dbname(selected_dbname)
     CONN = conn
+
+@ app.callback(
+    Output('EPGen_Button_UploadtoDb', 'children'),
+    Input('EPGen_Button_UploadtoDb', 'n_clicks'),
+    prevent_initial_call=True
+)
+def upload_to_db(n_clicks):
+
+    button_text = EPGen.upload_to_db(VARIABLES_PICKLE_FILEPATH, EIO_PICKLE_FILEPATH, SIMULATION_RESULTS_FOLDERPATH, SIMULATION_SETTINGS, SIM_VARIABLE_LIST)
+    return button_text
 
 # Running the App
 if __name__ == '__main__':
