@@ -909,6 +909,7 @@ def update_simulation_variables_list(your_variable_selection, our_variable_selec
     else: sim_variables_list = []
 
     SIMULATION_VARIABLE_LIST = sim_variables_list
+    return SIMULATION_VARIABLE_LIST
 
 
 def EPGen_Dropdown_EditSchedule_Interaction_Function(people_schedules, equip_schedules, light_schedules, heating_schedules, cooling_schedules, temperature_schedules):

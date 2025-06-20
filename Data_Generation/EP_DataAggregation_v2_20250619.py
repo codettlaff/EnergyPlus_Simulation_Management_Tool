@@ -13,12 +13,12 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_re
     with open(variables_pickle_filepath, "rb") as f1: IDF_OutputVariable_Dict = pickle.load(f1)
     with open(eio_pickle_filepath, "rb") as f2: Eio_OutputFile_Dict = pickle.load(f2)
 
-    zone_list = Eio_OutputFile_Dict['Zone Information']['Zone Name'].columns.tolist()
+    zone_list = Eio_OutputFile_Dict['Zone Information']['Zone Name'].tolist()
 
     if aggregation_zone_list == 'all_zones':
         Aggregation_Zone_List = [[item] for item in zone_list]
         Aggregation_File_Name = 'Aggregation_Dict_AllZones.pickle'
-    if aggregation_zone_list == 'one_zone':
+    elif aggregation_zone_list == 'one_zone':
         Aggregation_Zone_List = [zone_list]
         Aggregation_File_Name = 'Aggregation_Dict_OneZone.pickle'
     else:
@@ -181,17 +181,18 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_re
         # Incrementing Counter
         Counter = Counter + 1
 
-        # Creating Aggregated Zone name 1 : For the Aggregated Time Series
-        Aggregated_Zone_Name_1 = element[0]
-        # Aggregated_Zone_Name_1 = Aggregation_Zone_NameStem + "_" + str(Counter)
-
-        # Creating Aggregated Zone name 2 : For the Aggregated Equipment
-        Aggregated_Zone_Name_2 = Aggregated_Zone_Name_1 + "_Equipment"
-        # Aggregated_Zone_Name_2 = Aggregation_Zone_NameStem + "_Equipment_" + str(Counter)
+        if aggregation_zone_list == 'all_zones':
+            Aggregated_Zone_Name_1 = element[0]
+            Aggregated_Zone_Name_2 = Aggregated_Zone_Name_1 + "_Equipment"
+        elif aggregation_zone_list == 'one_zone':
+            Aggregation_Zone_Name_1 = 'Aggregated_Zone'
+            Aggregated_Zone_Name_2 = Aggregated_Zone_Name_1 + "_Equipment"
+        else:
+            Aggregated_Zone_Name_1 = Aggregation_Zone_NameStem + "_" + str(Counter)
+            Aggregated_Zone_Name_2 = Aggregation_Zone_NameStem + "_Equipment_" + str(Counter)
 
         # Appending empty Aggregation_DF to Aggregation_Dict
         Aggregation_Dict[Aggregated_Zone_Name_1] = copy.deepcopy(Aggregation_DF)
-
         Aggregation_Dict[Aggregated_Zone_Name_2] = copy.deepcopy(Aggregation_DF_Equipment)
 
     # =============================================================================
