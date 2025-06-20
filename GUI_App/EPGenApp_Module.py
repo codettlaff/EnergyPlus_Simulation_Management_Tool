@@ -1022,7 +1022,7 @@ def EPGen_Checkbox_DownloadSelection_Interaction_Function(download_selection):
 
     return final_download
 
-def EPGen_Button_GenerateData_Interaction_Function(download_selection, start_date, end_date, Sim_TimeStep, Sim_OutputVariable_ReportingFrequency, n_clicks):
+def EPGen_Button_GenerateData_Interaction_Function(results_folderpath, start_date, end_date, Sim_TimeStep, Sim_OutputVariable_ReportingFrequency, n_clicks):
 
     global SIMULATION_RESULTS_FOLDERPATH
 
@@ -1040,7 +1040,7 @@ def EPGen_Button_GenerateData_Interaction_Function(download_selection, start_dat
 
     idf_filepath = DATA_IDF_FILEPATH
     weather_filepath = DATA_WEATHER_FILEPATH
-    results_folderpath = EP_Gen.simulate_variables(DATA_IDF_FILEPATH, DATA_WEATHER_FILEPATH, variable_names=SIMULATION_VARIABLE_LIST, simulation_settings=simulation_settings)
+    results_folderpath = EP_Gen.simulate_variables(DATA_IDF_FILEPATH, DATA_WEATHER_FILEPATH, variable_names=SIMULATION_VARIABLE_LIST, simulation_settings=simulation_settings, results_folderpath=results_folderpath)
 
     SIMULATION_RESULTS_FOLDERPATH = results_folderpath
     VARIABLES_PICKLE_FILEPATH = os.path.join(SIMULATION_RESULTS_FOLDERPATH, 'Sim_ProcessedData', 'Output_Variables.pickle')

@@ -56,6 +56,9 @@ os.makedirs(TEMPORARY_FOLDERPATH)
 DATA_IDF_FILEPATH = None
 DATA_EPW_FILEPATH = None
 
+RESULTS_FOLDERPATH = os.path.abspath(os.path.join(os.getcwd(), "..", "Results"))
+SIMULATION_RESULTS_FOLDERPATH = None
+
 CONN = None
 
 SIM_VARIABLE_LIST = []
@@ -422,7 +425,7 @@ def update_simulation_settings(start_date, end_date, sim_TimeStep, simReportFreq
     prevent_initial_call = True)
 def EPGen_Button_GenerateData_Interaction(download_selection, start_date, end_date, Sim_TimeStep, Sim_OutputVariable_ReportingFrequency, Var_selection, your_vars, n_clicks):
     global SIMULATION_RESULTS_FOLDERPATH, VARIABLES_PICKLE_FILEPATH, EIO_PICKLE_FILEPATH
-    button_text, SIMULATION_RESULTS_FOLDERPATH, VARIABLES_PICKLE_FILEPATH, EIO_PICKLE_FILEPATH = EPGen.EPGen_Button_GenerateData_Interaction_Function(download_selection, start_date, end_date, Sim_TimeStep, Sim_OutputVariable_ReportingFrequency, n_clicks)
+    button_text, SIMULATION_RESULTS_FOLDERPATH, VARIABLES_PICKLE_FILEPATH, EIO_PICKLE_FILEPATH = EPGen.EPGen_Button_GenerateData_Interaction_Function(RESULTS_FOLDERPATH, start_date, end_date, Sim_TimeStep, Sim_OutputVariable_ReportingFrequency, n_clicks)
     return button_text
 
 @app.callback(

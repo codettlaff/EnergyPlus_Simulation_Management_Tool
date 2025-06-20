@@ -11,12 +11,12 @@ import pickle
 from datetime import datetime, timedelta
 import requests
 
-THIS_SCRIPT_DIR = os.path.dirname(__file__)
-SPECIAL_IDF_FILEPATH = os.path.join(THIS_SCRIPT_DIR, '..', '..', 'Data', 'Special.idf')
-TEMPORARY_FOLDERPATH = os.path.join(THIS_SCRIPT_DIR, 'Temporary_Folder')
+EPGEN_SCRIPT_DIR = os.path.dirname(__file__) # This script dir.
+SPECIAL_IDF_FILEPATH = os.path.join(EPGEN_SCRIPT_DIR, '..', '..', 'Data', 'Special.idf')
+TEMPORARY_FOLDERPATH = os.path.join(EPGEN_SCRIPT_DIR, 'Temporary_Folder')
 
-default_data_folderpath = os.path.join(THIS_SCRIPT_DIR, '..', 'Data')
-default_results_folderpath = os.path.join(THIS_SCRIPT_DIR, '..', 'Results')
+default_data_folderpath = os.path.join(EPGEN_SCRIPT_DIR, '..', 'Data')
+default_results_folderpath = os.path.join(EPGEN_SCRIPT_DIR, '..', 'Results')
 default_simulation_settings = {
     "name": "new_simulation",
     "idf_year": 2013,

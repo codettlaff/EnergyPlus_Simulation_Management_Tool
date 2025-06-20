@@ -15,8 +15,14 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_re
 
     zone_list = Eio_OutputFile_Dict['Zone Information']['Zone Name'].columns.tolist()
 
-    if aggregation_zone_list == 'all_zones': Aggregation_Zone_List = [[item] for item in zone_list]
-    if aggregation_zone_list == 'one_zone': Aggregation_Zone_List = [zone_list]
+    if aggregation_zone_list == 'all_zones':
+        Aggregation_Zone_List = [[item] for item in zone_list]
+        Aggregation_File_Name = 'Aggregation_Dict_AllZones.pickle'
+    if aggregation_zone_list == 'one_zone':
+        Aggregation_Zone_List = [zone_list]
+        Aggregation_File_Name = 'Aggregation_Dict_OneZone.pickle'
+    else:
+        Aggregation_File_Name = 'Aggregation_Dict_Custom.pickle'
 
     Aggregation_Zone_NameStem = 'Aggregation_Zone'
     Aggregation_File_Name = 'Aggregation_Dict_AllZones.pickle'
