@@ -30,7 +30,7 @@ def get_climate_zone(location):
     return climate_zones.get(location, "Climate Zone not found.")
 # Passed
 
-def populate_datetimes_table(conn, base_time_resolution=1, start_datetime=datetime(2013, 1, 1, 0, 0)):
+def populate_datetimes_table(conn, base_time_resolution=1, start_datetime=datetime(2013, 1, 1, 0, 0), end_datetime=datetime(2014, 1, 1, 0, 0)):
     """
         Populates the 'datetimes' table with timestamps at 5-minute intervals for one year.
 
@@ -40,7 +40,6 @@ def populate_datetimes_table(conn, base_time_resolution=1, start_datetime=dateti
     try:
         with conn.cursor() as cursor:
             # Generate timestamps for one year at 5-minute intervals
-            end_datetime = start_datetime + timedelta(days=365)
             timestamps = [start_datetime + timedelta(minutes=base_time_resolution * i) for i in range((end_datetime - start_datetime).days * 24 * 12)]
 
             # Convert list into a format suitable for insertion

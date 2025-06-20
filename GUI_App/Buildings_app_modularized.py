@@ -795,7 +795,7 @@ def handle_existing_db_selection(selected_dbname):
 )
 def upload_to_db(n_clicks):
 
-    button_text = EPGen.upload_to_db(VARIABLES_PICKLE_FILEPATH, EIO_PICKLE_FILEPATH, SIMULATION_RESULTS_FOLDERPATH, SIMULATION_SETTINGS, SIMULATION_VARIABLE_LIST)
+    button_text = EPGen.upload_to_db(CONN, VARIABLES_PICKLE_FILEPATH, EIO_PICKLE_FILEPATH, SIMULATION_RESULTS_FOLDERPATH, SIMULATION_SETTINGS, SIMULATION_VARIABLE_LIST)
     return button_text
 
 # Running the App

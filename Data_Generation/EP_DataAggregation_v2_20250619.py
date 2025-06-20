@@ -126,7 +126,7 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_re
     for key in simulation_variable_list:
 
         # IF LOOP: For the Variable Name Schedule_Value_
-        if (key == 'Schedule_Value_'):  # Create Schedule Columns which are needed
+        if (key == 'Schedule Value'):  # Create Schedule Columns which are needed
 
             # FOR LOOP: For each element in Equipment_List
             for element in Equipment_List:

@@ -353,13 +353,21 @@ def get_conn_from_dbname(database_name):
         df = pd.read_csv(DATABASES_CSV_FILEPATH)
         record = df[df["database_name"] == database_name].iloc[0]
 
-        conn = psycopg2.connect(
-            dbname=record["database_name"],
-            user=record["username"],
-            password=record["password"],
-            host="localhost",  # change if stored in CSV
-            port=record["port"]
-        )
+        if record["port"] == "localhost":
+            conn = psycopg2.connect(
+                dbname=record["database_name"],
+                user=record["username"],
+                password=record["password"],
+                host="localhost"
+            )
+        else:
+            conn = psycopg2.connect(
+                dbname=record["database_name"],
+                user=record["username"],
+                password=record["password"],
+                port=record["port"]
+            )
+
         print(f"Connected to {database_name}")
         return conn
     except Exception as e:

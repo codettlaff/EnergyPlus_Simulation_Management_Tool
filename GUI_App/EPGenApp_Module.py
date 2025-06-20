@@ -25,10 +25,15 @@ import dash_bootstrap_components as dbc
 # Importing User-Defined Modules
 import MyDashApp_Module as AppFuncs
 
-database_creator_script_dir = os.path.join(os.path.dirname(__file__), '..', 'Data_Generation')
-sys.path.append(database_creator_script_dir)
+database_generation_dir = os.path.join(os.path.dirname(__file__), '..', 'Data_Generation')
+sys.path.append(database_generation_dir)
 import EP_DataGenerator_Script_v2_20250512 as EP_Gen
 import EP_DataAggregation_v2_20250619 as EP_Agg
+
+database_dir = os.path.join(os.path.dirname(__file__), '..', 'Database')
+sys.path.append(database_dir)
+import Database_Creator as DB_Creator
+import Data_Uploader as DB_Uploader
 
 UPLOAD_DIRECTORY = os.path.join(os.getcwd(), "EP_APP_Uploads")
 UPLOAD_DIRECTORY_AGG_PICKLE = os.path.join(UPLOAD_DIRECTORY, "Pickle_Upload")
@@ -1631,10 +1636,20 @@ def EPGen_Button_DownloadFiles_Interaction_Function(download_selection, n_clicks
     return dcc.send_file(download_path)
 """
 
-def upload_to_db(variables_pickle_filepath, eio_pickle_filepath, simulation_results_folderpath, simulation_settings, simulation_variable_list):
+def upload_to_db(conn, variables_pickle_filepath, eio_pickle_filepath, simulation_results_folderpath, simulation_settings, simulation_variable_list):
 
     all_zone_aggregation_pickle_filepath = EP_Agg.aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_results_folderpath, simulation_settings, simulation_variable_list)
-
+    start_datetime = datetime.datetime(
+        simulation_settings["idf_year"],
+        simulation_settings["start_month"],
+        simulation_settings["start_day"]
+    )
+    end_datetime = datetime.datetime(
+        simulation_settings["idf_year"],
+        simulation_settings["end_month"],
+        simulation_settings["end_day"]
+    )
+    DB_Uploader.populate_datetimes_table(conn, base_time_resolution=1, start_datetime=start_datetime, end_datetime=end_datetime)
     return('Data Uploaded')
 
 def EPGen_Button_EndSession_Interaction_Function(n_clicks):
