@@ -299,10 +299,7 @@ def simulate_variables(idf_filepath, epw_filepath, variable_names=default_simula
     ]
 
     def is_table_header(line, key):
-        if ((line.find(key) >= 0) and (line.find('!') >= 0)):
-            Is_Table_Header = True
-        else:
-            Is_Table_Header = False
+        return (key in line) and ('!' in line)
 
     for line1 in lines:
 
@@ -344,6 +341,6 @@ def simulate_variables(idf_filepath, epw_filepath, variable_names=default_simula
 
                 eio_dict[key] = df_table
 
-        pickle.dump(eio_dict, open(eio_pickle_filepath, 'wb'))
+    pickle.dump(eio_dict, open(eio_pickle_filepath, 'wb'))
 
     return os.path.join(results_folderpath, simulation_settings["name"])

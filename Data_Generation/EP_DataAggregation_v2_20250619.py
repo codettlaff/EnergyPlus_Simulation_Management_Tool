@@ -10,8 +10,8 @@ import copy
 def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_results_folderpath, simulation_settings, simulation_variable_list, aggregation_type=1, aggregation_zone_list='all_zones'):
 
     # Read Pickle Files
-    IDF_OutputVariable_Dict = pickle.load(variables_pickle_filepath)
-    Eio_OutputFile_Dict = pickle.load(eio_pickle_filepath)
+    with open(variables_pickle_filepath, "rb") as f1: IDF_OutputVariable_Dict = pickle.load(f1)
+    with open(eio_pickle_filepath, "rb") as f2: Eio_OutputFile_Dict = pickle.load(f2)
 
     zone_list = Eio_OutputFile_Dict['Zone Information']['Zone Name'].columns.tolist()
 
