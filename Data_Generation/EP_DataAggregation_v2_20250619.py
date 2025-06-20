@@ -166,7 +166,7 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_re
             # Initializing Aggregation_Dict with None
             Aggregation_DF_Equipment[key1] = None
 
-        # =============================================================================
+    # =============================================================================
     # Creating Aggregation_Dict to hold Aggregated Data
     # =============================================================================
 
@@ -182,7 +182,7 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_re
         Counter = Counter + 1
 
         if aggregation_zone_list == 'all_zones':
-            Aggregated_Zone_Name_1 = element[0]
+            Aggregated_Zone_Name_1 = element[0].strip()
             Aggregated_Zone_Name_2 = Aggregated_Zone_Name_1 + "_Equipment"
         elif aggregation_zone_list == 'one_zone':
             Aggregation_Zone_Name_1 = 'Aggregated_Zone'
@@ -195,62 +195,35 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_re
         Aggregation_Dict[Aggregated_Zone_Name_1] = copy.deepcopy(Aggregation_DF)
         Aggregation_Dict[Aggregated_Zone_Name_2] = copy.deepcopy(Aggregation_DF_Equipment)
 
-    # =============================================================================
-    # Creating Aggregated Data
-    # =============================================================================
-
-    # Initializing Counter
-    Counter = 0
-
-    # FOR LOOP: For each Aggregated Zone in Aggregation_Zone_List
-    for Current_Aggregated_Zone_List in Aggregation_Zone_List:
-
-        # Incrementing Counter
-        Counter = Counter + 1
-
-        # Creating Aggregated Zone name
-        Aggregated_Zone_Name_1 = Current_Aggregated_Zone_List[0]
-        # Aggregated_Zone_Name_1 = Aggregation_Zone_NameStem + "_" + str(Counter)
-
-        Aggregated_Zone_Name_2 = Aggregated_Zone_Name_1 + "_Equipment"
-        # Aggregated_Zone_Name_2 = Aggregation_Zone_NameStem + "_Equipment_" + str(Counter)
-
         # FOR LOOP: For each Aggregation_VariableName in Aggregation_VariableNames_List
-        for Current_Aggregation_VariableName in Aggregation_Dict[Aggregated_Zone_Name_1].columns:
+        for variable_name in simulation_variable_list:
 
             # Getting Current_Aggregation_Variable Type
-            Current_Aggregation_Variable_Type = Current_Aggregation_VariableName.split('_')[0]
+            Current_Aggregation_Variable_Type = variable_name.split(' ')[0]
 
             # Aggregation Based on Current_Aggregation_Variable_Type
             if (Current_Aggregation_Variable_Type == 'Site' or Current_Aggregation_Variable_Type == 'Facility'):  # Site
 
-                try:
-                    # Getting Current_Aggregation_Variable from IDF_OutputVariable_Dict
-                    Current_Aggregation_Variable = IDF_OutputVariable_Dict[Current_Aggregation_VariableName[:-1]]
-
-                except KeyError:
-                    # Getting Current_Aggregation_Variable from IDF_OutputVariable_Dict
-                    Current_Aggregation_Variable = IDF_OutputVariable_Dict[
-                        Current_Aggregation_VariableName[:-1] + ".csv"]
+                # Getting Current_Aggregation_Variable from IDF_OutputVariable_Dict
+                Current_Aggregation_Variable = IDF_OutputVariable_Dict[variable_name]
 
                 # Filling Aggregation_Dict with Current_Aggregation_Variable
-                Aggregation_Dict[Aggregated_Zone_Name_1][
-                    Current_Aggregation_VariableName] = Current_Aggregation_Variable.iloc[:, [1]]
+                Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = Current_Aggregation_Variable.iloc[:, [0]]
 
             elif (Current_Aggregation_Variable_Type == 'Zone'):  # Zone
 
-                if Current_Aggregation_VariableName[:-1] in IDF_OutputVariable_Dict.keys():
+                if variable_name[:-1] in IDF_OutputVariable_Dict.keys():
                     # Getting Current_Aggregation_Variable from IDF_OutputVariable_Dict
-                    Current_Aggregation_Variable = IDF_OutputVariable_Dict[Current_Aggregation_VariableName[:-1]]
+                    Current_Aggregation_Variable = IDF_OutputVariable_Dict[variable_name[:-1]]
 
-                    # Getting Dataframe subset based on Current_Aggregated_Zone_List
+                    # Getting Dataframe subset based on element
                     Current_DF_Cols_Desired = []
 
                     #  Getting Current_Aggregation_Variable_ColName_List
                     Current_Aggregation_Variable_ColName_List = Current_Aggregation_Variable.columns
 
-                    # FOR LOOP: For each element in Current_Aggregated_Zone_List
-                    for ColName1 in Current_Aggregated_Zone_List:
+                    # FOR LOOP: For each element in element
+                    for ColName1 in element:
 
                         # FOR LOOP: For each element in Current_Aggregation_Variable_ColName_List
                         for ColName2 in Current_Aggregation_Variable_ColName_List:
@@ -283,13 +256,13 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_re
                     if (aggregation_type == 1):  # Normal Aggregation
 
                         # Filling Aggregation_Dict with Current_Aggregation_Variable
-                        Aggregation_Dict[Aggregated_Zone_Name_1][Current_Aggregation_VariableName] = \
+                        Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = \
                         Current_Aggregation_Variable[Current_DF_Cols_Desired].mean(1)
 
                     elif (aggregation_type == 2):  # Weighted Area Aggregation
 
                         # Filling Aggregation_Dict with Current_Aggregation_Variable
-                        Aggregation_Dict[Aggregated_Zone_Name_1][Current_Aggregation_VariableName] = (
+                        Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = (
                                                                                                          Current_Aggregation_Variable[
                                                                                                              Current_DF_Cols_Desired].sum(
                                                                                                              1)) / (
@@ -299,7 +272,7 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_re
                     elif (aggregation_type == 3):  # Weighted Volume Aggregation
 
                         # Filling Aggregation_Dict with Current_Aggregation_Variable
-                        Aggregation_Dict[Aggregated_Zone_Name_1][Current_Aggregation_VariableName] = (
+                        Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = (
                                                                                                          Current_Aggregation_Variable[
                                                                                                              Current_DF_Cols_Desired].sum(
                                                                                                              1)) / (
@@ -310,14 +283,14 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_re
 
                 try:
                     # Getting Current_Aggregation_Variable from IDF_OutputVariable_Dict
-                    Current_Aggregation_Variable = IDF_OutputVariable_Dict[Current_Aggregation_VariableName[:-1]]
+                    Current_Aggregation_Variable = IDF_OutputVariable_Dict[variable_name[:-1]]
 
                 except KeyError:
                     # Getting Current_Aggregation_Variable from IDF_OutputVariable_Dict
                     Current_Aggregation_Variable = IDF_OutputVariable_Dict[
-                        Current_Aggregation_VariableName[:-1] + ".csv"]
+                        variable_name[:-1] + ".csv"]
 
-                # Getting Dataframe subset based on Current_Aggregated_Zone_List
+                # Getting Dataframe subset based on element
                 Current_DF_Cols_Desired = []
 
                 # Initializing Current_DF
@@ -326,8 +299,8 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_re
                 #  Getting Current_Aggregation_Variable_ColName_List
                 Current_Aggregation_Variable_ColName_List = Current_Aggregation_Variable.columns
 
-                # FOR LOOP: For each element in Current_Aggregated_Zone_List
-                for ColName1 in Current_Aggregated_Zone_List:
+                # FOR LOOP: For each element in element
+                for ColName1 in element:
 
                     # FOR LOOP: For each element in Current_Aggregation_Variable_ColName_List
                     for ColName2 in Current_Aggregation_Variable_ColName_List:
@@ -356,12 +329,12 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_re
                                 Current_Aggregation_Variable[ColName2] = Unique_Zone_Volume_Dict[ColName1] * \
                                                                          Current_Aggregation_Variable[ColName2]
 
-                    # IF ELSE LOOP: For filling Up Current_DF according to Current_Aggregation_VariableName
-                    if ((Current_Aggregation_VariableName.find('Heat') >= 0) or (
-                            Current_Aggregation_VariableName.find('Gain') >= 0) or (
-                            Current_Aggregation_VariableName.find('Rate') >= 0) or (
-                            Current_Aggregation_VariableName.find('Power') >= 0) or (
-                            Current_Aggregation_VariableName.find('Energy') >= 0)):  # Its an additive Variable
+                    # IF ELSE LOOP: For filling Up Current_DF according to variable_name
+                    if ((variable_name.find('Heat') >= 0) or (
+                            variable_name.find('Gain') >= 0) or (
+                            variable_name.find('Rate') >= 0) or (
+                            variable_name.find('Power') >= 0) or (
+                            variable_name.find('Energy') >= 0)):  # Its an additive Variable
 
                         # Adding Column to Current_DF
                         Current_DF[ColName1] = Current_Aggregation_Variable[Current_DF_Cols_Desired].sum(1)
@@ -375,21 +348,21 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_re
                 if (aggregation_type == 1):  # Normal Aggregation
 
                     # Filling Aggregation_Dict with Current_Aggregation_Variable
-                    Aggregation_Dict[Aggregated_Zone_Name_1][Current_Aggregation_VariableName] = Current_DF[
-                        Current_Aggregated_Zone_List].mean(1)
+                    Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = Current_DF[
+                        element].mean(1)
 
                 elif (aggregation_type == 2):  # Weighted Area Aggregation
 
                     # Filling Aggregation_Dict with Current_Aggregation_Variable
-                    Aggregation_Dict[Aggregated_Zone_Name_1][Current_Aggregation_VariableName] = (Current_DF[
-                                                                                                      Current_Aggregated_Zone_List].sum(
+                    Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = (Current_DF[
+                                                                                                      element].sum(
                         1)) / (Zone_TotalArea_List[Counter])
 
                 elif (aggregation_type == 3):  # Weighted Volume Aggregation
 
                     # Filling Aggregation_Dict with Current_Aggregation_Variable
-                    Aggregation_Dict[Aggregated_Zone_Name_1][Current_Aggregation_VariableName] = (Current_DF[
-                                                                                                      Current_Aggregated_Zone_List].sum(
+                    Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = (Current_DF[
+                                                                                                      element].sum(
                         1)) / (Zone_TotalVolume_List[Counter])
 
 
@@ -397,21 +370,21 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_re
 
                 try:
                     # Getting Current_Aggregation_Variable from IDF_OutputVariable_Dict
-                    Current_Aggregation_Variable = IDF_OutputVariable_Dict[Current_Aggregation_VariableName[:-1]]
+                    Current_Aggregation_Variable = IDF_OutputVariable_Dict[variable_name[:-1]]
 
                 except KeyError:
                     # Getting Current_Aggregation_Variable from IDF_OutputVariable_Dict
                     Current_Aggregation_Variable = IDF_OutputVariable_Dict[
-                        Current_Aggregation_VariableName[:-1] + ".csv"]
+                        variable_name[:-1] + ".csv"]
 
-                # Getting Dataframe subset based on Current_Aggregated_Zone_List
+                # Getting Dataframe subset based on element
                 Current_DF_Cols_Desired = []
 
                 #  Getting Current_Aggregation_Variable_ColName_List
                 Current_Aggregation_Variable_ColName_List = Current_Aggregation_Variable.columns
 
-                # FOR LOOP: For each element in Current_Aggregated_Zone_List
-                for ColName1 in Current_Aggregated_Zone_List:
+                # FOR LOOP: For each element in element
+                for ColName1 in element:
 
                     # FOR LOOP: For each element in Current_Aggregation_Variable_ColName_List
                     for ColName2 in Current_Aggregation_Variable_ColName_List:
@@ -445,13 +418,13 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_re
                 if (aggregation_type == 1):  # Normal Aggregation
 
                     # Filling Aggregation_Dict with Current_Aggregation_Variable
-                    Aggregation_Dict[Aggregated_Zone_Name_1][Current_Aggregation_VariableName] = \
+                    Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = \
                     Current_Aggregation_Variable[Current_DF_Cols_Desired].mean(1)
 
                 elif (aggregation_type == 2):  # Weighted Area Aggregation
 
                     # Filling Aggregation_Dict with Current_Aggregation_Variable
-                    Aggregation_Dict[Aggregated_Zone_Name_1][Current_Aggregation_VariableName] = (
+                    Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = (
                                                                                                      Current_Aggregation_Variable[
                                                                                                          Current_DF_Cols_Desired].sum(
                                                                                                          1)) / (
@@ -461,7 +434,7 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_re
                 elif (aggregation_type == 3):  # Weighted Volume Aggregation
 
                     # Filling Aggregation_Dict with Current_Aggregation_Variable
-                    Aggregation_Dict[Aggregated_Zone_Name_1][Current_Aggregation_VariableName] = (
+                    Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = (
                                                                                                      Current_Aggregation_Variable[
                                                                                                          Current_DF_Cols_Desired].sum(
                                                                                                          1)) / (
@@ -473,18 +446,18 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_re
 
                 try:
 
-                    # Getting Dataframe subset based on Current_Aggregated_Zone_List
+                    # Getting Dataframe subset based on element
                     Current_DF_Cols_Desired = []
 
                     # Create a CurrentLevel_List
                     CurrentLevel_List = []
 
                     # Creating Current_VariableName_1
-                    Current_Aggregation_VariableName_1 = Current_Aggregation_VariableName.split('_')[0] + '_' + \
-                                                         Current_Aggregation_VariableName.split('_')[1] + ".csv"
+                    variable_name_1 = variable_name.split('_')[0] + '_' + \
+                                                         variable_name.split('_')[1] + ".csv"
 
                     # Get Current_Element
-                    Current_Element = Current_Aggregation_VariableName.split('_')[2]
+                    Current_Element = variable_name.split('_')[2]
 
                     # Creating Current_EIO_Dict_Key
                     Current_EIO_Dict_Key = Current_Element + ' ' + 'Internal Gains Nominal'
@@ -509,15 +482,15 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_re
                     Current_EIO_Dict_DF = Eio_OutputFile_Dict[Current_EIO_Dict_Key]
 
                     # Getting Current_Aggregation_Variable from IDF_OutputVariable_Dict
-                    Current_Aggregation_Variable = IDF_OutputVariable_Dict[Current_Aggregation_VariableName_1]
+                    Current_Aggregation_Variable = IDF_OutputVariable_Dict[variable_name_1]
 
                     #  Getting Current_Aggregation_Variable_ColName_List
                     Current_Aggregation_Variable_ColName_List = Current_Aggregation_Variable.columns
 
-                    # FOR LOOP: For each element in Current_Aggregated_Zone_List
-                    for ColName1 in Current_Aggregated_Zone_List:
+                    # FOR LOOP: For each element in element
+                    for ColName1 in element:
 
-                        # Current_Aggregated_Zone_List should only be only be 2D
+                        # element should only be only be 2D
 
                         # Getting ColName2 from the 'Schedule Name' Column of Current_EIO_Dict_DF
                         # need to remove duplicates from Current_EIO_Dict_DF['Zone Name']
@@ -553,7 +526,7 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_re
                                 ColName4)
 
                     # Filling Aggregation_Dict with Current_Aggregation_Variable and Current_EIO_Dict_Key_Level
-                    Aggregation_Dict[Aggregated_Zone_Name_1][Current_Aggregation_VariableName] = \
+                    Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = \
                     Current_Aggregation_Variable[Current_DF_Cols_Desired_Corrected].mean(1)
 
                     Aggregation_Dict[Aggregated_Zone_Name_2][Current_EIO_Dict_Key_Level] = pd.DataFrame(

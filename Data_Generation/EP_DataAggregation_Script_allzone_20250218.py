@@ -300,7 +300,6 @@ for Simulation_Name in Simulation_Name_List:
        
         # Appending empty Aggregation_DF to Aggregation_Dict
         Aggregation_Dict[Aggregated_Zone_Name_1] = copy.deepcopy(Aggregation_DF)
-        
         Aggregation_Dict[Aggregated_Zone_Name_2] = copy.deepcopy(Aggregation_DF_Equipment)
 
 
