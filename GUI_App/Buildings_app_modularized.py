@@ -46,6 +46,8 @@ os.makedirs(WORKSPACE_DIRECTORY)
 SIMULATION_FOLDERPATH = 'abc123'
 SIMULATION_FOLDERNAME = 'abc123' # Simulation Name
 
+BUILDING_TYPE = None
+
 # Data Directory
 DATA_DIRECTORY = os.path.join(os.getcwd(), "..", "..", "Data")
 
@@ -300,6 +302,9 @@ def EPGen_Dropdown_SubLevel2_Interaction(buildingType_selection, level_1, level_
 def Update_IDF_Weather_Files(buildingType, level1, level2, level3, location):
     global DATA_IDF_FILEPATH
     global DATA_WEATHER_FILEPATH
+    global BUILDING_TYPE
+
+    BUILDING_TYPE = buildingType
 
     idf_filepath, weather_filepath = EPGen.Update_IDF_Weather_Files(buildingType, level1, level2, level3, location)
     if idf_filepath is not None: DATA_IDF_FILEPATH = idf_filepath
