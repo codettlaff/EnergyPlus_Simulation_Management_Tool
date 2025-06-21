@@ -169,7 +169,7 @@ def get_building_id(conn, building_type, building_name):
     # Initialize query parameters
     prototype, energy_code, climate_zone, heating_type, foundation_type = None, None, None, None, None
 
-    if building_type == "Commercial":
+    if building_type == "Commercial_Prototypes":
         # Example Name: ASHRAE901_Hospital_STD2013_Tampa
         match = re.match(r"(ASHRAE\d{3}|IECC\d{4})_(\w+)_STD(\d{4})_([A-Za-z]+)", building_name)
         if match:
@@ -178,7 +178,7 @@ def get_building_id(conn, building_type, building_name):
             location = match.group(4)
             climate_zone = get_climate_zone(location)
 
-    elif building_type == "Residential":
+    elif building_type == "Residential_Prototypes":
         # Example Name: US+MF+CZ1AWH+elecres+crawlspace+IECC_2021
         match = re.match(r"US\+([A-Za-z-]+)\+CZ(\d+[A-Z]*)\+([a-z-]+)\+([a-z-]+)\+(IECC_\d{4})", building_name)
         if match:
@@ -188,7 +188,7 @@ def get_building_id(conn, building_type, building_name):
             foundation_type = match.group(4).replace('crawlspace', 'Crawlspace').replace('unheatedbsmt', 'Unheated-basement').replace('heatedbsmt', 'Heated-basement').replace('slab', 'Slab')
             energy_code = match.group(5).replace('_', '')
 
-    elif building_type == "Manufactured":
+    elif building_type == "Manufactured_Prototypes":
         # Example Name: MS_Miami_1A_HUD_electricfurnace
         match = re.match(r"([A-Za-z]+)_([A-Za-z]+)_(\d+[A-Z]*)_(HUD|Final-Rule)_(\w+)", building_name)
         if match:
@@ -639,33 +639,34 @@ def upload_time_series_data(conn, data_dict, simulation_name, building_id, epw_c
 
 # NEW TEST CODE
 
-dbname = "buildings"
-user = "Casey"
-password = "OfficeLarge"
-host = "localhost"
+def test_code():
+    dbname = "buildings"
+    user = "Casey"
+    password = "OfficeLarge"
+    host = "localhost"
 
-# Create the connection object
-conn = psycopg2.connect(dbname=dbname, user=user, password=password, host=host)
+    # Create the connection object
+    conn = psycopg2.connect(dbname=dbname, user=user, password=password, host=host)
 
-populate_datetimes_table(conn)
-populate_buildings_table(conn)
+    populate_datetimes_table(conn)
+    populate_buildings_table(conn)
 
-test_building_name = 'ASHRAE901_OfficeSmall_STD2013_Seattle'
-building_id = get_building_id(conn, 'Commercial', test_building_name)
+    test_building_name = 'ASHRAE901_OfficeSmall_STD2013_Seattle'
+    building_id = get_building_id(conn, 'Commercial', test_building_name)
 
-all_zone_aggregated_pickle_filepath = r"D:\Seattle_ASHRAE_2013_2day\ASHRAE901_OfficeSmall_STD2013_Seattle\Sim_AggregatedData\Aggregation_Dict_AllZones.pickle"
-with (open(all_zone_aggregated_pickle_filepath,"rb") as file):
-    all_zone_data_dict = pickle.load(file)
+    all_zone_aggregated_pickle_filepath = r"D:\Seattle_ASHRAE_2013_2day\ASHRAE901_OfficeSmall_STD2013_Seattle\Sim_AggregatedData\Aggregation_Dict_AllZones.pickle"
+    with (open(all_zone_aggregated_pickle_filepath,"rb") as file):
+        all_zone_data_dict = pickle.load(file)
 
-one_zone_aggregated_pickle_filepath = r"D:\Seattle_ASHRAE_2013_2day\ASHRAE901_OfficeSmall_STD2013_Seattle\Sim_AggregatedData\Aggregation_Dict_OneZone.pickle"
-with (open(one_zone_aggregated_pickle_filepath,"rb") as file):
-    one_zone_data_dict = pickle.load(file)
+    one_zone_aggregated_pickle_filepath = r"D:\Seattle_ASHRAE_2013_2day\ASHRAE901_OfficeSmall_STD2013_Seattle\Sim_AggregatedData\Aggregation_Dict_OneZone.pickle"
+    with (open(one_zone_aggregated_pickle_filepath,"rb") as file):
+        one_zone_data_dict = pickle.load(file)
 
-# Upload All-Zones (un-aggregated) pickle file.
-zones = upload_time_series_data(conn, all_zone_data_dict, test_building_name, building_id)
+    # Upload All-Zones (un-aggregated) pickle file.
+    zones = upload_time_series_data(conn, all_zone_data_dict, test_building_name, building_id)
 
-# Upload One-Zone (aggregated) pickle file.
-aggregation_zones = {
-    "aggregation_zone_1z": zones
-}
-zones = upload_time_series_data(conn, one_zone_data_dict, test_building_name, building_id, aggregation_zones=aggregation_zones)
+    # Upload One-Zone (aggregated) pickle file.
+    aggregation_zones = {
+        "aggregation_zone_1z": zones
+    }
+    zones = upload_time_series_data(conn, one_zone_data_dict, test_building_name, building_id, aggregation_zones=aggregation_zones)

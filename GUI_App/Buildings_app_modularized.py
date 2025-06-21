@@ -47,6 +47,7 @@ SIMULATION_FOLDERPATH = 'abc123'
 SIMULATION_FOLDERNAME = 'abc123' # Simulation Name
 
 BUILDING_TYPE = None
+BUILDING_ID = None
 
 # Data Directory
 DATA_DIRECTORY = os.path.join(os.getcwd(), "..", "..", "Data")
@@ -800,7 +801,9 @@ def handle_existing_db_selection(selected_dbname):
 )
 def upload_to_db(n_clicks):
 
-    button_text = EPGen.upload_to_db(CONN, VARIABLES_PICKLE_FILEPATH, EIO_PICKLE_FILEPATH, SIMULATION_RESULTS_FOLDERPATH, SIMULATION_SETTINGS, SIMULATION_VARIABLE_LIST)
+    global BUILDING_ID
+    button_text, building_id = EPGen.upload_to_db(CONN, BUILDING_TYPE, VARIABLES_PICKLE_FILEPATH, EIO_PICKLE_FILEPATH, SIMULATION_RESULTS_FOLDERPATH, SIMULATION_SETTINGS, SIMULATION_VARIABLE_LIST)
+    BUILDING_ID = building_id
     return button_text
 
 # Running the App

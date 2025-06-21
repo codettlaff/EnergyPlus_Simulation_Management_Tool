@@ -1636,7 +1636,7 @@ def EPGen_Button_DownloadFiles_Interaction_Function(download_selection, n_clicks
     return dcc.send_file(download_path)
 """
 
-def upload_to_db(conn, variables_pickle_filepath, eio_pickle_filepath, simulation_results_folderpath, simulation_settings, simulation_variable_list):
+def upload_to_db(conn, building_type, variables_pickle_filepath, eio_pickle_filepath, simulation_results_folderpath, simulation_settings, simulation_variable_list):
 
     all_zone_aggregation_pickle_filepath = EP_Agg.aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_results_folderpath, simulation_settings, simulation_variable_list)
     start_datetime = datetime.datetime(
@@ -1650,7 +1650,9 @@ def upload_to_db(conn, variables_pickle_filepath, eio_pickle_filepath, simulatio
         simulation_settings["end_day"]
     )
     DB_Uploader.populate_datetimes_table(conn, base_time_resolution=1, start_datetime=start_datetime, end_datetime=end_datetime)
-    return('Data Uploaded')
+    idf_filename = os.path.basename(DATA_IDF_FILEPATH)
+    building_id = DB_Uploader.get_building_id(conn, building_type, idf_filename)
+    return('Data Uploaded'), building_id
 
 def EPGen_Button_EndSession_Interaction_Function(n_clicks):
 
