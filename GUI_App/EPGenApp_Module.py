@@ -1653,7 +1653,7 @@ def upload_to_db(conn, building_type, variables_pickle_filepath, eio_pickle_file
     idf_filename = os.path.basename(DATA_IDF_FILEPATH)
     building_id = DB_Uploader.get_building_id(conn, building_type, idf_filename)
 
-    with open(variables_pickle_filepath, "rb") as f: data_dict = pickle.load(f)
+    with open(all_zone_aggregation_pickle_filepath, "rb") as f: data_dict = pickle.load(f)
     simulation_name = SIMULATION_FOLDERNAME
     location = DB_Uploader.get_location_from_epw_filepath(os.path.basename(DATA_WEATHER_FILEPATH))
     epw_climate_zone = DB_Uploader.get_climate_zone(location)
