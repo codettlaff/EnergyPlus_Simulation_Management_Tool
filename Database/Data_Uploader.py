@@ -201,6 +201,8 @@ def get_building_id(conn, building_type, building_name):
     if not prototype or not energy_code or not climate_zone:
         return None
 
+    if '_' in building_type: building_type = building_type.split('_')[0]
+
     # Construct SQL query
     query = """
         SELECT id FROM building_prototypes

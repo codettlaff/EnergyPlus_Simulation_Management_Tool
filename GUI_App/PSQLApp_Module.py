@@ -313,6 +313,7 @@ def create_database(username, password, port, dbname):
     try:
         conn = Database_Creator.create_database(username, password, port, dbname)
         Database_Creator.create_tables(conn)
+        Data_Uploader.populate_buildings_table(conn)
     except Exception as e:
         print(e)
 
