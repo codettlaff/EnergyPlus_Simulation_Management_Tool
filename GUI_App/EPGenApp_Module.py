@@ -1035,7 +1035,7 @@ def EPGen_Button_GenerateData_Interaction_Function(results_folderpath, start_dat
     print("generating_data")
     simulation_settings = {
         "name": SIMULATION_FOLDERNAME,
-        "idf_year": 2013,
+        "idf_year": int(start_date.split("-")[0]),
         "start_month": int(start_date.split("-")[1]),
         "start_day": int(start_date.split("-")[2]),
         "end_month": int(end_date.split("-")[1]),

@@ -587,7 +587,6 @@ def upload_time_series_data(conn, data_dict, simulation_name, building_id, epw_c
     # populate zones table
     if not aggregation_zones:
         zones = populate_zones_table(conn, data_dict, simulation_id)
-        return zones
     else:
         zones = insert_aggregation_zones(conn, data_dict, simulation_id, aggregation_zones)
 
