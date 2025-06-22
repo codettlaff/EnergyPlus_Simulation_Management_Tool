@@ -7,6 +7,20 @@ from datetime import datetime, timedelta
 import pickle
 import re
 
+def get_location_from_epw_filepath(epw_file_path):
+
+    location = epw_file_path.split('_')[2]
+    if '-' in location: location = location.split('-')[0]
+    if '.' in location: location = location.split('.')[0]
+    if location == 'San': location = 'SanDiego'
+    if location == 'International': location = 'InternationalFalls'
+    if location == 'Great': location = 'GreatFalls'
+    if location == 'New': location = 'NewYork'
+    if location == 'El': location = 'ElPaso'
+    if location == 'Port': location = 'PortAngeles'
+
+    return location
+
 def get_climate_zone(location):
     climate_zones = {
         "Miami": "1A",

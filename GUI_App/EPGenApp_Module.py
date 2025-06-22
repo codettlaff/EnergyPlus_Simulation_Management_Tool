@@ -1652,6 +1652,14 @@ def upload_to_db(conn, building_type, variables_pickle_filepath, eio_pickle_file
     DB_Uploader.populate_datetimes_table(conn, base_time_resolution=1, start_datetime=start_datetime, end_datetime=end_datetime)
     idf_filename = os.path.basename(DATA_IDF_FILEPATH)
     building_id = DB_Uploader.get_building_id(conn, building_type, idf_filename)
+
+    with open(variables_pickle_filepath, "rb") as f: data_dict = pickle.load(f)
+    simulation_name = SIMULATION_FOLDERNAME
+    location = DB_Uploader.get_location_from_epw_filepath(os.path.basename(DATA_WEATHER_FILEPATH))
+    epw_climate_zone = DB_Uploader.get_climate_zone(location)
+    time_resolution = simulation_settings["timestep_minutes"]
+
+    DB_Uploader.upload_time_series_data(conn, data_dict, simulation_name, building_id, epw_climate_zone, time_resolution, aggregation_zones=None)
     return('Data Uploaded'), building_id
 
 def EPGen_Button_EndSession_Interaction_Function(n_clicks):
