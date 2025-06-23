@@ -474,7 +474,7 @@ def populate_variables_table(conn, data_dict, zone_ids):
     df = pd.DataFrame(result, columns=["variable_id", "variable_name", "zone_id"])
     return df
 
-def get_datetime_id_list(conn, data_dict):
+def get_datetime_id_list(conn, data_dict, start_datetime, end_datetime, time_resolution):
     """
     Retrieves a list of datetime_ids from the 'datetimes' table based on the time resolution
     given in data_dict. The 'datetimes' table is assumed to have a 5-minute resolution,
@@ -503,8 +503,8 @@ def get_datetime_id_list(conn, data_dict):
         if time_resolution % 5 != 0:
             raise ValueError("Time resolution must be a multiple of 5 minutes")
 
-        start_datetime = datetime_list[0] - timedelta(minutes=time_resolution) # First timestamp in DateTime_List, shifted.
-        end_datetime = datetime_list[-1] + timedelta(days=1) - timedelta(minutes=time_resolution) # Last timestamp in DateTime_List, shifted
+        #start_datetime = datetime_list[0] - timedelta(minutes=time_resolution) # First timestamp in DateTime_List, shifted.
+        #end_datetime = datetime_list[-1] + timedelta(days=1) - timedelta(minutes=time_resolution) # Last timestamp in DateTime_List, shifted
 
         step = time_resolution // 1 # Step size for selecting datetime_ids
 
@@ -579,7 +579,18 @@ def get_variables(conn, zone_id):
         return []
 # passed
 
-def upload_time_series_data(conn, data_dict, simulation_name, building_id, epw_climate_zone=None, time_resolution=5, aggregation_zones=None):
+def upload_time_series_data(conn, data_dict, simulation_name, simulation_settings, building_id, epw_climate_zone=None, time_resolution=5, aggregation_zones=None):
+
+    start_datetime = datetime(
+        simulation_settings["idf_year"],
+        simulation_settings["start_month"],
+        simulation_settings["start_day"]
+    )
+    end_datetime = datetime(
+        simulation_settings["idf_year"],
+        simulation_settings["end_month"],
+        simulation_settings["end_day"]
+    )
 
     # Create new entry in the simulations table, returning simulation_id
     simulation_id = populate_simulations_table(conn, building_id, simulation_name, epw_climate_zone)
@@ -599,7 +610,7 @@ def upload_time_series_data(conn, data_dict, simulation_name, building_id, epw_c
     variables_with_zone_name = variables.merge(zones, on='zone_id', how='left')
 
     # get datetime id list
-    datetime_ids = get_datetime_id_list(conn, data_dict)
+    datetime_ids = get_datetime_id_list(conn, data_dict, start_datetime, end_datetime, time_resolution)
 
     # Extract zone names from data_dict, ignoring "Equipment" keys
     keys = list(data_dict.keys())
