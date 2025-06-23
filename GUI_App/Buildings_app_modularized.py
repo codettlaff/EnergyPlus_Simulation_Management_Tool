@@ -525,6 +525,18 @@ def EPAgg_DropDown_TypeOfAggregation_Interaction(value):
     div = EPAgg.EPAgg_DropDown_TypeOfAggregation_Interaction_Function(value)
     return div
 
+# Update Variable Selection
+@app.callback(
+    Input(component_id = 'EPAgg_RadioButton_AggregationVariables', component_property = 'value'),
+    Input(component_id = 'EPAgg_DropDown_PreselectedVariables', component_property = 'value'),
+    Input(component_id = 'EPAgg_DropDown_CustomVariables', component_property = 'value'),
+    prevent_initial_call = True
+)
+def update_variables_list(button_value, preselected_variables, custom_variables):
+    global SIMULATION_VARIABLE_LIST
+    if button_value == 1: SIMULATION_VARIABLE_LIST = preselected_variables
+    elif button_value == 2: SIMULATION_VARIABLE_LIST = custom_variables
+
 @app.callback(
     Output(component_id = 'EPAgg_Button_Aggregate', component_property = 'children'),
     State(component_id = 'EPAgg_RadioButton_AggregationVariables', component_property = 'value'),

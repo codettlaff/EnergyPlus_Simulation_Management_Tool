@@ -158,6 +158,7 @@ tab_layout =[
                         html.Label("Preselected Variables",
                             className = 'text-left ms-4'),
                         dcc.Dropdown(['Var1','Var2','Var3'], '',
+                            multi = True,
                             id='EPAgg_DropDown_PreselectedVariables',
                             style = {
                                 'width': '95%',
