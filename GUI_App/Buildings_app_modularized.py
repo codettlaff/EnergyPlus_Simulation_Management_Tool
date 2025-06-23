@@ -486,7 +486,9 @@ def EPAgg_Upload_Pickle_Interaction(filename, content):
     State(component_id = 'EPAgg_Upload_EIO', component_property = 'contents'),
     prevent_initial_call = True)
 def EPAgg_Upload_EIO_Interaction(filename, content):
-    message = EPAgg.EPAgg_Upload_EIO_Interaction_Function(filename, content)
+    global EIO_PICKLE_FILEPATH
+    message, eio_pickle_filepath = EPAgg.EPAgg_Upload_EIO_Interaction_Function(filename, content)
+    EIO_PICKLE_FILEPATH = eio_pickle_filepath
     return message
 
 @app.callback(

@@ -341,7 +341,8 @@ def EPAgg_Upload_EIO_Interaction_Function(filename, content):
     else:
         message = 'Upload EIO file'
 
-    return message
+    eio_pickle_filepath = os.path.join(UPLOAD_DIRECTORY_AGG_EIO, filename)
+    return message, eio_pickle_filepath
 
 def EPAgg_DropDown_AggregationVariables_Interaction_Function(selection, value):
 
