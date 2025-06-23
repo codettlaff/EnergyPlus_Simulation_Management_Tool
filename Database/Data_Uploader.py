@@ -54,7 +54,9 @@ def populate_datetimes_table(conn, base_time_resolution=1, start_datetime=dateti
     try:
         with conn.cursor() as cursor:
             # Generate timestamps for one year
-            timestamps = [start_datetime + timedelta(minutes=base_time_resolution * i) for i in range((end_datetime - start_datetime).days * 24 * 60)]
+            duration_minutes = int((end_datetime - start_datetime).total_seconds() / 60)
+            timestamps = [start_datetime + timedelta(minutes=base_time_resolution * i)
+                          for i in range(duration_minutes // base_time_resolution)]
             timestamps.append(end_datetime)
 
             # Convert list into a format suitable for insertion
@@ -74,6 +76,7 @@ def populate_datetimes_table(conn, base_time_resolution=1, start_datetime=dateti
     except Exception as e:
         conn.rollback()
         print(f"Error inserting into datetimes table: {e}")
+
 # Fills datetimes table with timestamps at 1-minute intervals for one year.
 # Passed
 
