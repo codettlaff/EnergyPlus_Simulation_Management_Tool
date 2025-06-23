@@ -77,7 +77,7 @@ def create_simulation_folder(simName_FilePath, IDF_FilePath, Weather_FilePath):
     print(f"Files copied to {temp_folder}")
 
 # function for saving the uploaded file
-def save_file(name, content,UPLOAD_DIRECTORY):
+def save_file(name, content, UPLOAD_DIRECTORY):
     """Decode and store a file uploaded with Plotly Dash."""
     data = content.encode("utf8").split(b";base64,")[1]
 

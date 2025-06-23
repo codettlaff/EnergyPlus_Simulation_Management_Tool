@@ -39,6 +39,12 @@ UPLOAD_DIRECTORY_AGG_EIO = os.path.join(UPLOAD_DIRECTORY, "EIO_Upload")
 UPLOAD_DIRECTORY_VIS = os.path.join(UPLOAD_DIRECTORY, "Visualization")
 WORKSPACE_DIRECTORY = os.path.join(os.getcwd(), "EP_APP_Workspace")
 
+if os.path.exists(UPLOAD_DIRECTORY): shutil.rmtree(UPLOAD_DIRECTORY)
+os.mkdir(UPLOAD_DIRECTORY)
+os.mkdir(UPLOAD_DIRECTORY_AGG_PICKLE)
+os.mkdir(UPLOAD_DIRECTORY_AGG_EIO)
+os.mkdir(UPLOAD_DIRECTORY_VIS)
+
 if os.path.exists(WORKSPACE_DIRECTORY): shutil.rmtree(WORKSPACE_DIRECTORY)
 os.makedirs(WORKSPACE_DIRECTORY)
 

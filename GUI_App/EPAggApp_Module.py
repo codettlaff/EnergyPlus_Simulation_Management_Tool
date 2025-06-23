@@ -28,6 +28,7 @@ UPLOAD_DIRECTORY = os.path.join(os.getcwd(), "EP_APP_Uploads")
 UPLOAD_DIRECTORY_AGG_PICKLE = os.path.join(UPLOAD_DIRECTORY, "Pickle_Upload")
 UPLOAD_DIRECTORY_AGG_EIO = os.path.join(UPLOAD_DIRECTORY, "EIO_Upload")
 UPLOAD_DIRECTORY_VIS = os.path.join(UPLOAD_DIRECTORY, "Visualization")
+
 WORKSPACE_DIRECTORY = os.path.join(os.getcwd(), "EP_APP_Workspace")
 SIMULATION_FOLDERPATH = 'abc123'
 SIMULATION_FOLDERNAME = 'abc123'
