@@ -63,6 +63,7 @@ RESULTS_FOLDERPATH = os.path.abspath(os.path.join(os.getcwd(), "..", "Results"))
 SIMULATION_RESULTS_FOLDERPATH = None
 
 CONN = None
+DB_SETTINGS = None
 
 SIMULATION_VARIABLE_LIST = []
 
@@ -772,8 +773,9 @@ def PSQL_Radiobutton_CreateSelectDatabase_Interaction(selection):
     prevent_initial_call=True
 )
 def on_create_database(n_clicks, username, password, port, dbname):
+    global DB_SETTINGS
     print(f"Creating database {dbname}\n Username: {username}\n Password: {password}\n Port: {port}")
-    conn = PSQL.create_database(username, password, port, dbname)
+    DB_SETTINGS = PSQL.create_database(username, password, port, dbname)
 
 @app.callback(
     Output('PSQL_Dropdown_ExistDbList', 'options'),
@@ -790,9 +792,8 @@ def populate_existing_db_dropdown(selection):
     #prevent_initial_call=True
 )
 def handle_existing_db_selection(selected_dbname):
-    global CONN
-    conn = PSQL.get_conn_from_dbname(selected_dbname)
-    CONN = conn
+    global DB_SETTINGS
+    DB_SETTINGS = PSQL.get_conn_from_dbname(selected_dbname)
 
 @ app.callback(
     Output('EPGen_Button_UploadtoDb', 'children'),
@@ -802,8 +803,10 @@ def handle_existing_db_selection(selected_dbname):
 def upload_to_db(n_clicks):
 
     global BUILDING_ID
-    button_text, building_id = EPGen.upload_to_db(CONN, BUILDING_TYPE, VARIABLES_PICKLE_FILEPATH, EIO_PICKLE_FILEPATH, SIMULATION_RESULTS_FOLDERPATH, SIMULATION_SETTINGS, SIMULATION_VARIABLE_LIST)
+    conn = PSQL.connect_to_database(DB_SETTINGS)
+    button_text, building_id = EPGen.upload_to_db(conn, BUILDING_TYPE, VARIABLES_PICKLE_FILEPATH, EIO_PICKLE_FILEPATH, SIMULATION_RESULTS_FOLDERPATH, SIMULATION_SETTINGS, SIMULATION_VARIABLE_LIST)
     BUILDING_ID = building_id
+    conn.close()
     return button_text
 
 # Running the App

@@ -303,17 +303,22 @@ def PSQL_Radiobutton_CreateSelectDatabase_Interaction_Function(data_source):
 
 # Casey's Code
 
+def connect_to_database(db_settings):
+    return psycopg2.connect(**db_settings)
+
 def create_database(username, password, port, dbname):
     """
     1. call create_database function in database_creator script, which returns a conn object. if this was done sucessfully, continue.
     1. if databases csv file does not exist, create it (have global variable DATABASES_CSV_FILEPATH)
     2. add current database as row in databases csv
     """
+    db_settings = None
 
     try:
-        conn = Database_Creator.create_database(username, password, port, dbname)
+        conn, db_settings = Database_Creator.create_database(username, password, port, dbname)
         Database_Creator.create_tables(conn)
         Data_Uploader.populate_buildings_table(conn)
+        conn.close()
     except Exception as e:
         print(e)
 
@@ -331,7 +336,7 @@ def create_database(username, password, port, dbname):
     df = pd.concat([df, pd.DataFrame([new_record])], ignore_index=True)
     df.to_csv(DATABASES_CSV_FILEPATH, index=False)
 
-    return conn
+    return db_settings
 
 def populate_existing_db_dropdown(selection):
     # Only update the dropdown if "Select Database" was chosen (value = 2)
@@ -350,6 +355,7 @@ def populate_existing_db_dropdown(selection):
 
 def get_conn_from_dbname(database_name):
 
+    db_settings = None
     try:
         df = pd.read_csv(DATABASES_CSV_FILEPATH)
         record = df[df["database_name"] == database_name].iloc[0]
@@ -361,6 +367,12 @@ def get_conn_from_dbname(database_name):
                 password=record["password"],
                 host="localhost"
             )
+            db_settings = {
+                "dbname": record["database_name"],
+                "user": record["username"],
+                "password": record["password"],
+                "host": "localhost"
+            }
         else:
             conn = psycopg2.connect(
                 dbname=record["database_name"],
@@ -368,9 +380,17 @@ def get_conn_from_dbname(database_name):
                 password=record["password"],
                 port=record["port"]
             )
+            db_settings = {
+                "dbname": record["database_name"],
+                "user": record["username"],
+                "password": record["password"],
+                "post": record["port"]
+            }
+
+        conn.close()
 
         print(f"Connected to {database_name}")
-        return conn
+        return db_settings
     except Exception as e:
         print(f"Could not connect to {database_name}: {e}")
         return None

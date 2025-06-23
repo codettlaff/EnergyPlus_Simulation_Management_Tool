@@ -661,7 +661,7 @@ def upload_time_series_data(conn, data_dict, simulation_name, simulation_setting
 
                     cursor.executemany(insert_query, data_to_insert)
                     conn.commit()
-                    conn.close()
+                    #conn.close()
 
                 except Exception as e:
                     print(f"Error in populate_time_series_data_table: {e}")

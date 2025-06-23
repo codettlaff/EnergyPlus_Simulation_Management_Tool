@@ -23,9 +23,24 @@ def create_database(username="user", password="password", host="localhost", data
     conn.close()
 
     time.sleep(0.5)
-    if host == "localhost": conn = psycopg2.connect(dbname=database_name, user=username, password=password, host=host)
-    else: conn = psycopg2.connect(dbname=database_name, user=username, password=password, port=host)
-    return conn
+    if host == "localhost":
+        conn = psycopg2.connect(dbname=database_name, user=username, password=password, host=host)
+        db_settings = {
+            "dbname": database_name,
+            "user": username,
+            "password": password,
+            "host": host
+        }
+    else:
+        conn = psycopg2.connect(dbname=database_name, user=username, password=password, port=host)
+        db_settings = {
+            "dbname": database_name,
+            "user": username,
+            "password": password,
+            "port": host
+        }
+
+    return conn, db_settings
 
 def delete_database(conn, dbname):
 
