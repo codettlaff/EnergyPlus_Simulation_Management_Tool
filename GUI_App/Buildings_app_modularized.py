@@ -474,9 +474,10 @@ def EPAgg_RadioButton_InputSelection_Interaction(value):
     Input(component_id = 'EPAgg_Upload_Pickle', component_property = 'contents'),
     prevent_initial_call = True)
 def EPAgg_Upload_Pickle_Interaction(filename, content):
-    global VARIABLES_PICKLE_FILEPATH
+    global VARIABLES_PICKLE_FILEPATH, BUILDING_TYPE
     message, variables_pickle_filepath = EPAgg.EPAgg_Upload_Pickle_Interaction_Function(filename, content)
     VARIABLES_PICKLE_FILEPATH = variables_pickle_filepath
+    BUILDING_TYPE = 'Custom'
     return message
 
 @app.callback(
