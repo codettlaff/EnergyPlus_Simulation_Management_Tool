@@ -470,18 +470,20 @@ def EPAgg_RadioButton_InputSelection_Interaction(value):
 
 @app.callback(
     Output(component_id = 'EPAgg_Upload_Pickle', component_property = 'children'),
-    Input(component_id = 'EPAgg_Upload_Pickle', component_property = 'filename'),
-    State(component_id = 'EPAgg_Upload_Pickle', component_property = 'contents'),
-    prevent_initial_call = False)
+    State(component_id = 'EPAgg_Upload_Pickle', component_property = 'filename'),
+    Input(component_id = 'EPAgg_Upload_Pickle', component_property = 'contents'),
+    prevent_initial_call = True)
 def EPAgg_Upload_Pickle_Interaction(filename, content):
-    message = EPAgg.EPAgg_Upload_Pickle_Interaction_Function(filename, content)
+    global VARIABLES_PICKLE_FILEPATH
+    message, variables_pickle_filepath = EPAgg.EPAgg_Upload_Pickle_Interaction_Function(filename, content)
+    VARIABLES_PICKLE_FILEPATH = variables_pickle_filepath
     return message
 
 @app.callback(
     Output(component_id = 'EPAgg_Upload_EIO', component_property = 'children'),
     Input(component_id = 'EPAgg_Upload_EIO', component_property = 'filename'),
     State(component_id = 'EPAgg_Upload_EIO', component_property = 'contents'),
-    prevent_initial_call = False)
+    prevent_initial_call = True)
 def EPAgg_Upload_EIO_Interaction(filename, content):
     message = EPAgg.EPAgg_Upload_EIO_Interaction_Function(filename, content)
     return message

@@ -330,7 +330,8 @@ def EPAgg_Upload_Pickle_Interaction_Function(filename, content):
     else:
         message = 'Upload Pickled Variable file'
 
-    return message
+    variables_pickle_filepath = os.path.join(UPLOAD_DIRECTORY_AGG_PICKLE, filename)
+    return message, variables_pickle_filepath
 
 def EPAgg_Upload_EIO_Interaction_Function(filename, content):
     if filename is not None and content is not None:
