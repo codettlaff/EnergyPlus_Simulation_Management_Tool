@@ -1644,11 +1644,14 @@ def upload_to_db(conn, building_type, variables_pickle_filepath, eio_pickle_file
         simulation_settings["start_month"],
         simulation_settings["start_day"]
     )
+    start_datetime = start_datetime + datetime.timedelta(minutes=simulation_settings["timestep_minutes"])
     end_datetime = datetime.datetime(
         simulation_settings["idf_year"],
         simulation_settings["end_month"],
         simulation_settings["end_day"]
     )
+    end_datetime = end_datetime + datetime.timedelta(days=1)
+
     DB_Uploader.populate_datetimes_table(conn, base_time_resolution=1, start_datetime=start_datetime, end_datetime=end_datetime)
     idf_filename = os.path.basename(DATA_IDF_FILEPATH)
     building_id = DB_Uploader.get_building_id(conn, building_type, idf_filename)

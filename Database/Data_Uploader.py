@@ -53,8 +53,9 @@ def populate_datetimes_table(conn, base_time_resolution=1, start_datetime=dateti
         """
     try:
         with conn.cursor() as cursor:
-            # Generate timestamps for one year at 5-minute intervals
-            timestamps = [start_datetime + timedelta(minutes=base_time_resolution * i) for i in range((end_datetime - start_datetime).days * 24 * 12)]
+            # Generate timestamps for one year
+            timestamps = [start_datetime + timedelta(minutes=base_time_resolution * i) for i in range((end_datetime - start_datetime).days * 24 * 60)]
+            timestamps.append(end_datetime)
 
             # Convert list into a format suitable for insertion
             records = [(ts,) for ts in timestamps]
@@ -503,8 +504,8 @@ def get_datetime_id_list(conn, data_dict, start_datetime, end_datetime, time_res
         if time_resolution % 5 != 0:
             raise ValueError("Time resolution must be a multiple of 5 minutes")
 
-        #start_datetime = datetime_list[0] - timedelta(minutes=time_resolution) # First timestamp in DateTime_List, shifted.
-        #end_datetime = datetime_list[-1] + timedelta(days=1) - timedelta(minutes=time_resolution) # Last timestamp in DateTime_List, shifted
+        #start_datetime = start_datetime - timedelta(minutes=time_resolution) # First timestamp in DateTime_List, shifted.
+        #end_datetime = end_datetime + timedelta(days=1) - timedelta(minutes=time_resolution) # Last timestamp in DateTime_List, shifted
 
         step = time_resolution // 1 # Step size for selecting datetime_ids
 
@@ -586,11 +587,13 @@ def upload_time_series_data(conn, data_dict, simulation_name, simulation_setting
         simulation_settings["start_month"],
         simulation_settings["start_day"]
     )
+    start_datetime = start_datetime + timedelta(minutes=simulation_settings["timestep_minutes"])
     end_datetime = datetime(
         simulation_settings["idf_year"],
         simulation_settings["end_month"],
         simulation_settings["end_day"]
     )
+    end_datetime = end_datetime + timedelta(days=1)
 
     # Create new entry in the simulations table, returning simulation_id
     simulation_id = populate_simulations_table(conn, building_id, simulation_name, epw_climate_zone)
