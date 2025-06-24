@@ -6,6 +6,7 @@ Created on Tue Jan 30 15:32:25 2024
 
 # Importing Required Modules
 import shutil
+import sys
 import os
 import re
 import datetime
@@ -69,6 +70,10 @@ OUR_VARIABLE_LIST = ['Schedule_Value_',
                         'Zone_Air_System_Sensible_Heating_Rate_',
                         'System_Node_Temperature_',
                         'System_Node_Mass_Flow_Rate_']
+
+database_generation_dir = os.path.join(os.path.dirname(__file__), '..', 'Data_Generation')
+sys.path.append(database_generation_dir)
+import EP_DataAggregation_v2_20250619 as EP_Agg
 
 tab_layout =[
     
@@ -458,7 +463,12 @@ def EPAgg_DropDown_TypeOfAggregation_Interaction_Function(value):
 
     return div
 
-def EPAgg_Button_Aggregate_Interaction_Function(variable_selection, custom_variables, aggregate_to, custom_zone_list, Type_Aggregation, n_clicks):
+def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_results_folderpath, simulation_variable_list, aggregation_type, aggregation_zone_list):
+
+    aggregation_pickle_filepath = EP_Agg.aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_results_folderpath, simulation_variable_list, aggregation_type, aggregation_zone_list)
+
+'''
+def EPAgg_Button_Aggregate_Interaction_Function(selected_variable_list, aggregate_to, custom_zone_list, Type_Aggregation, n_clicks):
 
     # Retrieing Aggregation Folder Path
     Aggregation_FolderPath = os.path.join(WORKSPACE_DIRECTORY, 'Aggregation')
@@ -471,17 +481,6 @@ def EPAgg_Button_Aggregate_Interaction_Function(variable_selection, custom_varia
     Eio_OutputFile_Dict_file = open(os.path.join(Aggregation_FolderPath,'Eio_OutputFile.pickle'),"rb")
 
     Eio_OutputFile_Dict = pickle.load(Eio_OutputFile_Dict_file)
-
-    # Getting variable selection for aggregation
-    selected_variable_list = []
-
-    if variable_selection == 1:  # Pre selected variables
-
-        selected_variable_list = OUR_VARIABLE_LIST
-
-    elif variable_selection == 2:  # Custom variables
-
-        selected_variable_list = custom_variables
 
     # Getting Aggregation Zone list
     if aggregate_to == 1:  # Aggregate to one
@@ -981,7 +980,11 @@ def EPAgg_Button_Aggregate_Interaction_Function(variable_selection, custom_varia
 
     pickle.dump(Aggregation_Dict, open(os.path.join(results_path,'Aggregation_Dictionary.pickle'), "wb"))
 
+
+
     return "Aggregation Completed"
+
+'''
 
 def EPAgg_Button_Download_Interaction_Function(n_clicks):
     download_path = []

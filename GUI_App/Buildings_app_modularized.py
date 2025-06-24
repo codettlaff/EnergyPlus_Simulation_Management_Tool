@@ -120,6 +120,8 @@ SIMULATION_RESULTS_FOLDERPATH = None
 VARIABLES_PICKLE_FILEPATH = None
 EIO_PICKLE_FILEPATH = None
 
+AGGREGATION_ZONE_LIST = None
+
 # Instantiate our App and incorporate BOOTSTRAP theme Stylesheet
 # Themes - https://dash-bootstrap-components.opensource.faculty.ai/docs/themes/#available-themes
 # Themes - https://dash-bootstrap-components.opensource.faculty.ai/docs/themes/explorer/
@@ -537,17 +539,29 @@ def update_variables_list(button_value, preselected_variables, custom_variables)
     if button_value == 1: SIMULATION_VARIABLE_LIST = preselected_variables
     elif button_value == 2: SIMULATION_VARIABLE_LIST = custom_variables
 
+# Update Aggregation Zone List
+@app.callback(
+    Input(component_id = 'EPAgg_RadioButton_AggregateTo', component_property = 'value'), # Aggregate to One or Custom Aggregation
+    Input(component_id = 'EPAgg_DropDown_CustomAggregationZoneList', component_property = 'value'), # User Input List using commas and semicolon
+)
+def update_aggregation_zone_list(button_value, zone_list):
+    global AGGREGATION_ZONE_LIST
+    if button_value == 1: AGGREGATION_ZONE_LIST = 'one_zone'
+    elif button_value == 2: AGGREGATION_ZONE_LIST = zone_list
+
 @app.callback(
     Output(component_id = 'EPAgg_Button_Aggregate', component_property = 'children'),
-    State(component_id = 'EPAgg_RadioButton_AggregationVariables', component_property = 'value'),
-    State(component_id = 'EPAgg_DropDown_CustomVariables', component_property = 'value'),
-    State(component_id = 'EPAgg_RadioButton_AggregateTo', component_property = 'value'),
-    State(component_id = 'EPAgg_DropDown_CustomAggregationZoneList', component_property = 'value'),
+    #State(component_id = 'EPAgg_RadioButton_AggregationVariables', component_property = 'value'),
+    #State(component_id = 'EPAgg_DropDown_CustomVariables', component_property = 'value'),
+    #State(component_id = 'EPAgg_RadioButton_AggregateTo', component_property = 'value'),
+    #State(component_id = 'EPAgg_DropDown_CustomAggregationZoneList', component_property = 'value'),
     State(component_id = 'EPAgg_DropDown_TypeOfAggregation', component_property = 'value'),
     Input(component_id = 'EPAgg_Button_Aggregate', component_property = 'n_clicks'),
     prevent_initial_call = True)
-def EPAgg_Button_Aggregate_Interaction(variable_selection, custom_variables, aggregate_to, custom_zone_list, Type_Aggregation, n_clicks):
-    message = EPAgg.EPAgg_Button_Aggregate_Interaction_Function(variable_selection, custom_variables, aggregate_to, custom_zone_list, Type_Aggregation, n_clicks)
+def EPAgg_Button_Aggregate_Interaction(aggregation_type, n_clicks):
+
+    # message = EPAgg.EPAgg_Button_Aggregate_Interaction_Function(SIMULATION_VARIABLE_LIST, aggregate_to, custom_zone_list, Type_Aggregation, n_clicks)
+    message, aggregation_pickle_filepath = EPAgg.aggregate_data(VARIABLES_PICKLE_FILEPATH, EIO_PICKLE_FILEPATH, SIMULATION_RESULTS_FOLDERPATH, SIMULATION_VARIABLE_LIST, aggregation_type, AGGREGATION_ZONE_LIST)
     return "Aggregation Completed"
 
 @app.callback(

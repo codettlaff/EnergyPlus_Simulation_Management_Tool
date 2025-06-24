@@ -1638,7 +1638,7 @@ def EPGen_Button_DownloadFiles_Interaction_Function(download_selection, n_clicks
 
 def upload_to_db(conn, building_type, variables_pickle_filepath, eio_pickle_filepath, simulation_results_folderpath, simulation_settings, simulation_variable_list):
 
-    all_zone_aggregation_pickle_filepath = EP_Agg.aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_results_folderpath, simulation_settings, simulation_variable_list)
+    all_zone_aggregation_pickle_filepath = EP_Agg.aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_results_folderpath, simulation_variable_list)
     start_datetime = datetime.datetime(
         simulation_settings["idf_year"],
         simulation_settings["start_month"],
