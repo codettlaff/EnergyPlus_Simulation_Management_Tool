@@ -125,6 +125,7 @@ EIO_PICKLE_FILEPATH = None
 AGGREGATION_ZONE_LIST = None
 AGGREGATION_PICKLE_FILEPATH = None
 AGGREGATION_VARIABLE_SELECTION = None
+AGGREGATION_BUILDING_ID = None
 
 
 # Instantiate our App and incorporate BOOTSTRAP theme Stylesheet
@@ -478,8 +479,9 @@ def EPGen_Button_EndSession_Interaction(n_clicks):
     Input(component_id = 'EPAgg_RadioButton_InputSelection', component_property = 'value'), # 1: Continue Session, 2: Upload Files
     prevent_initial_call = True)
 def EPAgg_RadioButton_InputSelection_Interaction(value):
+    global AGGREGATION_BUILDING_ID
     upload_div, variable_div = EPAgg.EPAgg_RadioButton_InputSelection_Interaction_Function(value)
-
+    if value == 1: AGGREGATION_BUILDING_ID = BUILDING_ID
     return upload_div, variable_div
 
 @app.callback(
@@ -869,6 +871,16 @@ def upload_to_db(n_clicks):
     BUILDING_ID = building_id
     conn.close()
     return button_text
+
+@ app.callback(
+    Output('EPAgg_Button_UploadtoDb', 'children'),
+    Input('EPAgg_Button_UploadtoDb', 'n_clicks'),
+    prevent_initial_call=True
+)
+def agg_upload_to_db(n_clicks):
+
+    global BUILDING_ID
+    conn = PSQL.connect_to_database(DB_SETTINGS)
 
 # Running the App
 if __name__ == '__main__':

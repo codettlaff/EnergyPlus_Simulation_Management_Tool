@@ -25,6 +25,11 @@ import dash_bootstrap_components as dbc
 # Importing User-Defined Modules
 import MyDashApp_Module as AppFuncs
 
+database_dir = os.path.join(os.path.dirname(__file__), '..', 'Database')
+sys.path.append(database_dir)
+import Database_Creator as DB_Creator
+import Data_Uploader as DB_Uploader
+
 UPLOAD_DIRECTORY = os.path.join(os.getcwd(), "EP_APP_Uploads")
 UPLOAD_DIRECTORY_AGG_PICKLE = os.path.join(UPLOAD_DIRECTORY, "Pickle_Upload")
 UPLOAD_DIRECTORY_AGG_EIO = os.path.join(UPLOAD_DIRECTORY, "EIO_Upload")
@@ -1012,3 +1017,35 @@ def EPAgg_Button_Aggregate_Interaction_Function(selected_variable_list, aggregat
 
 def EPAgg_Button_Download_Interaction_Function(aggregation_pickle_filepath):
     return dcc.send_file(aggregation_pickle_filepath)
+
+def upload_to_db(conn, building_type, epw_climate_zone, aggregation_pickle_filepath, building_id, simulation_results_folderpath, simulation_settings, simulation_variable_list):
+
+    start_datetime = datetime.datetime(
+        simulation_settings["idf_year"],
+        simulation_settings["start_month"],
+        simulation_settings["start_day"]
+    )
+    start_datetime = start_datetime + datetime.timedelta(minutes=simulation_settings["timestep_minutes"])
+    end_datetime = datetime.datetime(
+        simulation_settings["idf_year"],
+        simulation_settings["end_month"],
+        simulation_settings["end_day"]
+    )
+    end_datetime = end_datetime + datetime.timedelta(days=1)
+    time_resolution = simulation_settings["timestep_minutes"]
+
+    DB_Uploader.populate_datetimes_table(conn, base_time_resolution=1, start_datetime=start_datetime,
+                                         end_datetime=end_datetime)
+
+    # If building_id = None, the user uploaded pickle files rather than continuing session
+    # Insert new 'custom' building into the buildings table
+    # retrieve simulation settings from the aggregation pickle file
+
+    with open(aggregation_pickle_filepath, "rb") as f: data_dict = pickle.load(f)
+
+    simulation_name = SIMULATION_FOLDERNAME
+
+    DB_Uploader.upload_time_series_data(conn, data_dict, simulation_name, simulation_settings, building_id,
+                                        epw_climate_zone, time_resolution, aggregation_zones=None)
+
+    return ('Data Uploaded'), building_id
