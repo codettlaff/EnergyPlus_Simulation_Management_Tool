@@ -153,8 +153,8 @@ tab_layout =[
                             id = 'EPAgg_RadioButton_AggregationVariables',
                             labelStyle = {'display': 'block'},
                             options = [
-                                {'label' : " Preselected Variables", 'value' : 1},
-                                {'label' : " Custom Variables", 'value' : 2}
+                                {'label' : " All Variables", 'value' : 1},
+                                {'label' : " Select Variables", 'value' : 2}
                                 ]  ,
                             value = '',
                             className = 'ps-4 p-3',
@@ -165,17 +165,6 @@ tab_layout =[
                         dcc.Dropdown(['Var1','Var2','Var3'], '',
                             multi = True,
                             id='EPAgg_DropDown_PreselectedVariables',
-                            style = {
-                                'width': '95%',
-                                'margin-left': '2.5%',
-                                'margin-bottom': '2.5%'
-                                }),
-
-                        html.Label("Select custom variables",
-                            className = 'text-left ms-4'),
-                        dcc.Dropdown(['Var1','Var2','Var3'], '',
-                            id='EPAgg_DropDown_CustomVariables',
-                            multi = True,
                             style = {
                                 'width': '95%',
                                 'margin-left': '2.5%',
@@ -459,6 +448,12 @@ def EPAgg_RadioButton_AggregationVariables_Interaction_Function(InputSelection, 
     zone_list = list(Eio_OutputFile_Dict['Zone Information'][Eio_OutputFile_Dict['Zone Information']['  Part of Total Building Area']  == 'Yes']['Zone Name'])
 
     return pre_list, custom_list, zone_list
+
+def get_zone_list(eio_pickle_filepath):
+
+    with open(eio_pickle_filepath, 'rb') as f: eio_dict = pickle.load(f)
+    zone_list = list(eio_dict['Zone Information'][eio_dict['Zone Information']['  Part of Total Building Area']  == 'Yes']['Zone Name'])
+    return zone_list
 
 def EPAgg_DropDown_TypeOfAggregation_Interaction_Function(value):
 

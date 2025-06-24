@@ -124,6 +124,7 @@ EIO_PICKLE_FILEPATH = None
 
 AGGREGATION_ZONE_LIST = None
 AGGREGATION_PICKLE_FILEPATH = None
+AGGREGATION_VARIABLE_SELECTION = None
 
 
 # Instantiate our App and incorporate BOOTSTRAP theme Stylesheet
@@ -512,25 +513,32 @@ def EPAgg_Upload_EIO_Interaction(filename, content):
     EIO_PICKLE_FILEPATH = eio_pickle_filepath
     return message
 
+# Unhide Aggregation Details Window, populate Zone List dropdown.
 @app.callback(
     Output(component_id = 'EPAgg_Div_AggregationDetails', component_property = 'hidden'),
+    Output(component_id = 'EPAgg_DropDown_ZoneList', component_property = 'options'),
     Input(component_id = 'EPAgg_RadioButton_AggregationVariables', component_property = 'value'),
-    Input(component_id = 'EPAgg_DropDown_CustomVariables', component_property = 'value'),
+    Input(component_id = 'EPAgg_DropDown_PreselectedVariables', component_property = 'value'),
     prevent_initial_call = True)
 def EPAgg_DropDown_AggregationVariables_Interaction(selection, value):
     div = EPAgg.EPAgg_DropDown_AggregationVariables_Interaction_Function(selection, value)
-    return div
+    zone_list = EPAgg.get_zone_list(EIO_PICKLE_FILEPATH)
+    return div, zone_list
 
+# Populate Variable Selection DropDown
 @app.callback(
     Output(component_id = 'EPAgg_DropDown_PreselectedVariables', component_property = 'options'),
-    Output(component_id = 'EPAgg_DropDown_CustomVariables', component_property = 'options'),
-    Output(component_id = 'EPAgg_DropDown_ZoneList', component_property = 'options'),
+    # Output(component_id = 'EPAgg_DropDown_ZoneList', component_property = 'options'),
     State(component_id = 'EPAgg_RadioButton_InputSelection', component_property = 'value'),
     Input(component_id = 'EPAgg_RadioButton_AggregationVariables', component_property = 'value'),
     prevent_initial_call = True)
 def EPAgg_RadioButton_AggregationVariables_Interaction(InputSelection, VariableSelection):
-    pre_list, custom_list, zone_list = EPAgg.EPAgg_RadioButton_AggregationVariables_Interaction_Function(InputSelection, VariableSelection)
-    return pre_list, custom_list, zone_list
+    # pre_list, custom_list, zone_list = EPAgg.EPAgg_RadioButton_AggregationVariables_Interaction_Function(InputSelection, VariableSelection)
+    global AGGREGATION_VARIABLE_SELECTION
+    if InputSelection == 1: aggregation_variable_selection = VARIABLES_PICKLE_VARIABLE_LIST # All Variables
+    elif InputSelection == 2: aggregation_variable_selection = VariableSelection
+    AGGREGATION_VARIABLE_SELECTION = aggregation_variable_selection
+    return VARIABLES_PICKLE_VARIABLE_LIST
 
 @app.callback(
     Output(component_id = 'EPAgg_Div_FinalDownload', component_property = 'hidden'),
