@@ -15,6 +15,7 @@ import copy
 import datetime
 from datetime import date
 from datetime import datetime
+from os import mkdir
 
 import numpy as np
 import pandas as pd
@@ -121,6 +122,7 @@ VARIABLES_PICKLE_FILEPATH = None
 EIO_PICKLE_FILEPATH = None
 
 AGGREGATION_ZONE_LIST = None
+AGGREGATION_PICKLE_FILEPATH = None
 
 # Instantiate our App and incorporate BOOTSTRAP theme Stylesheet
 # Themes - https://dash-bootstrap-components.opensource.faculty.ai/docs/themes/#available-themes
@@ -482,10 +484,15 @@ def EPAgg_RadioButton_InputSelection_Interaction(value):
     Input(component_id = 'EPAgg_Upload_Pickle', component_property = 'contents'),
     prevent_initial_call = True)
 def EPAgg_Upload_Pickle_Interaction(filename, content):
-    global VARIABLES_PICKLE_FILEPATH, BUILDING_TYPE
+    global VARIABLES_PICKLE_FILEPATH, BUILDING_TYPE, SIMULATION_RESULTS_FOLDERPATH
     message, variables_pickle_filepath = EPAgg.EPAgg_Upload_Pickle_Interaction_Function(filename, content)
     VARIABLES_PICKLE_FILEPATH = variables_pickle_filepath
     BUILDING_TYPE = 'Custom'
+
+    simulation_results_folderpath = os.path.join(RESULTS_FOLDERPATH, SIMULATION_FOLDERNAME)
+    if not os.path.exists(simulation_results_folderpath): mkdir(simulation_results_folderpath)
+    SIMULATION_RESULTS_FOLDERPATH = simulation_results_folderpath
+
     return message
 
 @app.callback(
@@ -559,9 +566,9 @@ def update_aggregation_zone_list(button_value, zone_list):
     Input(component_id = 'EPAgg_Button_Aggregate', component_property = 'n_clicks'),
     prevent_initial_call = True)
 def EPAgg_Button_Aggregate_Interaction(aggregation_type, n_clicks):
-
+    global AGGREGATION_PICKLE_FILEPATH
     # message = EPAgg.EPAgg_Button_Aggregate_Interaction_Function(SIMULATION_VARIABLE_LIST, aggregate_to, custom_zone_list, Type_Aggregation, n_clicks)
-    message, aggregation_pickle_filepath = EPAgg.aggregate_data(VARIABLES_PICKLE_FILEPATH, EIO_PICKLE_FILEPATH, SIMULATION_RESULTS_FOLDERPATH, SIMULATION_VARIABLE_LIST, aggregation_type, AGGREGATION_ZONE_LIST)
+    AGGREGATION_PICKLE_FILEPATH = EPAgg.aggregate_data(VARIABLES_PICKLE_FILEPATH, EIO_PICKLE_FILEPATH, SIMULATION_RESULTS_FOLDERPATH, SIMULATION_VARIABLE_LIST, aggregation_type, AGGREGATION_ZONE_LIST)
     return "Aggregation Completed"
 
 @app.callback(
@@ -569,7 +576,7 @@ def EPAgg_Button_Aggregate_Interaction(aggregation_type, n_clicks):
     Input(component_id = 'EPAgg_Button_Download', component_property = 'n_clicks'),
     prevent_initial_call = True)
 def EPAgg_Button_Download_Interaction(n_clicks):
-    download_path = EPAgg.EPAgg_Button_Download_Interaction_Function(n_clicks)
+    download_path = EPAgg.EPAgg_Button_Download_Interaction_Function(AGGREGATION_PICKLE_FILEPATH)
     return download_path
 
 ##########################################################################################################
@@ -781,6 +788,8 @@ def EPVis_Button_TimeGeneratedData_Interaction(table_gen, column_gen, table_agg,
 
     return figure
 '''
+
+# Want to make sure windows go away when 'No' is selected.
 @app.callback(
     Output(component_id = 'PSQL_Div_CreateSelectDatabase', component_property = 'hidden'),
     Input(component_id = 'PSQL_RadioButton_UsingDatabase', component_property = 'value'),

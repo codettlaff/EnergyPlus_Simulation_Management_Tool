@@ -463,9 +463,29 @@ def EPAgg_DropDown_TypeOfAggregation_Interaction_Function(value):
 
     return div
 
+# Use when Pickle files are uploaded
+def get_simulation_settings(variables_pickle_filepath):
+
+    with open(variables_pickle_filepath, 'rb') as f: data_dict = pickle.load(f)
+
+    # Get DateTime_List from data_dict
+    datetime_list = data_dict.get("DateTime_List", [])
+    if not datetime_list:
+        raise ValueError("DateTime_List is missing or empty in data_dict")
+
+    # Determine time resolution from DateTime_List
+    if len(datetime_list) > 1:
+        time_resolution = (datetime_list[1] - datetime_list[0]).seconds // 60  # Convert to minutes
+    else:
+        raise ValueError("Not enough timestamps in DateTime_List to determine resolution")
+
+    if time_resolution % 5 != 0:
+        raise ValueError("Time resolution must be a multiple of 5 minutes")
+
 def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_results_folderpath, simulation_variable_list, aggregation_type, aggregation_zone_list):
 
     aggregation_pickle_filepath = EP_Agg.aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_results_folderpath, simulation_variable_list, aggregation_type, aggregation_zone_list)
+    return aggregation_pickle_filepath
 
 '''
 def EPAgg_Button_Aggregate_Interaction_Function(selected_variable_list, aggregate_to, custom_zone_list, Type_Aggregation, n_clicks):
@@ -986,11 +1006,5 @@ def EPAgg_Button_Aggregate_Interaction_Function(selected_variable_list, aggregat
 
 '''
 
-def EPAgg_Button_Download_Interaction_Function(n_clicks):
-    download_path = []
-    results_path = os.path.join(WORKSPACE_DIRECTORY, "Aggregation", "Results")
-
-    for item in os.listdir(results_path):
-        if item.endswith(".pickle"):
-            download_path = os.path.join(results_path,item)
-    return dcc.send_file(download_path)
+def EPAgg_Button_Download_Interaction_Function(aggregation_pickle_filepath):
+    return dcc.send_file(aggregation_pickle_filepath)

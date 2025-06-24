@@ -25,7 +25,6 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_re
         Aggregation_File_Name = 'Aggregation_Dict_Custom.pickle'
 
     Aggregation_Zone_NameStem = 'Aggregation_Zone'
-    Aggregation_File_Name = 'Aggregation_Dict_AllZones.pickle'
 
     SystemNode_Name = 'DIRECT AIR INLET NODE'
 
@@ -36,13 +35,7 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_re
     # =============================================================================
 
     # Creating Unique List of Zones
-    Total_Zone_List = []
-
-    # FOR LOOP: For each element of Aggregation_Zone_List
-    for Aggregation_Zone in Aggregation_Zone_List:
-
-        for CurrentZone in Aggregation_Zone:
-            Total_Zone_List.append(CurrentZone)
+    Total_Zone_List = zone_list
 
     # Creating Unique Zone List
     Unique_Zone_List = list(set(Total_Zone_List))
@@ -185,7 +178,7 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_re
             Aggregated_Zone_Name_1 = element[0].strip()
             Aggregated_Zone_Name_2 = Aggregated_Zone_Name_1 + "_Equipment"
         elif aggregation_zone_list == 'one_zone':
-            Aggregation_Zone_Name_1 = 'Aggregated_Zone'
+            Aggregated_Zone_Name_1 = 'Aggregated_Zone'
             Aggregated_Zone_Name_2 = Aggregated_Zone_Name_1 + "_Equipment"
         else:
             Aggregated_Zone_Name_1 = Aggregation_Zone_NameStem + "_" + str(Counter)
