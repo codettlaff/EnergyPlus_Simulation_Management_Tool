@@ -475,10 +475,11 @@ def EPGen_Button_EndSession_Interaction(n_clicks):
 @app.callback(
     Output(component_id = 'EPAgg_Div_UploadFiles', component_property = 'hidden'),
     Output(component_id = 'EPAgg_Div_AggregationVariables', component_property = 'hidden'),
-    Input(component_id = 'EPAgg_RadioButton_InputSelection', component_property = 'value'),
+    Input(component_id = 'EPAgg_RadioButton_InputSelection', component_property = 'value'), # 1: Continue Session, 2: Upload Files
     prevent_initial_call = True)
 def EPAgg_RadioButton_InputSelection_Interaction(value):
     upload_div, variable_div = EPAgg.EPAgg_RadioButton_InputSelection_Interaction_Function(value)
+
     return upload_div, variable_div
 
 @app.callback(
