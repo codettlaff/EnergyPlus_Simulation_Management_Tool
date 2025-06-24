@@ -119,10 +119,12 @@ SIMULATION_SETTINGS = None
 
 SIMULATION_RESULTS_FOLDERPATH = None
 VARIABLES_PICKLE_FILEPATH = None
+VARIABLES_PICKLE_VARIABLE_LIST = None
 EIO_PICKLE_FILEPATH = None
 
 AGGREGATION_ZONE_LIST = None
 AGGREGATION_PICKLE_FILEPATH = None
+
 
 # Instantiate our App and incorporate BOOTSTRAP theme Stylesheet
 # Themes - https://dash-bootstrap-components.opensource.faculty.ai/docs/themes/#available-themes
@@ -492,6 +494,10 @@ def EPAgg_Upload_Pickle_Interaction(filename, content):
     simulation_results_folderpath = os.path.join(RESULTS_FOLDERPATH, SIMULATION_FOLDERNAME)
     if not os.path.exists(simulation_results_folderpath): mkdir(simulation_results_folderpath)
     SIMULATION_RESULTS_FOLDERPATH = simulation_results_folderpath
+
+    # Get list of all possible variables
+    global VARIABLES_PICKLE_VARIABLE_LIST
+    VARIABLES_PICKLE_VARIABLE_LIST = EPAgg.get_variable_list(VARIABLES_PICKLE_FILEPATH)
 
     return message
 
