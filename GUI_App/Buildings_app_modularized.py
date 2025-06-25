@@ -487,6 +487,8 @@ def EPGen_Button_EndSession_Interaction(n_clicks):
 def EPAgg_RadioButton_InputSelection_Interaction(value):
 
     global BUILDING_ID
+    global SIMULATION_VARIABLE_LIST
+
     upload_div, variable_div = EPAgg.EPAgg_RadioButton_InputSelection_Interaction_Function(value)
     if (BUILDING_ID == None) and (value == 1):
         BUILDING_ID = DB_Uploader.get_building_id(os.path.dirname(DATA_IDF_FILEPATH))
@@ -544,14 +546,15 @@ def EPAgg_DropDown_AggregationVariables_Interaction(selection, value):
 @app.callback(
     Output(component_id = 'EPAgg_DropDown_PreselectedVariables', component_property = 'options'),
     # Output(component_id = 'EPAgg_DropDown_ZoneList', component_property = 'options'),
-    Input(component_id = 'EPAgg_RadioButton_AggregationVariables', component_property = 'value'),
-    State(component_id = 'EPAgg_RadioButton_InputSelection', component_property = 'value'),
+    # Input(component_id = 'EPAgg_RadioButton_InputSelection', component_property = 'value'), # 1: Continue Session 2: Upload Files
+    Input(component_id = 'EPAgg_RadioButton_AggregationVariables', component_property = 'value'), # 1: All Variables 2: Select Variables
+    Input(component_id = 'EPAgg_DropDown_PreselectedVariables', component_property = 'value'), # Variable Selection DropDown
     prevent_initial_call = True)
-def EPAgg_RadioButton_AggregationVariables_Interaction(VariableSelection, InputSelection):
+def EPAgg_RadioButton_AggregationVariables_Interaction(VariableSelection, Variable_DropDown_Selection):
     # pre_list, custom_list, zone_list = EPAgg.EPAgg_RadioButton_AggregationVariables_Interaction_Function(InputSelection, VariableSelection)
     global AGGREGATION_VARIABLE_SELECTION
-    if InputSelection == 1: aggregation_variable_selection = VARIABLES_PICKLE_VARIABLE_LIST # All Variables
-    elif InputSelection == 2: aggregation_variable_selection = VariableSelection
+    if VariableSelection == 1: aggregation_variable_selection = VARIABLES_PICKLE_VARIABLE_LIST # All Variables
+    elif VariableSelection == 2: aggregation_variable_selection = Variable_DropDown_Selection # Selected Variables
     AGGREGATION_VARIABLE_SELECTION = aggregation_variable_selection
     return VARIABLES_PICKLE_VARIABLE_LIST
 
@@ -597,7 +600,7 @@ def update_aggregation_zone_list(button_value, zone_list):
 def EPAgg_Button_Aggregate_Interaction(aggregation_type, n_clicks):
     global AGGREGATION_PICKLE_FILEPATH
     # message = EPAgg.EPAgg_Button_Aggregate_Interaction_Function(SIMULATION_VARIABLE_LIST, aggregate_to, custom_zone_list, Type_Aggregation, n_clicks)
-    AGGREGATION_PICKLE_FILEPATH = EPAgg.aggregate_data(VARIABLES_PICKLE_FILEPATH, EIO_PICKLE_FILEPATH, SIMULATION_RESULTS_FOLDERPATH, SIMULATION_VARIABLE_LIST, aggregation_type, AGGREGATION_ZONE_LIST)
+    AGGREGATION_PICKLE_FILEPATH = EPAgg.aggregate_data(VARIABLES_PICKLE_FILEPATH, EIO_PICKLE_FILEPATH, SIMULATION_RESULTS_FOLDERPATH, AGGREGATION_VARIABLE_SELECTION, aggregation_type, AGGREGATION_ZONE_LIST)
     return "Aggregation Completed"
 
 @app.callback(
@@ -875,7 +878,7 @@ def handle_existing_db_selection(selected_dbname):
     Input('EPGen_Button_UploadtoDb', 'n_clicks'),
     prevent_initial_call=True
 )
-def upload_to_db(n_clicks):
+def gen_upload_to_db(n_clicks):
 
     global BUILDING_ID
     conn = PSQL.connect_to_database(DB_SETTINGS)
@@ -893,6 +896,13 @@ def agg_upload_to_db(n_clicks):
 
     global BUILDING_ID
     conn = PSQL.connect_to_database(DB_SETTINGS)
+
+    simulation_settings = EPAgg.get_simulation_settings(VARIABLES_PICKLE_FILEPATH)
+
+    message = EPAgg.upload_to_db(conn, DATA_EPW_FILEPATH, AGGREGATION_PICKLE_FILEPATH, BUILDING_ID, simulation_settings)
+
+    return message
+
 
 # Running the App
 if __name__ == '__main__':

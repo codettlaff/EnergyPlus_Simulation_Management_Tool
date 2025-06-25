@@ -471,6 +471,7 @@ def insert_aggregation_zones(conn, data_dict, simulation_id, aggregation_zones):
     return aggregated_zones_df
 
 def populate_variables_table(conn, data_dict, zone_ids):
+
     keys = list(data_dict.keys())  # Convert keys to a list
     zone_names = []
     for key in keys[1:]:
@@ -643,7 +644,7 @@ def upload_time_series_data(conn, data_dict, simulation_name, simulation_setting
         zones = insert_aggregation_zones(conn, data_dict, simulation_id, aggregation_zones)
 
     # populate variables table
-    variables = populate_variables_table(conn, data_dict, zones['zone_id'].tolist())
+    variables = populate_variables_table(conn, data_dict, zones['zone_id'].tolist()) # BUG HERE
 
     # zones has columns 'zone_id', 'zone_name'
     # variables has columns 'variable_id, variable_name, zone_id'
@@ -651,7 +652,7 @@ def upload_time_series_data(conn, data_dict, simulation_name, simulation_setting
     variables_with_zone_name = variables.merge(zones, on='zone_id', how='left')
 
     # get datetime id list
-    datetime_ids = get_datetime_id_list(conn, data_dict, start_datetime, end_datetime, time_resolution)
+    datetime_ids = get_datetime_id_list(conn, data_dict, start_datetime, end_datetime, time_resolution) #BUG: This is coming back empty
 
     # Extract zone names from data_dict, ignoring "Equipment" keys
     keys = list(data_dict.keys())

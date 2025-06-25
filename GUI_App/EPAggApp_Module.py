@@ -483,13 +483,23 @@ def get_simulation_settings(variables_pickle_filepath):
         raise ValueError("DateTime_List is missing or empty in data_dict")
 
     # Determine time resolution from DateTime_List
-    if len(datetime_list) > 1:
-        time_resolution = (datetime_list[1] - datetime_list[0]).seconds // 60  # Convert to minutes
-    else:
-        raise ValueError("Not enough timestamps in DateTime_List to determine resolution")
+    time_resolution = (datetime_list[1] - datetime_list[0]).seconds // 60  # Convert to minutes
 
-    if time_resolution % 5 != 0:
-        raise ValueError("Time resolution must be a multiple of 5 minutes")
+    start_datetime = datetime_list[0]
+    end_datetime = datetime_list[-1]
+
+    simulation_settings = {
+        "name": "new_simulation",
+        "idf_year": start_datetime.year,
+        "start_month": start_datetime.month,
+        "start_day": start_datetime.day,
+        "end_month": end_datetime.month,
+        "end_day": (end_datetime - datetime.timedelta(days=1)).day,
+        "reporting_frequency": "timestep",
+        "timestep_minutes": time_resolution
+    }
+
+    return simulation_settings
 
 def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_results_folderpath, simulation_variable_list, aggregation_type, aggregation_zone_list):
 
@@ -1018,7 +1028,7 @@ def EPAgg_Button_Aggregate_Interaction_Function(selected_variable_list, aggregat
 def EPAgg_Button_Download_Interaction_Function(aggregation_pickle_filepath):
     return dcc.send_file(aggregation_pickle_filepath)
 
-def upload_to_db(conn, building_type, epw_climate_zone, aggregation_pickle_filepath, building_id, simulation_results_folderpath, simulation_settings, simulation_variable_list):
+def upload_to_db(conn, epw_filepath, aggregation_pickle_filepath, building_id, simulation_settings):
 
     start_datetime = datetime.datetime(
         simulation_settings["idf_year"],
@@ -1045,7 +1055,13 @@ def upload_to_db(conn, building_type, epw_climate_zone, aggregation_pickle_filep
 
     simulation_name = SIMULATION_FOLDERNAME
 
+    # Get EPW Climate Zone
+    if epw_filepath is not None:
+        location = DB_Uploader.get_location_from_epw_filepath(os.path.basename(epw_filepath))
+        epw_climate_zone = DB_Uploader.get_climate_zone(location)
+    else: epw_climate_zone = 'NA'
+
     DB_Uploader.upload_time_series_data(conn, data_dict, simulation_name, simulation_settings, building_id,
                                         epw_climate_zone, time_resolution, aggregation_zones=None)
 
-    return ('Data Uploaded'), building_id
+    return ('Data Uploaded')
