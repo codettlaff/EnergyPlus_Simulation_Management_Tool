@@ -8,6 +8,7 @@ main function of web app
 
 # Importing Required Modules
 import os
+import sys
 import re
 import shutil
 import pickle
@@ -32,6 +33,11 @@ import EPGenApp_Module as EPGen
 import EPAggApp_Module as EPAgg
 import EPVisApp_Module as EPVis
 import PSQLApp_Module as PSQL
+
+database_dir = os.path.join(os.path.dirname(__file__), '..', 'Database')
+sys.path.append(database_dir)
+import Database_Creator as DB_Creator
+import Data_Uploader as DB_Uploader
 
 # Directory Paths
 UPLOAD_DIRECTORY = os.path.join(os.getcwd(), "EP_APP_Uploads")
@@ -479,9 +485,15 @@ def EPGen_Button_EndSession_Interaction(n_clicks):
     Input(component_id = 'EPAgg_RadioButton_InputSelection', component_property = 'value'), # 1: Continue Session, 2: Upload Files
     prevent_initial_call = True)
 def EPAgg_RadioButton_InputSelection_Interaction(value):
-    global AGGREGATION_BUILDING_ID
+
+    global BUILDING_ID
     upload_div, variable_div = EPAgg.EPAgg_RadioButton_InputSelection_Interaction_Function(value)
-    if value == 1: AGGREGATION_BUILDING_ID = BUILDING_ID
+    if (BUILDING_ID == None) and (value == 1):
+        BUILDING_ID = DB_Uploader.get_building_id(os.path.dirname(DATA_IDF_FILEPATH))
+    if (BUILDING_ID == None) or (value == 2):
+        conn = PSQL.connect_to_database(DB_SETTINGS)
+        BUILDING_ID = DB_Uploader.upload_custom_building(conn)
+
     return upload_div, variable_div
 
 @app.callback(
@@ -532,10 +544,10 @@ def EPAgg_DropDown_AggregationVariables_Interaction(selection, value):
 @app.callback(
     Output(component_id = 'EPAgg_DropDown_PreselectedVariables', component_property = 'options'),
     # Output(component_id = 'EPAgg_DropDown_ZoneList', component_property = 'options'),
-    State(component_id = 'EPAgg_RadioButton_InputSelection', component_property = 'value'),
     Input(component_id = 'EPAgg_RadioButton_AggregationVariables', component_property = 'value'),
+    State(component_id = 'EPAgg_RadioButton_InputSelection', component_property = 'value'),
     prevent_initial_call = True)
-def EPAgg_RadioButton_AggregationVariables_Interaction(InputSelection, VariableSelection):
+def EPAgg_RadioButton_AggregationVariables_Interaction(VariableSelection, InputSelection):
     # pre_list, custom_list, zone_list = EPAgg.EPAgg_RadioButton_AggregationVariables_Interaction_Function(InputSelection, VariableSelection)
     global AGGREGATION_VARIABLE_SELECTION
     if InputSelection == 1: aggregation_variable_selection = VARIABLES_PICKLE_VARIABLE_LIST # All Variables

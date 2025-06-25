@@ -80,6 +80,41 @@ def populate_datetimes_table(conn, base_time_resolution=1, start_datetime=dateti
 # Fills datetimes table with timestamps at 1-minute intervals for one year.
 # Passed
 
+def upload_custom_building(conn):
+    record = ['Custom', 'NA', 'NA', 'NA', 'NA', 'NA']
+    try:
+        with conn.cursor() as cursor:
+            insert_query = """
+                INSERT INTO building_prototypes 
+                (building_type, prototype, energy_code, idf_climate_zone, heating_type, foundation_type)
+                VALUES (%s, %s, %s, %s, %s, %s)
+                ON CONFLICT (building_type, prototype, energy_code, idf_climate_zone, heating_type, foundation_type) DO NOTHING
+                RETURNING id;
+            """
+            cursor.execute(insert_query, record)
+            result = cursor.fetchone()
+
+            # If inserted successfully, RETURNING gives the id
+            if result:
+                conn.commit()
+                return result[0]
+
+            # If conflict occurred (already exists), get ID manually
+            select_query = """
+                SELECT id FROM building_prototypes
+                WHERE building_type = %s AND prototype = %s AND energy_code = %s
+                  AND idf_climate_zone = %s AND heating_type = %s AND foundation_type = %s;
+            """
+            cursor.execute(select_query, record)
+            result = cursor.fetchone()
+            conn.commit()
+            return result[0] if result else None
+
+    except Exception as e:
+        conn.rollback()
+        print(f"Error in upload_custom_building: {e}")
+        return None
+
 def populate_buildings_table(conn):
     """
     Populates the 'building_prototypes' table with commercial, residential, and manufactured building prototypes.
