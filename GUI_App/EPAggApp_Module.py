@@ -1028,7 +1028,7 @@ def EPAgg_Button_Aggregate_Interaction_Function(selected_variable_list, aggregat
 def EPAgg_Button_Download_Interaction_Function(aggregation_pickle_filepath):
     return dcc.send_file(aggregation_pickle_filepath)
 
-def upload_to_db(conn, epw_filepath, aggregation_pickle_filepath, eio_pickle_filepath, building_id, simulation_settings, aggregation_zones):
+def upload_to_db(conn, epw_filepath, aggregation_pickle_filepath, eio_pickle_filepath, building_id, simulation_settings, aggregation_zones, zones_df):
 
     start_datetime = datetime.datetime(
         simulation_settings["idf_year"],
@@ -1061,7 +1061,13 @@ def upload_to_db(conn, epw_filepath, aggregation_pickle_filepath, eio_pickle_fil
         epw_climate_zone = DB_Uploader.get_climate_zone(location)
     else: epw_climate_zone = 'NA'
 
-    DB_Uploader.upload_time_series_data(conn, data_dict, simulation_name, simulation_settings, building_id,
+    if zones_df is not None:
+        aggregation_zones = {
+            "Aggregated Zone": zones_df
+        }
+    else: aggregation_zones = None
+
+    zones_df = DB_Uploader.upload_time_series_data(conn, data_dict, simulation_name, simulation_settings, building_id,
                                         epw_climate_zone, time_resolution, aggregation_zones)
 
     return ('Data Uploaded')

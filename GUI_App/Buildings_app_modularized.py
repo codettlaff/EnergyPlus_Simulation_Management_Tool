@@ -911,7 +911,7 @@ def agg_upload_to_db(n_clicks):
 
     simulation_settings = EPAgg.get_simulation_settings(VARIABLES_PICKLE_FILEPATH)
 
-    message = EPAgg.upload_to_db(conn, DATA_EPW_FILEPATH, AGGREGATION_PICKLE_FILEPATH, EIO_PICKLE_FILEPATH, BUILDING_ID, simulation_settings, AGGREGATION_ZONE_LIST)
+    message = EPAgg.upload_to_db(conn, DATA_EPW_FILEPATH, AGGREGATION_PICKLE_FILEPATH, EIO_PICKLE_FILEPATH, BUILDING_ID, simulation_settings, AGGREGATION_ZONE_LIST, ZONES_DF)
 
     return message
 
