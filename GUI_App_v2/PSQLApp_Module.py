@@ -35,7 +35,7 @@ tab_layout = [
             # Box 1 C1
             # Using Database?
             html.Div([
-                html.Label("Box 1: Database Selection", style={
+                html.Label("Database Selection", style={
                     'font-weight': 'bold',
                     'font-size': '1.2rem',
                     'margin-bottom': '10px',
@@ -55,8 +55,8 @@ tab_layout = [
                     id='PSQL_RadioButton_UsingDatabase',
                     labelStyle={'display': 'block'},
                     options=[
-                        {'label': " Yes", 'value': 1},
-                        {'label': " No", 'value': 2}
+                        {'label': " Yes", 'value': True},
+                        {'label': " No", 'value': False}
                     ],
                     value='',
                     style={

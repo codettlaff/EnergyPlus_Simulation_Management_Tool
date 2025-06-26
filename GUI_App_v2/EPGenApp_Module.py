@@ -50,7 +50,7 @@ tab_layout=[
                     # Box 11 C1
                     html.Div([
                         dcc.Input(
-                            id='folder_name',
+                            id='simulation_name',
                             type='text',
                             value='',
                             placeholder='Enter simulation name',
@@ -75,12 +75,12 @@ tab_layout=[
                     # Box 1 C1
                     # Database selection
                     dcc.RadioItems(
-                        id = 'database_selection',
+                        id = 'data_source_selection',
                         labelStyle = {'display': 'block'},
                         value = '1',
                         options = [
-                            {'label' : " Our Database", 'value' : 1},
-                            {'label' : " Your Files", 'value' : 2}
+                            {'label' : " PNNL Prototypical Buildings", 'value' : 1},
+                            {'label' : " Upload Files", 'value' : 2}
                             ]  ,
                         className = 'ps-4 p-3',
                         style = {

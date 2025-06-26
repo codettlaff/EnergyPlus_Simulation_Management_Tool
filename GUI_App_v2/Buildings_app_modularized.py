@@ -152,16 +152,50 @@ app.layout = dbc.Container([
 
 ########## PostgreSQL ##########
 
-# Are you using a database
+# Database Selection
 @app.callback(
-    Input('PSQL_RadioButton_UsingDatabase', 'value')
+    Output('PSQL_Div_CreateSelectDatabase', 'hidden'),
+    Input('PSQL_RadioButton_UsingDatabase', 'value'),
+    prevent_initial_call=True
 )
 def database_selection(selection):
-    pass
+    global USING_DATABASE
+    USING_DATABASE = selection
+    return not selection
+
+# Create/Select Database
+@app.callback(
+    Output('PSQL_Div_EnterInfo', 'hidden'),
+    Output('PSQL_Div_SelectDbfromExist', 'hidden'),
+    Input('PSQL_RadioButton_CreateSelectDatabase', 'value'),
+    Input('PSQL_RadioButton_UsingDatabase', 'value')
+)
+def create_select_database(selection, using_db):
+    if (selection == 1) and using_db: return False, True
+    elif (selection == 2) and using_db: return True, False
+    else: return True, True
 
 ########## Data Generation ##########
 
+# Update Simulation Name
+@app.callback(
+    Input('simulation_name', 'value')
+)
+def update_simulation_name(simulation_name):
+    global SIMULATION_SETTINGS
+    SIMULATION_SETTINGS = example_simulation_settings
+    SIMULATION_SETTINGS['name'] = simulation_name
 
+# Data Source Selection
+@app.callback(
+    Output('building_details', 'hidden'),
+    Output('upload_files', 'hidden'),
+    Input('data_source_selection', 'value')
+)
+def data_source_selection(selection):
+    if selection == 1: return False, True
+    elif selection == 2: return True, False
+    else: return True, True
 
 '''
 
