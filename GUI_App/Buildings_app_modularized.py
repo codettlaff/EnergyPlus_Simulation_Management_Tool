@@ -135,6 +135,8 @@ AGGREGATION_PICKLE_FILEPATH = None
 AGGREGATION_VARIABLE_SELECTION = None
 AGGREGATION_BUILDING_ID = None
 
+ZONES_DF = None # Contains Zone IDs, needed for uploading aggregated zones later
+
 
 # Instantiate our App and incorporate BOOTSTRAP theme Stylesheet
 # Themes - https://dash-bootstrap-components.opensource.faculty.ai/docs/themes/#available-themes
@@ -495,7 +497,7 @@ def EPAgg_RadioButton_InputSelection_Interaction(value):
     if USING_DATABASE:
         if (BUILDING_ID == None) and (value == 1):
             conn = PSQL.connect_to_database(DB_SETTINGS)
-            BUILDING_ID = DB_Uploader.get_building_id(conn, BUILDING_TYPE, os.path.dirname(DATA_IDF_FILEPATH))
+            BUILDING_ID = DB_Uploader.get_building_id(conn, BUILDING_TYPE, os.path.basename(DATA_IDF_FILEPATH))
         if (BUILDING_ID == None) or (value == 2):
             conn = PSQL.connect_to_database(DB_SETTINGS)
             BUILDING_ID = DB_Uploader.upload_custom_building(conn)
@@ -889,11 +891,12 @@ def handle_existing_db_selection(selected_dbname):
 )
 def gen_upload_to_db(n_clicks):
 
-    global BUILDING_ID
+    global BUILDING_ID, ZONES_DF
     conn = PSQL.connect_to_database(DB_SETTINGS)
-    button_text, building_id = EPGen.upload_to_db(conn, BUILDING_TYPE, VARIABLES_PICKLE_FILEPATH, EIO_PICKLE_FILEPATH, SIMULATION_RESULTS_FOLDERPATH, SIMULATION_SETTINGS, SIMULATION_VARIABLE_LIST)
+    button_text, building_id, zones_df = EPGen.upload_to_db(conn, BUILDING_TYPE, VARIABLES_PICKLE_FILEPATH, EIO_PICKLE_FILEPATH, SIMULATION_RESULTS_FOLDERPATH, SIMULATION_SETTINGS, SIMULATION_VARIABLE_LIST)
     BUILDING_ID = building_id
     conn.close()
+    ZONES_DF = zones_df
     return button_text
 
 @ app.callback(
@@ -908,7 +911,7 @@ def agg_upload_to_db(n_clicks):
 
     simulation_settings = EPAgg.get_simulation_settings(VARIABLES_PICKLE_FILEPATH)
 
-    message = EPAgg.upload_to_db(conn, DATA_EPW_FILEPATH, AGGREGATION_PICKLE_FILEPATH, BUILDING_ID, simulation_settings)
+    message = EPAgg.upload_to_db(conn, DATA_EPW_FILEPATH, AGGREGATION_PICKLE_FILEPATH, EIO_PICKLE_FILEPATH, BUILDING_ID, simulation_settings, AGGREGATION_ZONE_LIST)
 
     return message
 

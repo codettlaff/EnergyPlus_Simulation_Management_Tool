@@ -1661,8 +1661,8 @@ def upload_to_db(conn, building_type, variables_pickle_filepath, eio_pickle_file
     location = DB_Uploader.get_location_from_epw_filepath(os.path.basename(DATA_WEATHER_FILEPATH))
     epw_climate_zone = DB_Uploader.get_climate_zone(location)
     time_resolution = simulation_settings["timestep_minutes"]
-    DB_Uploader.upload_time_series_data(conn, data_dict, simulation_name, simulation_settings, building_id, epw_climate_zone, time_resolution, aggregation_zones=None)
-    return('Data Uploaded'), building_id
+    zones_df = DB_Uploader.upload_time_series_data(conn, data_dict, simulation_name, simulation_settings, building_id, epw_climate_zone, time_resolution, aggregation_zones=None)
+    return('Data Uploaded'), building_id, zones_df
 
 def EPGen_Button_EndSession_Interaction_Function(n_clicks):
 
