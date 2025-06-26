@@ -356,7 +356,7 @@ def EPGen_Button_GenerateVariables_Interaction(database_selection, buildingType_
 @app.callback(
     Input(component_id = 'your_variable_selection', component_property = 'value'),
     Input(component_id = 'our_variable_selection', component_property = 'value'),
-    Input('EPGen_Radiobutton_VariableSelection', 'value'),
+    Input('EPGen_Radiobutton_VariableSelection', 'value'), # 1: All Preselected Variables 2: Custom Variable Selection
     prevent_initial_call = True
 )
 def update_simulation_variables_list(your_variable_selection, our_variable_selection, variable_selection_button):

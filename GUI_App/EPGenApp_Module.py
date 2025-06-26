@@ -312,7 +312,7 @@ tab_layout=[
                             labelStyle = {'display': 'block'},
                             value = 0,
                             options = [
-                                {'label' : " Preselected Variables", 'value' : 1},
+                                {'label' : " All Preselected Variables", 'value' : 1},
                                 {'label' : " Custom Variable Selection", 'value' : 2}
                                 ]  ,
                             className = 'ps-4 p-3',
@@ -907,10 +907,10 @@ def update_simulation_variables_list(your_variable_selection, our_variable_selec
 
     global SIMULATION_VARIABLE_LIST
 
-    if variable_selection_button == 1: # Preselected Variables
-        sim_variables_list = our_variable_selection
+    if variable_selection_button == 1: # All Preselected Variables
+        sim_variables_list = OUR_VARIABLE_LIST
     elif variable_selection_button == 2: # Preselected Variables
-        sim_variables_list = your_variable_selection
+        sim_variables_list = our_variable_selection + your_variable_selection
     else: sim_variables_list = []
 
     SIMULATION_VARIABLE_LIST = sim_variables_list
