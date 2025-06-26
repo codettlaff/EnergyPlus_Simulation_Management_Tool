@@ -59,6 +59,8 @@ os.makedirs(WORKSPACE_DIRECTORY)
 SIMULATION_FOLDERPATH = 'abc123'
 SIMULATION_FOLDERNAME = 'abc123' # Simulation Name
 
+USING_DATABASE = None
+
 BUILDING_TYPE = None
 BUILDING_ID = None
 
@@ -490,11 +492,13 @@ def EPAgg_RadioButton_InputSelection_Interaction(value):
     global SIMULATION_VARIABLE_LIST
 
     upload_div, variable_div = EPAgg.EPAgg_RadioButton_InputSelection_Interaction_Function(value)
-    if (BUILDING_ID == None) and (value == 1):
-        BUILDING_ID = DB_Uploader.get_building_id(os.path.dirname(DATA_IDF_FILEPATH))
-    if (BUILDING_ID == None) or (value == 2):
-        conn = PSQL.connect_to_database(DB_SETTINGS)
-        BUILDING_ID = DB_Uploader.upload_custom_building(conn)
+    if USING_DATABASE:
+        if (BUILDING_ID == None) and (value == 1):
+            conn = PSQL.connect_to_database(DB_SETTINGS)
+            BUILDING_ID = DB_Uploader.get_building_id(conn, BUILDING_TYPE, os.path.dirname(DATA_IDF_FILEPATH))
+        if (BUILDING_ID == None) or (value == 2):
+            conn = PSQL.connect_to_database(DB_SETTINGS)
+            BUILDING_ID = DB_Uploader.upload_custom_building(conn)
 
     return upload_div, variable_div
 
@@ -552,7 +556,9 @@ def EPAgg_DropDown_AggregationVariables_Interaction(selection, value):
     prevent_initial_call = True)
 def EPAgg_RadioButton_AggregationVariables_Interaction(VariableSelection, Variable_DropDown_Selection):
     # pre_list, custom_list, zone_list = EPAgg.EPAgg_RadioButton_AggregationVariables_Interaction_Function(InputSelection, VariableSelection)
-    global AGGREGATION_VARIABLE_SELECTION
+    global AGGREGATION_VARIABLE_SELECTION, VARIABLES_PICKLE_VARIABLE_LIST
+    if VARIABLES_PICKLE_VARIABLE_LIST == None:
+        VARIABLES_PICKLE_VARIABLE_LIST = EPAgg.get_variable_list(VARIABLES_PICKLE_FILEPATH)
     if VariableSelection == 1: aggregation_variable_selection = VARIABLES_PICKLE_VARIABLE_LIST # All Variables
     elif VariableSelection == 2: aggregation_variable_selection = Variable_DropDown_Selection # Selected Variables
     AGGREGATION_VARIABLE_SELECTION = aggregation_variable_selection
@@ -827,7 +833,10 @@ def EPVis_Button_TimeGeneratedData_Interaction(table_gen, column_gen, table_agg,
     Input(component_id = 'PSQL_RadioButton_UsingDatabase', component_property = 'value'),
     prevent_initial_call = True)
 def PSQL_Radiobutton_UsingDatabase_Interaction(selection):
+    global USING_DATABASE
     database_selection = PSQL.PSQL_Radiobutton_UsingDatabase_Interaction_Function(selection)
+    if selection == 1: USING_DATABASE = True
+    elif selection == 2: USING_DATABASE = False
     return database_selection
 
 @app.callback(
