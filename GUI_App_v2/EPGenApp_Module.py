@@ -438,7 +438,7 @@ tab_layout=[
                         # Building type selection
                         html.Label("Building Type",
                             className = 'text-left ms-4 mt-1'),
-                        dcc.Dropdown(['Commercial_Prototypes','Manufactured_Prototypes','Residential_Prototypes'], '',
+                        dcc.Dropdown(['Commercial','Manufactured','Residential'], '',
                             id='buildingType_selection',
                             style = {
                                 'width': '95%',

@@ -48,26 +48,24 @@ DATA_IDF_FILEPATH = None
 DATA_EPW_FILEPATH = None
 PRESELECTED_VARIABLES = EPGen.preselected_variables()
 
-SIMULATION_SETTINGS = None
-example_simulation_settings = {
-    "name": "new_simulation",
-    "idf_year": 2013,
-    "start_datetime": datetime(2013, 1, 1),
-    "end_datetime": datetime(2014, 1, 1),
-    "reporting_frequency": "timestep",
-    "timestep_minutes": 5,
+SIMULATION_SETTINGS = {
+    "name": None,
+    "idf_year": None,
+    "start_datetime": None,
+    "end_datetime": None,
+    "reporting_frequency": None,
+    "timestep_minutes": None,
     "variables": []
 }
-BUILDING_INFORMATION = None
-example_building_information = {
-    "building_type": "Commercial",
-    "prototype": "OfficeSmall",
-    "energy_code": "ASHRAE2013",
-    "idf_climate_zone": "2A",
-    "idf_location": "Seattle",
-    "heating_type": "NA",
-    "foundation_type": "NA",
-    "building_id": 1
+BUILDING_INFORMATION = {
+    "building_type": None,
+    "prototype": None,
+    "energy_code": None,
+    "idf_climate_zone": None,
+    "idf_location": None,
+    "heating_type": None,
+    "foundation_type": None,
+    "building_id": None
 }
 
 RESULTS_VARIABLES_PICKLE_FILEPATH = None
@@ -145,7 +143,6 @@ app.layout = dbc.Container([
         )
     ])
 ], fluid = False)
-
 
 ########## Callbacks ##########
 
@@ -239,11 +236,11 @@ def select_database(dbname):
 
 # Update Simulation Name
 @app.callback(
-    Input('simulation_name', 'value')
+    Input('simulation_name', 'value'),
+    prevent_initial_call=True
 )
 def update_simulation_name(simulation_name):
     global SIMULATION_SETTINGS
-    SIMULATION_SETTINGS = example_simulation_settings
     SIMULATION_SETTINGS['name'] = simulation_name
 
 # Data Source Selection
@@ -256,6 +253,53 @@ def data_source_selection(selection):
     if selection == 1: return False, True
     elif selection == 2: return True, False
     else: return True, True
+
+# Populate Sub Level 1
+@app.callback(
+    Output('level_1', 'options'),
+    Output('level_2', 'options'),
+    Output('level_3', 'options'),
+    Output('location_selection', 'options'),
+    Input('buildingType_selection', 'value'),
+    Input('level_1', 'value'),
+    Input('level_2', 'value'),
+    Input('level_3', 'value'),
+    Input('location_selection', 'value'),
+    prevent_initial_call=True
+)
+def pnnl_prototypes_dropdown(building_type, level1, level2, level3, location):
+
+    global DATA_IDF_FILEPATH
+    global DATA_EPW_FILEPATH
+
+    folderpath1 = os.path.join(DATA_FOLDERPATH, building_type + '_Prototypes')
+    options1 = os.listdir(folderpath1)
+    options2 = []
+    options3 = []
+
+    if os.path.exists(folderpath1) and level1:
+        folderpath2 = os.path.join(folderpath1, level1)
+        options2 = os.listdir(folderpath2)
+        if os.path.exists(folderpath2) and level2:
+            folderpath3 = os.path.join(folderpath2, level2)
+            options3 = os.listdir(folderpath3)
+            if os.path.exists(folderpath3) and level3:
+                idf_filepath = os.path.join(folderpath3, level3)
+                if os.path.exists(idf_filepath):
+                    DATA_IDF_FILEPATH
+                    print(idf_filepath)
+
+    weather_foldername = 'TMY3_WeatherFiles_' + building_type
+    weather_folderpath = os.path.join(DATA_FOLDERPATH, weather_foldername)
+    location_options = os.listdir(weather_folderpath)
+
+    if location:
+        epw_filepath = os.path.join(weather_folderpath, location)
+        if os.path.exists(epw_filepath):
+            DATA_EPW_FILEPATH = epw_filepath
+            print(epw_filepath)
+
+    return options1, options2, options3, location_options
 
 '''
 
