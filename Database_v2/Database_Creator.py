@@ -9,39 +9,6 @@ import time
 
 # conn = psycopg2.connect(dbname="postgres", user="casey", password="OfficeLarge", host="localhost")
 
-def create_database(username="user", password="password", host="localhost", database_name="New Database"):
-
-    if host == "localhost": conn = psycopg2.connect(dbname="postgres", user=username, password=password, host=host)
-    else: conn = psycopg2.connect(dbname="postgres", user=username, password=password, port=host)
-    conn.autocommit = True
-    cursor = conn.cursor()
-    try:
-        cursor.execute(f"CREATE DATABASE {database_name};")
-    except Exception as e:
-        print(e)
-    cursor.close()
-    conn.close()
-
-    time.sleep(0.5)
-    if host == "localhost":
-        conn = psycopg2.connect(dbname=database_name, user=username, password=password, host=host)
-        db_settings = {
-            "dbname": database_name,
-            "user": username,
-            "password": password,
-            "host": host
-        }
-    else:
-        conn = psycopg2.connect(dbname=database_name, user=username, password=password, port=host)
-        db_settings = {
-            "dbname": database_name,
-            "user": username,
-            "password": password,
-            "port": host
-        }
-
-    return conn, db_settings
-
 def delete_database(conn, dbname):
 
     conn.autocommit = True

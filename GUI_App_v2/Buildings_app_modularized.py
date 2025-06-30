@@ -20,7 +20,7 @@ from os import mkdir
 
 import numpy as np
 import pandas as pd
-from dash import Dash, dcc, html, Input, Output, State, dash_table
+from dash import Dash, dcc, html, Input, Output, State, dash_table, callback_context
 import dash_daq as daq
 import dash_bootstrap_components as dbc
 import plotly.express as px
@@ -151,6 +151,11 @@ app.layout = dbc.Container([
 
 ########## PostgreSQL ##########
 
+def get_callback_id():
+    ctx = callback_context
+    triggered_id = ctx.triggered[0]['prop_id'].split('.')[0]
+    return triggered_id
+
 # Database Selection
 @app.callback(
     Output('PSQL_Div_CreateSelectDatabase', 'hidden'),
@@ -199,10 +204,36 @@ def enter_database_information(username, password, port, host, dbname):
 @app.callback(
     Output('PSQL_Button_CreateDatabase', 'children'),
     Input('PSQL_Button_CreateDatabase', 'n_clicks'),
+    Input('PSQL_Textarea_Username', 'value'),
+    Input('PSQL_Textarea_Password', 'value'),
+    Input('PSQL_Textarea_PortNumber', 'value'),
+    Input('PSQL_Textarea_HostName', 'value'),
+    Input('PSQL_Textarea_DbName', 'value'),
     prevent_initial_call=True
 )
-def create_database(n_clicks):
-    return PSQL.create_database(DB_SETTINGS)
+def create_database(n_clicks, user, password, port, host, dbname):
+    if get_callback_id() == 'PSQL_Button_CreateDatabase': return PSQL.create_database(DB_SETTINGS)
+    else: return "Create Database"
+
+# Select Database Dropdown Options
+@ app.callback(
+    Output('PSQL_Dropdown_ExistDbList', 'options'),
+    Input('PSQL_Button_CreateDatabase', 'n_clicks'),
+    prevent_initial_call=False
+)
+def populate_select_db_dropdown(n_clicks):
+    if os.path.exists(PSQL.databases_csv_filepath()): return PSQL.get_db_names()
+    else: return []
+
+# Select Database Dropdown Selection
+@app.callback(
+    Input('PSQL_Dropdown_ExistDbList', 'value'),
+    prevent_initial_call=True
+)
+def select_database(dbname):
+    global DB_SETTINGS
+    DB_SETTINGS = PSQL.get_db_settings(dbname)
+    print(DB_SETTINGS)
 
 ########## Data Generation ##########
 

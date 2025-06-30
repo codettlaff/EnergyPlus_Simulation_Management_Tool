@@ -22,6 +22,7 @@ import Database_Creator as db_creator
 import Data_Uploader as db_uploader
 
 DATABASES_CSV_FILEPATH = os.path.join(os.path.dirname(__file__), 'databases.csv')
+def databases_csv_filepath(): return DATABASES_CSV_FILEPATH
 
 # Layout
 tab_layout = [
@@ -319,8 +320,8 @@ def create_database(db_settings):
         cursor.execute(f"CREATE DATABASE {dbname};")
         conn.close()
     except psycopg2.Error as e:
-        if e.pgcode == '42P04': pass # Duplicate Database
-        else: return "Failed to Create Database"
+        if e.pgcode == '42P04': return "Database Already Created" # Duplicate Database
+        else: return "Invalid Information"
 
     # Try Connecting to Newly Created Database
     db_settings['dbname'] = dbname
@@ -328,6 +329,16 @@ def create_database(db_settings):
         conn = connect(db_settings)
         conn.close()
     except psycopg2.Error as e:
+        return "Invalid Information"
+
+    # Create Empty Tables, Populate Prototypical Buildings Table
+    try:
+        conn = connect(db_settings)
+        db_creator.create_database(conn)
+        db_creator.create_tables(conn)
+        db_uploader.populate_buildings_table(conn)
+    except psycopg2.Error as e:
+        print("Failed to Create Tables: ", e)
         return "Failed to Create Database"
 
     if not os.path.isfile(DATABASES_CSV_FILEPATH):
@@ -338,6 +349,17 @@ def create_database(db_settings):
     df.to_csv(DATABASES_CSV_FILEPATH, index=False)
 
     return 'Database Created'
+
+def get_db_names():
+    df = pd.read_csv(DATABASES_CSV_FILEPATH)
+    dbnames = df["dbname"].dropna().unique().tolist()
+    return [{"label": name, "value": name} for name in dbnames]
+
+def get_db_settings(dbname):
+    df = pd.read_csv(DATABASES_CSV_FILEPATH)
+    record = df[df["dbname"] == dbname].iloc[0]
+    record_dict = record.to_dict()
+    return record_dict
 
 """
 
