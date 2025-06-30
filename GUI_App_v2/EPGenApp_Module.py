@@ -550,6 +550,8 @@ tab_layout=[
 
 ]
 
+"""
+
 def EPGen_Radiobutton_DatabaseSelection_Interaction_Function(folder_name, database_selection):
     global SIMULATION_FOLDERPATH
     global SIMULATION_FOLDERNAME
@@ -1619,3 +1621,5 @@ def EPGen_Button_EndSession_Interaction_Function(n_clicks):
         shutil.rmtree(os.path.join(WORKSPACE_DIRECTORY, directory))
 
     return "Session Completed"
+
+"""

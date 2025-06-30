@@ -30,52 +30,6 @@ sys.path.append(database_dir)
 import Database_Creator as DB_Creator
 import Data_Uploader as DB_Uploader
 
-UPLOAD_DIRECTORY = os.path.join(os.getcwd(), "EP_APP_Uploads")
-UPLOAD_DIRECTORY_AGG_PICKLE = os.path.join(UPLOAD_DIRECTORY, "Pickle_Upload")
-UPLOAD_DIRECTORY_AGG_EIO = os.path.join(UPLOAD_DIRECTORY, "EIO_Upload")
-UPLOAD_DIRECTORY_VIS = os.path.join(UPLOAD_DIRECTORY, "Visualization")
-
-WORKSPACE_DIRECTORY = os.path.join(os.getcwd(), "EP_APP_Workspace")
-SIMULATION_FOLDERPATH = 'abc123'
-SIMULATION_FOLDERNAME = 'abc123'
-DATA_DIRECTORY =  os.path.join(os.getcwd(), "..", "..", "Data")
-
-OUR_VARIABLE_LIST = ['Schedule_Value_',
-                        'Facility_Total_HVAC_Electric_Demand_Power_',
-                        'Site_Diffuse_Solar_Radiation_Rate_per_Area_',
-                        'Site_Direct_Solar_Radiation_Rate_per_Area_',
-                        'Site_Outdoor_Air_Drybulb_Temperature_',
-                        'Site_Solar_Altitude_Angle_',
-                        'Surface_Inside_Face_Internal_Gains_Radiation_Heat_Gain_Rate_',
-                        'Surface_Inside_Face_Lights_Radiation_Heat_Gain_Rate_',
-                        'Surface_Inside_Face_Solar_Radiation_Heat_Gain_Rate_',
-                        'Surface_Inside_Face_Temperature_',
-                        'Zone_Windows_Total_Transmitted_Solar_Radiation_Rate_',
-                        'Zone_Air_Temperature_',
-                        'Zone_People_Convective_Heating_Rate_',
-                        'Zone_Lights_Convective_Heating_Rate_',
-                        'Zone_Electric_Equipment_Convective_Heating_Rate_',
-                        'Zone_Gas_Equipment_Convective_Heating_Rate_',
-                        'Zone_Other_Equipment_Convective_Heating_Rate_',
-                        'Zone_Hot_Water_Equipment_Convective_Heating_Rate_',
-                        'Zone_Steam_Equipment_Convective_Heating_Rate_',
-                        'Zone_People_Radiant_Heating_Rate_',
-                        'Zone_Lights_Radiant_Heating_Rate_',
-                        'Zone_Electric_Equipment_Radiant_Heating_Rate_',
-                        'Zone_Gas_Equipment_Radiant_Heating_Rate_',
-                        'Zone_Other_Equipment_Radiant_Heating_Rate_',
-                        'Zone_Hot_Water_Equipment_Radiant_Heating_Rate_',
-                        'Zone_Steam_Equipment_Radiant_Heating_Rate_',
-                        'Zone_Lights_Visible_Radiation_Heating_Rate_',
-                        'Zone_Total_Internal_Convective_Heating_Rate_',
-                        'Zone_Total_Internal_Radiant_Heating_Rate_',
-                        'Zone_Total_Internal_Total_Heating_Rate_',
-                        'Zone_Total_Internal_Visible_Radiation_Heating_Rate_',
-                        'Zone_Air_System_Sensible_Cooling_Rate_',
-                        'Zone_Air_System_Sensible_Heating_Rate_',
-                        'System_Node_Temperature_',
-                        'System_Node_Mass_Flow_Rate_']
-
 database_generation_dir = os.path.join(os.path.dirname(__file__), '..', 'Data_Generation')
 sys.path.append(database_generation_dir)
 import EP_DataAggregation_v2_20250619 as EP_Agg
@@ -303,6 +257,8 @@ tab_layout =[
                 ])
             
 ]
+
+"""
 
 def EPAgg_RadioButton_InputSelection_Interaction_Function(value):
 
@@ -1071,3 +1027,5 @@ def upload_to_db(conn, epw_filepath, aggregation_pickle_filepath, eio_pickle_fil
                                         epw_climate_zone, time_resolution, aggregation_zones)
 
     return ('Data Uploaded')
+
+"""

@@ -21,7 +21,7 @@ sys.path.append(database_creator_script_dir)
 import Database_Creator as db_creator
 import Data_Uploader as db_uploader
 
-DATABASES_CSV_FILEPATH = os.path.join(os.path.dirname('__file__'), 'databases.csv')
+DATABASES_CSV_FILEPATH = os.path.join(os.path.dirname(__file__), 'databases.csv')
 
 # Layout
 tab_layout = [
@@ -188,6 +188,29 @@ tab_layout = [
                         'margin': '2%'
                     }),
 
+                    # Host Name
+                    dbc.Stack([
+                        html.Label(
+                            "Host Name:",
+                            style={
+                                'width': '30%',
+                                'margin-top': 'auto',
+                                'margin-bottom': 'auto'
+                            }
+                        ),
+                        dcc.Textarea(
+                            id='PSQL_Textarea_HostName',
+                            value='',
+                            style={
+                                'width': '70%',
+                                'height': 50
+                            }
+                        ),
+                    ], direction="horizontal", style={
+                        'align-items': 'center',
+                        'margin': '2%'
+                    }),
+
                     # Database Name
                     dbc.Stack([
                         html.Label(
@@ -280,68 +303,43 @@ tab_layout = [
 ]
 
 
-# Helper Functions
-def PSQL_Radiobutton_UsingDatabase_Interaction_Function(data_selection):
-    if data_selection == 1:
-        return False
-    else:
-        return True 
-    
-def PSQL_Radiobutton_CreateSelectDatabase_Interaction_Function(data_source):
-    """
-    Determines the behavior of data selection and upload controls 
-    based on the selected data source radio button.
-
-    Args:
-        data_source (int): 1 for upload, 2 for selection, others for both.
-
-    Returns:
-        tuple: (data_selection, upload_data)
-    """
-    options = {
-        1: (False, True),   # Enter Info
-        2: (True, False)    # Existing Db list
-    }
-
-    # Default to (True, True) if data_source is not 1 or 2
-    return options.get(data_source, (True, True))
-
 # Casey's Code
 
-def connect_to_database(db_settings):
+def connect(db_settings):
     return psycopg2.connect(**db_settings)
 
-def create_database(username, password, port, dbname):
-    """
-    1. call create_database function in database_creator script, which returns a conn object. if this was done sucessfully, continue.
-    1. if databases csv file does not exist, create it (have global variable DATABASES_CSV_FILEPATH)
-    2. add current database as row in databases csv
-    """
-    db_settings = None
+def create_database(db_settings):
 
+    dbname = db_settings['dbname']
+    db_settings['dbname'] = 'postgres'
     try:
-        conn, db_settings = Database_Creator.create_database(username, password, port, dbname)
-        Database_Creator.create_tables(conn)
-        Data_Uploader.populate_buildings_table(conn)
+        conn = connect(db_settings)
+        conn.autocommit = True
+        cursor = conn.cursor()
+        cursor.execute(f"CREATE DATABASE {dbname};")
         conn.close()
-    except Exception as e:
-        print(e)
+    except psycopg2.Error as e:
+        if e.pgcode == '42P04': pass # Duplicate Database
+        else: return "Failed to Create Database"
+
+    # Try Connecting to Newly Created Database
+    db_settings['dbname'] = dbname
+    try:
+        conn = connect(db_settings)
+        conn.close()
+    except psycopg2.Error as e:
+        return "Failed to Create Database"
 
     if not os.path.isfile(DATABASES_CSV_FILEPATH):
-        pd.DataFrame(columns=["username", "password", "port", "database_name"]).to_csv(DATABASES_CSV_FILEPATH, index=False)
-
-    new_record = {
-        "username": username,
-        "password": password,
-        "port": port,
-        "database_name": dbname
-    }
+        pd.DataFrame(columns=["dbname", "user", "password", "host", "port"]).to_csv(DATABASES_CSV_FILEPATH, index=False)
 
     df = pd.read_csv(DATABASES_CSV_FILEPATH)
-    df = pd.concat([df, pd.DataFrame([new_record])], ignore_index=True)
+    df = pd.concat([df, pd.DataFrame([db_settings])], ignore_index=True)
     df.to_csv(DATABASES_CSV_FILEPATH, index=False)
 
-    return db_settings
+    return 'Database Created'
+
+"""
 
 def populate_existing_db_dropdown(selection):
     # Only update the dropdown if "Select Database" was chosen (value = 2)
@@ -397,5 +395,6 @@ def get_conn_from_dbname(database_name):
         print(f"Connected to {database_name}")
         return db_settings
     except Exception as e:
-        print(f"Could not connect to {database_name}: {e}")
-        return None
+        print(f"Could not 
+
+"""

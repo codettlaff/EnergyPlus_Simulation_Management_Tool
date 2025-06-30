@@ -32,7 +32,6 @@ import EPGenApp_Module as EPGen
 import EPAggApp_Module as EPAgg
 import EPVisApp_Module as EPVis
 import PSQLApp_Module as PSQL
-from Data_Generation_v2.EP_DataGenerator_Script_v2_20250512 import PRESELECTED_VARIABLES
 
 # Directory Paths
 UPLOAD_DIRECTORY = os.path.join(os.path.dirname(__file__), "Uploads")
@@ -168,12 +167,42 @@ def database_selection(selection):
     Output('PSQL_Div_EnterInfo', 'hidden'),
     Output('PSQL_Div_SelectDbfromExist', 'hidden'),
     Input('PSQL_RadioButton_CreateSelectDatabase', 'value'),
-    Input('PSQL_RadioButton_UsingDatabase', 'value')
+    Input('PSQL_RadioButton_UsingDatabase', 'value'),
+    prevent_initial_call=True
 )
 def create_select_database(selection, using_db):
     if (selection == 1) and using_db: return False, True
     elif (selection == 2) and using_db: return True, False
     else: return True, True
+
+# Create Database Enter Information
+@app.callback(
+    Input('PSQL_Textarea_Username', 'value'),
+    Input('PSQL_Textarea_Password', 'value'),
+    Input('PSQL_Textarea_PortNumber', 'value'),
+    Input('PSQL_Textarea_HostName', 'value'),
+    Input('PSQL_Textarea_DbName', 'value'),
+    prevent_initial_call=True
+)
+def enter_database_information(username, password, port, host, dbname):
+    global DB_SETTINGS
+    db_settings = {
+        "dbname": dbname,
+        "user": username,
+        "password": password,
+        "host": host,
+        "port": port
+    }
+    DB_SETTINGS = db_settings
+
+# Create Database Button
+@app.callback(
+    Output('PSQL_Button_CreateDatabase', 'children'),
+    Input('PSQL_Button_CreateDatabase', 'n_clicks'),
+    prevent_initial_call=True
+)
+def create_database(n_clicks):
+    return PSQL.create_database(DB_SETTINGS)
 
 ########## Data Generation ##########
 
