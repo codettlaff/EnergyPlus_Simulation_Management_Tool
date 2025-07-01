@@ -17,6 +17,7 @@ import datetime
 from datetime import date
 from datetime import datetime
 from os import mkdir
+import base64
 
 import numpy as np
 import pandas as pd
@@ -32,6 +33,7 @@ import EPGenApp_Module as EPGen
 import EPAggApp_Module as EPAgg
 import EPVisApp_Module as EPVis
 import PSQLApp_Module as PSQL
+from Archive.Data_Generation.EP_DataGenerator_Script_v2_20250512 import TEMPORARY_FOLDERPATH
 
 # Directory Paths
 UPLOAD_DIRECTORY = os.path.join(os.path.dirname(__file__), "Uploads")
@@ -55,7 +57,8 @@ SIMULATION_SETTINGS = {
     "end_datetime": None,
     "reporting_frequency": None,
     "timestep_minutes": None,
-    "variables": []
+    "variables": [],
+    "ep_version": None
 }
 BUILDING_INFORMATION = {
     "building_type": None,
@@ -254,7 +257,7 @@ def data_source_selection(selection):
     elif selection == 2: return True, False
     else: return True, True
 
-# Populate Sub Level 1
+# PNNL Prototypes Drop-Down Menu
 @app.callback(
     Output('level_1', 'options'),
     Output('level_2', 'options'),
@@ -300,6 +303,56 @@ def pnnl_prototypes_dropdown(building_type, level1, level2, level3, location):
             print(epw_filepath)
 
     return options1, options2, options3, location_options
+
+# Upload IDF File Interaction
+@app.callback(
+    Output('upload_idf', 'children'),
+    Input('upload_idf', 'filename'),
+    Input('upload_idf', 'contents'),
+    prevent_initial_call=True
+)
+def upload_idf(filename, content):
+    global DATA_IDF_FILEPATH
+
+    try:
+        upload_filepath = os.path.join(UPLOAD_DIRECTORY, filename)
+        data = content.encode("utf8").split(b";base64,")[1]
+        with open(upload_filepath, "wb") as fp:
+            fp.write(base64.decodebytes(data))
+        DATA_IDF_FILEPATH = upload_filepath
+        short_name = filename[:20] + "..." if len(filename) > 10 else filename
+        return f"Uploaded {short_name}"
+    except Exception as e:
+        return "Upload Failed"
+
+# Upload IDF File Interaction
+@app.callback(
+    Output('upload_epw', 'children'),
+    Input('upload_epw', 'filename'),
+    Input('upload_epw', 'contents'),
+    prevent_initial_call=True
+)
+def upload_idf(filename, content):
+    global DATA_EPW_FILEPATH
+
+    try:
+        upload_filepath = os.path.join(UPLOAD_DIRECTORY, filename)
+        data = content.encode("utf8").split(b";base64,")[1]
+        with open(upload_filepath, "wb") as fp:
+            fp.write(base64.decodebytes(data))
+        short_name = filename[:20] + "..." if len(filename) > 10 else filename
+        DATA_EPW_FILEPATH = upload_filepath
+        return f"Uploaded {short_name}"
+    except Exception as e:
+        return "Upload Failed"
+
+# Version Selection
+@app.callback(
+    Input(component_id = 'version_selection', component_property = 'value'),
+    prevent_initial_call = True)
+def EPGen_Dropdown_EPVersion_Interaction(version_selection):
+    global SIMULATION_SETTINGS
+    SIMULATION_SETTINGS['ep_version'] = version_selection
 
 '''
 
