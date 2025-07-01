@@ -428,6 +428,20 @@ def unhide_generate_data_button(val1, val2, val3, val4, val5, val6, val7):
     else: return True
     return False
 
+# Variable Selection
+@app.callback(
+    Input('preselected_variable_selection', 'value'),
+    Input('custom_variable_selection', 'value'),
+    Input('EPGen_Radiobutton_VariableSelection', 'value'), # 1: All Preselected Variables 2: Select Variables
+    prevent_initial_call=True
+)
+def variable_selection(preselected_variable_selection, custom_variable_selection, choice):
+    global SIMULATION_SETTINGS
+    if choice == 1:
+        SIMULATION_SETTINGS['variables'] = PRESELECTED_VARIABLES
+    elif choice == 2:
+        SIMULATION_SETTINGS['variables'] = preselected_variable_selection + custom_variable_selection
+
 '''
 
 # Update Simulation Name
