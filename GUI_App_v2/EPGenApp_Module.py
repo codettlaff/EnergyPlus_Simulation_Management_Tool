@@ -157,6 +157,7 @@ tab_layout=[
 
                     # Box 3 C1
                     html.Div([
+                        dcc.Store(id='gen_simulation_settings', data=None),
 
                         # Time-step selection
                         dbc.Stack([

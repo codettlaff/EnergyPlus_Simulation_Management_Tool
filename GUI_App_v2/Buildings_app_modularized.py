@@ -52,7 +52,6 @@ PRESELECTED_VARIABLES = EPGen.preselected_variables()
 
 SIMULATION_SETTINGS = {
     "name": None,
-    "idf_year": None,
     "start_datetime": None,
     "end_datetime": None,
     "reporting_frequency": None,
@@ -390,10 +389,12 @@ def unhide_simulation_details(val1, val2, val3, val4, val5):
 
 # Simulation Details
 @app.callback(
+    Output('gen_simulation_settings', 'data'),
     Input('sim_TimeStep', 'value'),
     Input('sim_run_period', 'start_date'),
     Input('sim_run_period', 'end_date'),
-    Input('simReportFreq_selection', 'value')
+    Input('simReportFreq_selection', 'value'),
+    prevent_initial_call=True
 )
 def update_simulation_details(timestep, start_date, end_date, report_freq_selection):
     global SIMULATION_SETTINGS
@@ -401,6 +402,31 @@ def update_simulation_details(timestep, start_date, end_date, report_freq_select
     SIMULATION_SETTINGS['start_datetime'] = format_datetime(start_date)
     SIMULATION_SETTINGS['end_datetime'] = format_datetime(end_date)
     SIMULATION_SETTINGS['reporting_frequency'] = report_freq_selection
+    return SIMULATION_SETTINGS
+
+# Unhide Generate Variables
+@app.callback(
+    Output('generate_variables', 'hidden'),
+    Input('simulation_name', 'value'),
+    Input('data_source_selection', 'value'),
+    Input('pnnl_prototype_idf_filepath', 'data'),
+    Input('pnnl_prototype_weather_filepath', 'data'),
+    Input('gen_upload_idf_filepath', 'data'),
+    Input('gen_upload_epw_filepath', 'data'),
+    Input('gen_simulation_settings', 'data'),
+    prevent_initial_call=True
+)
+def unhide_generate_data_button(val1, val2, val3, val4, val5, val6, val7):
+    global DATA_IDF_FILEPATH
+    global DATA_EPW_FILEPATH
+    global SIMULATION_SETTINGS
+    if DATA_IDF_FILEPATH is not None and DATA_EPW_FILEPATH:
+        if os.path.exists(DATA_IDF_FILEPATH) and os.path.exists(DATA_EPW_FILEPATH):
+            for key, value in SIMULATION_SETTINGS.items():
+                if key != 'ep_version' and value == None: return True
+        else: return True
+    else: return True
+    return False
 
 '''
 
