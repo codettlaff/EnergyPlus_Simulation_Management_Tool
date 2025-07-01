@@ -149,6 +149,11 @@ app.layout = dbc.Container([
 
 ########## Callbacks ##########
 
+def format_datetime(date_string):
+    year, month, day = date_string.split('-')
+    formatted_datetime = datetime(int(year), int(month), int(day))
+    return formatted_datetime
+
 ########## PostgreSQL ##########
 
 def get_callback_id():
@@ -382,6 +387,20 @@ def unhide_simulation_details(val1, val2, val3, val4, val5):
     if DATA_IDF_FILEPATH is not None and DATA_EPW_FILEPATH is not None:
         if os.path.exists(DATA_IDF_FILEPATH) and os.path.exists(DATA_EPW_FILEPATH): return False
     else: return True
+
+# Simulation Details
+@app.callback(
+    Input('sim_TimeStep', 'value'),
+    Input('sim_run_period', 'start_date'),
+    Input('sim_run_period', 'end_date'),
+    Input('simReportFreq_selection', 'value')
+)
+def update_simulation_details(timestep, start_date, end_date, report_freq_selection):
+    global SIMULATION_SETTINGS
+    SIMULATION_SETTINGS['timestep_minutes'] = timestep
+    SIMULATION_SETTINGS['start_datetime'] = format_datetime(start_date)
+    SIMULATION_SETTINGS['end_datetime'] = format_datetime(end_date)
+    SIMULATION_SETTINGS['reporting_frequency'] = report_freq_selection
 
 '''
 
