@@ -253,6 +253,10 @@ def update_simulation_name(simulation_name):
     Input('data_source_selection', 'value')
 )
 def data_source_selection(selection):
+    global DATA_IDF_FILEPATH
+    global DATA_EPW_FILEPATH
+    DATA_IDF_FILEPATH = None # Refresh
+    DATA_EPW_FILEPATH = None # Refresh
     if selection == 1: return False, True
     elif selection == 2: return True, False
     else: return True, True
@@ -263,6 +267,8 @@ def data_source_selection(selection):
     Output('level_2', 'options'),
     Output('level_3', 'options'),
     Output('location_selection', 'options'),
+    Output('pnnl_prototype_idf_filepath', 'data'),
+    Output('pnnl_prototype_weather_filepath', 'data'),
     Input('buildingType_selection', 'value'),
     Input('level_1', 'value'),
     Input('level_2', 'value'),
@@ -280,6 +286,9 @@ def pnnl_prototypes_dropdown(building_type, level1, level2, level3, location):
     options2 = []
     options3 = []
 
+    idf_filepath = None
+    epw_filepath = None
+
     if os.path.exists(folderpath1) and level1:
         folderpath2 = os.path.join(folderpath1, level1)
         options2 = os.listdir(folderpath2)
@@ -289,7 +298,7 @@ def pnnl_prototypes_dropdown(building_type, level1, level2, level3, location):
             if os.path.exists(folderpath3) and level3:
                 idf_filepath = os.path.join(folderpath3, level3)
                 if os.path.exists(idf_filepath):
-                    DATA_IDF_FILEPATH
+                    DATA_IDF_FILEPATH = idf_filepath
                     print(idf_filepath)
 
     weather_foldername = 'TMY3_WeatherFiles_' + building_type
@@ -302,11 +311,12 @@ def pnnl_prototypes_dropdown(building_type, level1, level2, level3, location):
             DATA_EPW_FILEPATH = epw_filepath
             print(epw_filepath)
 
-    return options1, options2, options3, location_options
+    return options1, options2, options3, location_options, idf_filepath, epw_filepath
 
 # Upload IDF File Interaction
 @app.callback(
     Output('upload_idf', 'children'),
+    Output('gen_upload_idf_filepath', 'data'),
     Input('upload_idf', 'filename'),
     Input('upload_idf', 'contents'),
     prevent_initial_call=True
@@ -321,13 +331,14 @@ def upload_idf(filename, content):
             fp.write(base64.decodebytes(data))
         DATA_IDF_FILEPATH = upload_filepath
         short_name = filename[:20] + "..." if len(filename) > 10 else filename
-        return f"Uploaded {short_name}"
+        return f"Uploaded {short_name}", upload_filepath
     except Exception as e:
-        return "Upload Failed"
+        return "Upload Failed", None
 
-# Upload IDF File Interaction
+# Upload EPW File Interaction
 @app.callback(
     Output('upload_epw', 'children'),
+    Output('gen_upload_epw_filepath', 'data'),
     Input('upload_epw', 'filename'),
     Input('upload_epw', 'contents'),
     prevent_initial_call=True
@@ -342,9 +353,9 @@ def upload_idf(filename, content):
             fp.write(base64.decodebytes(data))
         short_name = filename[:20] + "..." if len(filename) > 10 else filename
         DATA_EPW_FILEPATH = upload_filepath
-        return f"Uploaded {short_name}"
+        return f"Uploaded {short_name}", upload_filepath
     except Exception as e:
-        return "Upload Failed"
+        return "Upload Failed", None
 
 # Version Selection
 @app.callback(
@@ -353,6 +364,24 @@ def upload_idf(filename, content):
 def EPGen_Dropdown_EPVersion_Interaction(version_selection):
     global SIMULATION_SETTINGS
     SIMULATION_SETTINGS['ep_version'] = version_selection
+
+# Unhide Simulation Details
+@app.callback(
+    Output('simulation_details', 'hidden'),
+    Input('pnnl_prototype_idf_filepath', 'data'),
+    Input('pnnl_prototype_weather_filepath', 'data'),
+    Input('gen_upload_idf_filepath', 'data'),
+    Input('gen_upload_epw_filepath', 'data'),
+    Input('data_source_selection', 'value'), # Refresh
+    prevent_initial_call=True
+)
+def unhide_simulation_details(val1, val2, val3, val4, val5):
+    global DATA_IDF_FILEPATH
+    global DATA_EPW_FILEPATH
+    if get_callback_id() == 'data_source_selection': return True # Refresh
+    if DATA_IDF_FILEPATH is not None and DATA_EPW_FILEPATH is not None:
+        if os.path.exists(DATA_IDF_FILEPATH) and os.path.exists(DATA_EPW_FILEPATH): return False
+    else: return True
 
 '''
 

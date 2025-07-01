@@ -95,6 +95,8 @@ tab_layout=[
 
                     # Box 2 C1
                     html.Div([
+                        dcc.Store(id='gen_upload_idf_filepath', data=None),
+                        dcc.Store(id='gen_upload_epw_filepath', data=None),
 
                         # Upload IDF file
                         dcc.Upload(['Upload IDF file'],
@@ -434,6 +436,8 @@ tab_layout=[
 
                     # Box 1 C3
                     html.Div([
+                        dcc.Store(id='pnnl_prototype_idf_filepath', data=None),
+                        dcc.Store(id='pnnl_prototype_weather_filepath', data=None),
 
                         # Building type selection
                         html.Label("Building Type",
