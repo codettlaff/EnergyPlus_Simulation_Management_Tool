@@ -21,7 +21,7 @@ import base64
 
 import numpy as np
 import pandas as pd
-from dash import Dash, dcc, html, Input, Output, State, dash_table, callback_context
+from dash import Dash, dcc, html, Input, Output, State, dash_table, callback_context, no_update
 import dash_daq as daq
 import dash_bootstrap_components as dbc
 import plotly.express as px
@@ -428,6 +428,25 @@ def unhide_generate_data_button(val1, val2, val3, val4, val5, val6, val7):
     else: return True
     return False
 
+# Generate Variables Button
+@app.callback(
+    Output('EPGen_Button_GenerateVariables', 'children'),
+    Output('custom_variable_selection', 'options'),
+    Input('EPGen_Button_GenerateVariables', 'n_clicks'),
+    Input('pnnl_prototype_idf_filepath', 'data'),
+    Input('gen_upload_idf_filepath', 'data'),
+    prevent_initial_call=True
+)
+def generate_variables(n_clicks, val1, val2):
+
+    if get_callback_id() == 'EPGen_Button_GenerateVariables':
+        try:
+            variable_list = EPGen.generate_variables(DATA_IDF_FILEPATH, DATA_EPW_FILEPATH)
+            return 'Variables Generated', variable_list
+        except Exception as e:
+            return 'Failed to Generate', []
+    else: return 'Generate Variables', no_update
+
 # Variable Selection
 @app.callback(
     Input('preselected_variable_selection', 'value'),
@@ -441,6 +460,8 @@ def variable_selection(preselected_variable_selection, custom_variable_selection
         SIMULATION_SETTINGS['variables'] = PRESELECTED_VARIABLES
     elif choice == 2:
         SIMULATION_SETTINGS['variables'] = preselected_variable_selection + custom_variable_selection
+
+
 
 '''
 

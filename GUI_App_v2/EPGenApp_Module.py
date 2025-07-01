@@ -238,7 +238,7 @@ tab_layout=[
                             className = 'text-left ms-4'),
                         dcc.Dropdown(options = [],
                             value = [],
-                            id = 'your_variable_selection',
+                            id = 'custom_variable_selection',
                             multi = True,
                             style = {
                                 'width':'95%',
@@ -251,7 +251,7 @@ tab_layout=[
                         dcc.Dropdown(options = PRESELECTED_VARIABLES,
                             multi = True,
                             value = [],
-                            id = 'our_variable_selection',
+                            id = 'preselected_variable_selection',
                             style = {
                                 'width':'95%',
                                 'margin-left':'2.5%',
@@ -264,7 +264,7 @@ tab_layout=[
                             value = 0,
                             options = [
                                 {'label' : " All Preselected Variables", 'value' : 1},
-                                {'label' : " Custom Variable Selection", 'value' : 2}
+                                {'label' : " Select Variables", 'value' : 2}
                                 ]  ,
                             className = 'ps-4 p-3',
                             style = {
@@ -554,6 +554,10 @@ tab_layout=[
                 ], justify = "center", align = "center"),
 
 ]
+
+def generate_variables(idf_filepath, epw_filepath):
+    variables_list = data_generator.generate_variables(idf_filepath, epw_filepath)
+    return variables_list
 
 """
 
