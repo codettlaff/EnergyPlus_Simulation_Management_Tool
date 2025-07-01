@@ -413,20 +413,16 @@ def update_simulation_details(timestep, start_date, end_date, report_freq_select
     Input('pnnl_prototype_weather_filepath', 'data'),
     Input('gen_upload_idf_filepath', 'data'),
     Input('gen_upload_epw_filepath', 'data'),
-    Input('gen_simulation_settings', 'data'),
     prevent_initial_call=True
 )
-def unhide_generate_data_button(val1, val2, val3, val4, val5, val6, val7):
+def unhide_generate_data_button(val1, val2, val3, val4, val5, val6):
     global DATA_IDF_FILEPATH
     global DATA_EPW_FILEPATH
     global SIMULATION_SETTINGS
     if DATA_IDF_FILEPATH is not None and DATA_EPW_FILEPATH:
         if os.path.exists(DATA_IDF_FILEPATH) and os.path.exists(DATA_EPW_FILEPATH):
-            for key, value in SIMULATION_SETTINGS.items():
-                if key != 'ep_version' and value == None: return True
-        else: return True
-    else: return True
-    return False
+            return False
+    return True
 
 # Generate Variables Button
 @app.callback(
@@ -445,7 +441,7 @@ def generate_variables(n_clicks, val1, val2):
             return 'Variables Generated', variable_list
         except Exception as e:
             return 'Failed to Generate', []
-    else: return 'Generate Variables', no_update
+    else: return 'Generate Variables', []
 
 # Variable Selection
 @app.callback(
