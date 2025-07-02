@@ -473,22 +473,19 @@ def variable_selection(preselected_variable_selection, custom_variable_selection
     elif choice == 2:
         SIMULATION_SETTINGS['variables'] = preselected_variable_selection + custom_variable_selection
 
-# Unhide Edit Schedules
 @app.callback(
     Output('schedules', 'hidden'),
     Input('generate_variables', 'hidden'),
-    Input('EPGen_Radiobutton_EditSchedules', 'value'), # 1: Edit Schedules 2: Keep Original Schedules
+    Input('EPGen_Radiobutton_EditSchedules', 'value'),
     Input('gen_upload_epw_filepath', 'data'),
     Input('pnnl_prototype_weather_filepath', 'data'),
     prevent_initial_call=True
 )
-def unhide_edit_schedules(hidden, selection, trigger1, trigger2):
-    if hidden == False and selection == 1 and DATA_EPW_FILEPATH is not None:
-        if os.path.exists(DATA_EPW_FILEPATH):
-            return False
-    else: return True
+def unhide_edit_schedules(generate_hidden, edit_selection, trigger1, trigger2):
+    if generate_hidden == False and edit_selection == 1 and valid_filepath(DATA_EPW_FILEPATH):
+        return False
+    return True
 
-# Fill Edit Schedules Dropdowns
 @app.callback(
     Output('people_schedules', 'options'),
     Output('equip_schedules', 'options'),
@@ -496,27 +493,37 @@ def unhide_edit_schedules(hidden, selection, trigger1, trigger2):
     Output('heating_schedules', 'options'),
     Output('cooling_schedules', 'options'),
     Output('temperature_schedules', 'options'),
-    Input('schedules', 'hidden'),
+    Input('EPGen_Radiobutton_EditSchedules', 'value'),
     Input('generate_variables_intial_run_eio_filepath', 'data'),
     Input('generate_variables_intial_run_rdd_filepath', 'data'),
     prevent_initial_call=True
 )
-def fill_schedule_dropdowns(hidden, trigger1, trigger2):
-    global INITIAL_RUN_EIO_FILEPATH
-    global INITIAL_RUN_RDD_FILEPATH
+def fill_schedule_dropdowns(edit_selection, trigger1, trigger2):
+    global INITIAL_RUN_EIO_FILEPATH, INITIAL_RUN_RDD_FILEPATH
 
-    if get_callback_id() == 'schedules' and hidden == True: return no_update # Menu Re-hidden
+    if edit_selection != 1:
+        return [no_update] * 6  # Only proceed if user wants to edit schedules
 
-    if valid_filepath(DATA_IDF_FILEPATH) and (valid_filepath(INITIAL_RUN_EIO_FILEPATH) or valid_filepath(DATA_EPW_FILEPATH)):
+    if not valid_filepath(DATA_IDF_FILEPATH):
+        return [no_update] * 6
 
-        if not valid_filepath(INITIAL_RUN_EIO_FILEPATH) :
-            rdd_filepath, eio_filepath = EPGen.initial_run(DATA_IDF_FILEPATH, DATA_EPW_FILEPATH)
-            INITIAL_RUN_EIO_FILEPATH = eio_filepath
-            INITIAL_RUN_RDD_FILEPATH = rdd_filepath
+    if not valid_filepath(INITIAL_RUN_EIO_FILEPATH) and valid_filepath(DATA_EPW_FILEPATH):
+        rdd_filepath, eio_filepath = EPGen.initial_run(DATA_IDF_FILEPATH, DATA_EPW_FILEPATH)
+        INITIAL_RUN_EIO_FILEPATH = eio_filepath
+        INITIAL_RUN_RDD_FILEPATH = rdd_filepath
 
+    if valid_filepath(INITIAL_RUN_EIO_FILEPATH):
         schedules = EPGen.get_schedules(INITIAL_RUN_EIO_FILEPATH, DATA_IDF_FILEPATH)
-        return schedules['people_schedules'], schedules['equipment_schedules'], schedules['light_schedules'], schedules['heating_schedules'], schedules['cooling_schedules'], schedules['temperature_schedules']
-    else: return no_update
+        return (
+            schedules['people_schedules'],
+            schedules['equipment_schedules'],
+            schedules['light_schedules'],
+            schedules['heating_schedules'],
+            schedules['cooling_schedules'],
+            schedules['temperature_schedules']
+        )
+
+    return [no_update] * 6
 
 # Handle Schedule Selection - Makes sure only one Schedule is selected at a time.
 @app.callback(
