@@ -430,6 +430,8 @@ def unhide_generate_data_button(val1, val2, val3, val4, val5, val6):
 @app.callback(
     Output('EPGen_Button_GenerateVariables', 'children'),
     Output('custom_variable_selection', 'options'),
+    Output('generate_variables_intial_run_eio_filepath', 'data'),
+    Output('generate_variables_intial_run_rdd_filepath', 'data'),
     Input('EPGen_Button_GenerateVariables', 'n_clicks'),
     Input('pnnl_prototype_idf_filepath', 'data'),
     Input('gen_upload_idf_filepath', 'data'),
@@ -444,10 +446,10 @@ def generate_variables(n_clicks, val1, val2):
             eio_filepath, rdd_filepath, variables_list = EPGen.generate_variables(DATA_IDF_FILEPATH, DATA_EPW_FILEPATH)
             INITIAL_RUN_EIO_FILEPATH = eio_filepath
             INITIAL_RUN_RDD_FILEPATH = rdd_filepath
-            return 'Variables Generated', variables_list
+            return 'Variables Generated', variables_list, eio_filepath, rdd_filepath
         except Exception as e:
-            return 'Failed to Generate', []
-    else: return 'Generate Variables', []
+            return 'Failed to Generate', [], None, None
+    else: return 'Generate Variables', [], None, None
 
 # Variable Selection
 @app.callback(
