@@ -515,6 +515,56 @@ def fill_schedule_dropdowns(hidden, trigger1, trigger2):
         schedules = EPGen.get_schedules(INITIAL_RUN_EIO_FILEPATH, DATA_IDF_FILEPATH)
         return schedules['people_schedules'], schedules['equipment_schedules'], schedules['light_schedules'], schedules['heating_schedules'], schedules['cooling_schedules'], schedules['temperature_schedules']
     else: return no_update
+
+# Handle Schedule Selection - Makes sure only one Schedule is selected at a time.
+@app.callback(
+    Output('schedule_name', 'data'),
+    Output('people_schedules', 'value'),
+    Output('equip_schedules', 'value'),
+    Output('light_schedules', 'value'),
+    Output('heating_schedules', 'value'),
+    Output('cooling_schedules', 'value'),
+    Output('temperature_schedules', 'value'),
+    Input('people_schedules', 'value'),
+    Input('equip_schedules', 'value'),
+    Input('light_schedules', 'value'),
+    Input('heating_schedules', 'value'),
+    Input('cooling_schedules', 'value'),
+    Input('temperature_schedules', 'value'),
+    prevent_initial_call=True
+)
+def handle_schedule_selection(people_schedule_selection, equip_schedule_selection, light_schedule_selection, heating_schedule_selection, cooling_schedule_selection, temperature_schedule_selection):
+    if get_callback_id() == 'people_schedules':
+        return people_schedule_selection, no_update, [], [], [], [], []
+    elif get_callback_id() == 'equip_schedules':
+        return equip_schedule_selection, [],no_update,[],[],[],[]
+    elif get_callback_id() == 'light_schedules':
+        return light_schedule_selection, [], [], no_update,[],[],[]
+    elif get_callback_id() == 'heating_schedules':
+        return heating_schedule_selection, [], [], [], no_update,[],[]
+    elif get_callback_id() == 'cooling_schedules':
+        return cooling_schedule_selection, [], [], [], [], no_update,[]
+    elif get_callback_id() == 'temperature_schedules':
+        return temperature_schedule_selection, [], [], [], [], [], no_update
+
+# Update Schedule Selection
+@app.callback(
+    Output('update_schedule_button', 'children'),
+    Input('update_schedule_button', 'n_clicks'),
+    Input('schedule_name', 'data'),
+    Input('schedule_input', 'value'),
+    prevent_initial_call = True
+)
+def update_schedule(n_clicks, schedule_input, schedule_name):
+
+    if get_callback_id() == 'schedule_name' or get_callback_id() == 'schedule_input':
+        return 'Update Schedule'
+    else:
+        try:
+            EPGen.update_schedule(schedule_name, DATA_IDF_FILEPATH, schedule_input)
+            return "Schedule Updated Sucessfully"
+        except Exception as e: return 'Failed to Update'
+
 '''
 
 # Update Simulation Name

@@ -306,6 +306,7 @@ tab_layout=[
 
                     # Box 1 C2
                     html.Div([
+                        dcc.Store('schedule_name', data=None),
                         html.H3("Edit Schedules",
                             className = 'text-center mt-1'),
                         html.H6("People",
@@ -384,16 +385,8 @@ tab_layout=[
                                    'height': 100},
                         ),
 
-                        html.Button('Select single schedule',
-                            id = 'update_selected_schedule',
-                            className = "btn btn-secondary btn-lg col-12",
-                            style = {
-                                'width':'90%',
-                                'margin':'5%'
-                                },),
-
-                        html.Button('Done Updating Schedule',
-                            id = 'done_updating_schedule',
+                        html.Button('Update Schedule',
+                            id = 'update_schedule_button',
                             className = "btn btn-secondary btn-lg col-12",
                             style = {
                                 'width':'90%',
@@ -643,6 +636,69 @@ def get_schedules(eio_filepath, idf_filepath):
     }
 
     return schedules
+
+def update_schedule(schedule_name, idf_filepath, schedule_content):
+
+    edited_idf = op.Epm.load(idf_filepath)
+
+    # Step 1 Get compact schedule from edited idf
+    Edited_ScheduleCompact = edited_idf.Schedule_Compact
+
+    # Step 2 Get table from compact schedule which corresponds to desired schedule
+    Current_Schedule_1 = Edited_ScheduleCompact.one(lambda x: x.name == schedule_name.lower())
+
+    # Step 3 change the name to something xyz@123 add user defined schedule
+    Current_Schedule_1.name = 'xyz'
+
+    lines  = schedule_content.split('\n')
+
+    Rough_schedule_lines_list = [line.strip() for line in lines]
+
+    new_schedule_rough = {}
+
+    for line1 in Rough_schedule_lines_list:
+        Current_line_elements = line1.split('!-')
+        Current_value = Current_line_elements[0].strip()
+        Current_key = Current_line_elements[1].lower().strip().replace(' ', '_')
+
+        if Current_value[-1] == ',':
+            Current_value = Current_value[:-1]
+
+        new_schedule_rough[Current_key] = Current_value
+
+    new_sch = Edited_ScheduleCompact.add(new_schedule_rough)
+
+    # Step 4 Use opyplus to overwrite edited file
+    Edited_IDFFile.save(IDF_FilePath)
+
+    # Step 5 Read the file and change particular name to desired name
+    with open(IDF_FilePath, 'r') as file:
+        lines = file.readlines()
+
+    for ii in range(len(lines)):
+
+        if ii == 0:
+            continue
+        else:
+            line_k = lines[ii-1]
+            line_k_plus_1 = lines[ii]
+
+            if not (line_k.find('Schedule:Compact') >= 0):
+
+                if line_k_plus_1.find('xyz') >= 0:
+
+                    lines[ii] = line_k_plus_1.replace('xyz', desired_schedule.lower())
+
+    # Step 6 OverWrite the file again
+    with open(IDF_FilePath, 'w') as file:
+        # Write each item in the list to the file
+        for line in lines:
+            file.write(line)
+
+    # Step 7 update update_selected_schedule
+    update_selected_schedule = "Schedule updated"
+
+    return update_selected_schedule
 
 """
 
