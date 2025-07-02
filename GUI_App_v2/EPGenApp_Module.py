@@ -637,6 +637,7 @@ def get_schedules(eio_filepath, idf_filepath):
 
     return schedules
 
+# Need to be using edited idf?
 def update_schedule(schedule_name, idf_filepath, schedule_content):
 
     edited_idf = op.Epm.load(idf_filepath)
