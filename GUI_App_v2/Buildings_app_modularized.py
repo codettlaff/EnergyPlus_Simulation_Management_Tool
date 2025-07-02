@@ -457,7 +457,7 @@ def variable_selection(preselected_variable_selection, custom_variable_selection
     elif choice == 2:
         SIMULATION_SETTINGS['variables'] = preselected_variable_selection + custom_variable_selection
 
-# Hide Edit Schedule / Keep Original Schedule Button
+# Unhide Edit Schedule / Keep Original Schedule Button
 
 # Unhide Edit Schedules
 @app.callback(

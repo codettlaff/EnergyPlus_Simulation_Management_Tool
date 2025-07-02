@@ -563,6 +563,80 @@ def generate_variables(idf_filepath, epw_filepath):
     variables_list = data_generator.generate_variables(idf_filepath, epw_filepath)
     return variables_list
 
+def get_schedules(eio_filepath, idf_filepath):
+
+    Eio_OutputFile_Dict = AppFuncs.EPGen_eio_dict_generator(eio_filepath)
+
+    People_Schedules = Eio_OutputFile_Dict['People Internal Gains Nominal']['Schedule Name'].tolist()
+    People_Schedules = list(set(People_Schedules))
+
+    Equip_Schedules = Eio_OutputFile_Dict['ElectricEquipment Internal Gains Nominal']['Schedule Name'].tolist()
+    Equip_Schedules = list(set(Equip_Schedules))
+
+    Light_Schedules = Eio_OutputFile_Dict['Lights Internal Gains Nominal']['Schedule Name'].tolist()
+    Light_Schedules = list(set(Light_Schedules))
+
+    # Load IDF File
+    Current_IDFFile = op.Epm.load(idf_filepath)
+
+    # Getting ThermalSetpoint items
+    filtered_items = [item for item in dir(Current_IDFFile) if "ThermostatSetpoint" in item]
+    ThermostatSetpoint_List = []
+    for attr in filtered_items:
+        if not attr.startswith('__'):
+            value = getattr(Current_IDFFile, attr)
+            ThermostatSetpoint_List.append(value)
+
+    counter = -1
+    ThermostatSetpoint_attribute_nameList = ['heating_setpoint_temperature_schedule_name',
+                                             'cooling_setpoint_temperature_schedule_name',
+                                             'setpoint_temperature_schedule_name']
+    HeatingSetpoint_List = []
+    CoolingSetpoint_List = []
+    TemperatureSetpoint_List = []
+
+    for item in filtered_items:
+        counter = counter + 1
+        if not item:
+            continue
+        else:
+            Current_ThermostatSetpoint_dict = ThermostatSetpoint_List[counter]._records
+
+            for Current_key in Current_ThermostatSetpoint_dict:
+                Current_ThermostatSetpoint_element = Current_ThermostatSetpoint_dict[Current_key]
+
+                for attr in ThermostatSetpoint_attribute_nameList:
+                    try:
+                        Current_ThermostatSetpoint_element_value = getattr(Current_ThermostatSetpoint_element, attr)
+
+                    except:
+                        continue
+
+                    else:
+                        if attr == 'heating_setpoint_temperature_schedule_name':
+                            HeatingSetpoint_List.append(Current_ThermostatSetpoint_element_value.name)
+
+                        if attr == 'cooling_setpoint_temperature_schedule_name':
+                            CoolingSetpoint_List.append(Current_ThermostatSetpoint_element_value.name)
+
+                        if attr == 'setpoint_temperature_schedule_name':
+                            TemperatureSetpoint_List.append(Current_ThermostatSetpoint_element_value.name)
+
+    HeatingSetpoint_Schedules = list(set(HeatingSetpoint_List))
+    CoolingSetpoint_Schedules = list(set(CoolingSetpoint_List))
+    TemperatureSetpoint_Schedules = list(set(TemperatureSetpoint_List))
+
+    schedules = {
+        "people_schedules": People_Schedules,
+        "equipment_schedules": Equip_Schedules,
+        "light_schedules": Light_Schedules,
+        "heating_setpoint_schedules": HeatingSetpoint_Schedules,
+        "cooling_setpoint_schedules": CoolingSetpoint_Schedules,
+        "temperature_setpoint_schedules": TemperatureSetpoint_Schedules,
+    }
+
+    return People_Schedules, Equip_Schedules, Light_Schedules, HeatingSetpoint_Schedules, CoolingSetpoint_Schedules, TemperatureSetpoint_Schedules
+
 """
 
 def EPGen_Radiobutton_DatabaseSelection_Interaction_Function(folder_name, database_selection):
@@ -649,113 +723,6 @@ def EPGen_Dropdown_SimReportFreq_Interaction_Function(simReportFreq_selection):
     else:
         generate_variables = True
     return generate_variables
-
-# An error is occuring in this function near the bottom
-def EPGen_RadioButton_EditSchedule_Interaction_Function(EPGen_Radiobutton_VariableSelection):
-
-    initial_run_folder_path = os.path.join(SIMULATION_FOLDERPATH, 'Initial_run_folder')
-
-    if not os.path.exists(initial_run_folder_path):
-        os.mkdir(initial_run_folder_path)
-        shutil.copy(DATA_IDF_FILEPATH, os.path.join(initial_run_folder_path, os.path.basename(DATA_IDF_FILEPATH)))
-        shutil.copy(DATA_WEATHER_FILEPATH, os.path.join(initial_run_folder_path, os.path.basename(DATA_WEATHER_FILEPATH)))
-
-    if EPGen_Radiobutton_VariableSelection == 1:
-        schedules = False
-        eio_FilePath = os.path.join(initial_run_folder_path, "eplusout.eio")
-        Eio_OutputFile_Dict = AppFuncs.EPGen_eio_dict_generator(eio_FilePath)
-
-        People_Schedules = Eio_OutputFile_Dict['People Internal Gains Nominal']['Schedule Name'].tolist()
-        People_Schedules = list(set(People_Schedules))
-
-        Equip_Schedules = Eio_OutputFile_Dict['ElectricEquipment Internal Gains Nominal']['Schedule Name'].tolist()
-        Equip_Schedules = list(set(Equip_Schedules))
-
-        Light_Schedules = Eio_OutputFile_Dict['Lights Internal Gains Nominal']['Schedule Name'].tolist()
-        Light_Schedules = list(set(Light_Schedules))
-
-        # Finding directory of .idf and .epw files
-        for file in os.listdir(initial_run_folder_path):
-            if file.endswith(".idf"):
-                IDF_FilePath = os.path.join(initial_run_folder_path, file)
-        
-        # Load IDF File
-        Current_IDFFile = op.Epm.load(IDF_FilePath)
-
-        # Getting ThermalSetpoint items
-        filtered_items = [item for item in dir(Current_IDFFile) if "ThermostatSetpoint" in item]
-        ThermostatSetpoint_List = []
-        for attr in filtered_items:
-            if not attr.startswith('__'):
-                value = getattr(Current_IDFFile, attr)
-                ThermostatSetpoint_List.append(value)
-
-        counter  = -1
-        ThermostatSetpoint_attribute_nameList = ['heating_setpoint_temperature_schedule_name', 'cooling_setpoint_temperature_schedule_name', 'setpoint_temperature_schedule_name']
-        HeatingSetpoint_List = []
-        CoolingSetpoint_List = []
-        TemperatureSetpoint_List = []
-
-        for item in filtered_items:
-            counter = counter + 1
-            if not item:
-                continue
-            else:
-                Current_ThermostatSetpoint_dict = ThermostatSetpoint_List[counter]._records
-
-                for Current_key in Current_ThermostatSetpoint_dict:
-                    Current_ThermostatSetpoint_element = Current_ThermostatSetpoint_dict[Current_key]
-
-                    for attr in ThermostatSetpoint_attribute_nameList:
-                        try:
-                            Current_ThermostatSetpoint_element_value = getattr(Current_ThermostatSetpoint_element, attr)
-
-                        except:
-                            continue
-
-                        else:
-                            if attr == 'heating_setpoint_temperature_schedule_name':
-                                HeatingSetpoint_List.append(Current_ThermostatSetpoint_element_value.name)
-
-                            if attr == 'cooling_setpoint_temperature_schedule_name':
-                                CoolingSetpoint_List.append(Current_ThermostatSetpoint_element_value.name)
-
-                            if attr == 'setpoint_temperature_schedule_name':
-                                TemperatureSetpoint_List.append(Current_ThermostatSetpoint_element_value.name)
-
-        HeatingSetpoint_Schedules = list(set(HeatingSetpoint_List))
-        CoolingSetpoint_Schedules = list(set(CoolingSetpoint_List))
-        TemperatureSetpoint_Schedules = list(set(TemperatureSetpoint_List))
-    elif EPGen_Radiobutton_VariableSelection == 2:
-        schedules = True
-        People_Schedules = []
-        Equip_Schedules = []
-        Light_Schedules = []
-        HeatingSetpoint_Schedules = []
-        CoolingSetpoint_Schedules = []
-        TemperatureSetpoint_Schedules = []
-    else:
-        schedules = True
-        People_Schedules = []
-        Equip_Schedules = []
-        Light_Schedules = []
-        HeatingSetpoint_Schedules = []
-        CoolingSetpoint_Schedules = []
-        TemperatureSetpoint_Schedules = []
-
-    edited_idf_folder_path = os.path.join(SIMULATION_FOLDERPATH,'Edited_idf_folder')
-
-    if os.path.isdir(edited_idf_folder_path):
-        z = 0
-    else:
-        os.mkdir(edited_idf_folder_path)
-        for item in os.listdir(initial_run_folder_path):
-            if (item.endswith(".idf") or item.endswith(".epw")) and (not item.startswith("opyplus")):
-                shutil.copy(os.path.join(initial_run_folder_path,item), edited_idf_folder_path)
-
-    #Current_IDFFile.ThermostatSetpoint_DualSetpoint._records['core_zn dualspsched'].heating_setpoint_temperature_schedule_name.name
-
-    return schedules, People_Schedules, Equip_Schedules, Light_Schedules, HeatingSetpoint_Schedules, CoolingSetpoint_Schedules, TemperatureSetpoint_Schedules
 
 def EPGen_Dropdown_DownloadSelection_Interaction_Function(download_selection):
     if download_selection != '' :
