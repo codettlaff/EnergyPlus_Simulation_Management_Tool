@@ -273,20 +273,24 @@ tab_layout=[
                                 }
                             ),
 
-                        dcc.RadioItems(
-                            id = 'EPGen_Radiobutton_EditSchedules',
-                            labelStyle = {'display': 'block'},
-                            value = '',
-                            options = [
-                                {'label' : " Edit Schedules", 'value' : 1},
-                                {'label' : " Keep Original Schedules", 'value' : 2}
-                                ]  ,
-                            className = 'ps-4 p-3',
-                            style = {
-                                'margin-left':'2.5%',
-                                'margin-bottom':'5%'
+                        html.Div(
+                            dcc.RadioItems(
+                                id='EPGen_Radiobutton_EditSchedules',
+                                labelStyle={'display': 'block'},
+                                value=2,
+                                options=[
+                                    {'label': " Edit Schedules", 'value': 1},
+                                    {'label': " Keep Original Schedules", 'value': 2}
+                                ],
+                                className='ps-4 p-3',
+                                style={
+                                    'margin-left': '2.5%',
+                                    'margin-bottom': '5%'
                                 }
                             ),
+                            id='EPGen_Div_EditSchedules',
+                            hidden=True  # <-- This hides the entire component
+                        ),
 
                             ],id = 'generate_variables',
                             hidden = True,

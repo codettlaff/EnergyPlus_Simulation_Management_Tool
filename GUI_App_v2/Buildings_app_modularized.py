@@ -457,12 +457,16 @@ def variable_selection(preselected_variable_selection, custom_variable_selection
     elif choice == 2:
         SIMULATION_SETTINGS['variables'] = preselected_variable_selection + custom_variable_selection
 
+# Hide Edit Schedule / Keep Original Schedule Button
+
 # Unhide Edit Schedules
 @app.callback(
     Output('schedules', 'hidden'),
-    Input('EPGen_Radiobutton_EditSchedules', 'value') # 1: Edit Schedules 2: Keep Original Schedules
+    Input('EPGen_Radiobutton_EditSchedules', 'value'), # 1: Edit Schedules 2: Keep Original Schedules
+    prevent_initial_call=True
 )
-def unhide_edit_schedules(val):
+def unhide_edit_schedules(hidden,selection):
+    pass
 
 '''
 
