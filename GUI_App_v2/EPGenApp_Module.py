@@ -291,7 +291,7 @@ tab_layout=[
                                 }
                             ),
                             id='EPGen_Div_EditSchedules',
-                            hidden=True  # <-- This hides the entire component
+                            hidden=False
                         ),
 
                             ],id = 'generate_variables',
@@ -561,6 +561,10 @@ tab_layout=[
 
 ]
 
+def initial_run(idf_filepath, epw_filepath):
+    rdd_filepath, eio_filepath = data_generator.initial_run(idf_filepath, epw_filepath)
+    return rdd_filepath, eio_filepath
+
 def generate_variables(idf_filepath, epw_filepath):
     rdd_filepath, eio_filepath = data_generator.initial_run(idf_filepath, epw_filepath)
     variables_list = data_generator.get_variable_list(rdd_filepath)
@@ -633,12 +637,12 @@ def get_schedules(eio_filepath, idf_filepath):
         "people_schedules": People_Schedules,
         "equipment_schedules": Equip_Schedules,
         "light_schedules": Light_Schedules,
-        "heating_setpoint_schedules": HeatingSetpoint_Schedules,
-        "cooling_setpoint_schedules": CoolingSetpoint_Schedules,
-        "temperature_setpoint_schedules": TemperatureSetpoint_Schedules,
+        "heating_schedules": HeatingSetpoint_Schedules,
+        "cooling_schedules": CoolingSetpoint_Schedules,
+        "temperature_schedules": TemperatureSetpoint_Schedules,
     }
 
-    return People_Schedules, Equip_Schedules, Light_Schedules, HeatingSetpoint_Schedules, CoolingSetpoint_Schedules, TemperatureSetpoint_Schedules
+    return schedules
 
 """
 
