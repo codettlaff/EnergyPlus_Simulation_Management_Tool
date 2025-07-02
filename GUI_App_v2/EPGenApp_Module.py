@@ -646,11 +646,9 @@ def update_schedule(schedule_name, idf_filepath, schedule_content):
     Edited_ScheduleCompact = edited_idf.Schedule_Compact
 
     # Step 2 Get table from compact schedule which corresponds to desired schedule
-    #Current_Schedule_1 = Edited_ScheduleCompact.one(lambda x: x.name == schedule_name.lower())
-    Current_Schedule_1 = Edited_ScheduleCompact.one(lambda x: x.name == schedule_name)
+    Current_Schedule_1 = Edited_ScheduleCompact.one(lambda x: x.name == schedule_name.lower())
 
-    # Step 3 change the name to something xyz@123 add user defined schedule
-    Current_Schedule_1.name = 'xyz'
+    Current_Schedule_1.name = schedule_name.lower()
 
     lines  = schedule_content.split('\n')
 
@@ -670,37 +668,7 @@ def update_schedule(schedule_name, idf_filepath, schedule_content):
 
     new_sch = Edited_ScheduleCompact.add(new_schedule_rough)
 
-    # Step 4 Use opyplus to overwrite edited file
-    Edited_IDFFile.save(IDF_FilePath)
-
-    # Step 5 Read the file and change particular name to desired name
-    with open(IDF_FilePath, 'r') as file:
-        lines = file.readlines()
-
-    for ii in range(len(lines)):
-
-        if ii == 0:
-            continue
-        else:
-            line_k = lines[ii-1]
-            line_k_plus_1 = lines[ii]
-
-            if not (line_k.find('Schedule:Compact') >= 0):
-
-                if line_k_plus_1.find('xyz') >= 0:
-
-                    lines[ii] = line_k_plus_1.replace('xyz', desired_schedule.lower())
-
-    # Step 6 OverWrite the file again
-    with open(IDF_FilePath, 'w') as file:
-        # Write each item in the list to the file
-        for line in lines:
-            file.write(line)
-
-    # Step 7 update update_selected_schedule
-    update_selected_schedule = "Schedule updated"
-
-    return update_selected_schedule
+    edited_idf.save(idf_filepath)
 
 """
 
