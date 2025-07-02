@@ -471,7 +471,7 @@ def variable_selection(preselected_variable_selection, custom_variable_selection
     elif choice == 2:
         SIMULATION_SETTINGS['variables'] = preselected_variable_selection + custom_variable_selection
 
-# Unhide Edit Schedules # Add Input for DATA_EPW_FILEPATH change
+# Unhide Edit Schedules
 @app.callback(
     Output('schedules', 'hidden'),
     Input('generate_variables', 'hidden'),
