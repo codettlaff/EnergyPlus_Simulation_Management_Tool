@@ -310,8 +310,8 @@ def pnnl_prototypes_dropdown(building_type, level1, level2, level3, location):
             if os.path.exists(folderpath3) and level3:
                 idf_filepath = os.path.join(folderpath3, level3)
                 if os.path.exists(idf_filepath):
-                    DATA_IDF_FILEPATH = idf_filepath
-                    print(idf_filepath)
+                    to_idf_filepath = os.path.join(UPLOAD_DIRECTORY, os.path.basename(idf_filepath))
+                    DATA_IDF_FILEPATH = to_idf_filepath
 
     weather_foldername = 'TMY3_WeatherFiles_' + building_type
     weather_folderpath = os.path.join(DATA_FOLDERPATH, weather_foldername)
@@ -320,8 +320,9 @@ def pnnl_prototypes_dropdown(building_type, level1, level2, level3, location):
     if location:
         epw_filepath = os.path.join(weather_folderpath, location)
         if os.path.exists(epw_filepath):
-            DATA_EPW_FILEPATH = epw_filepath
-            print(epw_filepath)
+            to_epw_filepath = os.path.join(UPLOAD_DIRECTORY, os.path.basename(epw_filepath))
+            shutil.copy(epw_filepath, to_epw_filepath)
+            DATA_EPW_FILEPATH = to_epw_filepath
 
     return options1, options2, options3, location_options, idf_filepath, epw_filepath
 
@@ -555,7 +556,7 @@ def handle_schedule_selection(people_schedule_selection, equip_schedule_selectio
     Input('schedule_input', 'value'),
     prevent_initial_call = True
 )
-def update_schedule(n_clicks, schedule_input, schedule_name):
+def update_schedule(n_clicks, schedule_name, schedule_input):
 
     if get_callback_id() == 'schedule_name' or get_callback_id() == 'schedule_input':
         return 'Update Schedule'

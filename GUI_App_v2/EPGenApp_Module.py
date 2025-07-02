@@ -637,7 +637,7 @@ def get_schedules(eio_filepath, idf_filepath):
 
     return schedules
 
-# Need to be using edited idf?
+# Error: RecordDoesNotExistError('Queryset set contains no value.')
 def update_schedule(schedule_name, idf_filepath, schedule_content):
 
     edited_idf = op.Epm.load(idf_filepath)
@@ -646,7 +646,8 @@ def update_schedule(schedule_name, idf_filepath, schedule_content):
     Edited_ScheduleCompact = edited_idf.Schedule_Compact
 
     # Step 2 Get table from compact schedule which corresponds to desired schedule
-    Current_Schedule_1 = Edited_ScheduleCompact.one(lambda x: x.name == schedule_name.lower())
+    #Current_Schedule_1 = Edited_ScheduleCompact.one(lambda x: x.name == schedule_name.lower())
+    Current_Schedule_1 = Edited_ScheduleCompact.one(lambda x: x.name == schedule_name)
 
     # Step 3 change the name to something xyz@123 add user defined schedule
     Current_Schedule_1.name = 'xyz'
