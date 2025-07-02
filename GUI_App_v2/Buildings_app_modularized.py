@@ -311,6 +311,7 @@ def pnnl_prototypes_dropdown(building_type, level1, level2, level3, location):
                 idf_filepath = os.path.join(folderpath3, level3)
                 if os.path.exists(idf_filepath):
                     to_idf_filepath = os.path.join(UPLOAD_DIRECTORY, os.path.basename(idf_filepath))
+                    shutil.copy(idf_filepath, to_idf_filepath)
                     DATA_IDF_FILEPATH = to_idf_filepath
 
     weather_foldername = 'TMY3_WeatherFiles_' + building_type
