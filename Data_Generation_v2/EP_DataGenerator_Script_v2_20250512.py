@@ -80,14 +80,17 @@ example_building_information = {
     "building_id": 1
 }
 
-def generate_variables(idf_filepath, epw_filepath):
+def initial_run(idf_filepath, epw_filepath):
 
     edited_idf_filepath = os.path.join(TEMPORARY_FOLDERPATH, "edited.idf")
     initial_run_folderpath = os.path.join(TEMPORARY_FOLDERPATH, "initial_run")
+    initial_run_results_folderpath = os.path.join(TEMPORARY_FOLDERPATH, "initial_run_results")
     rdd_filepath = os.path.join(initial_run_folderpath, "eplusout.rdd")
+    eio_filepath = os.path.join(initial_run_folderpath, "eplusout.eio")
 
     if not os.path.exists(TEMPORARY_FOLDERPATH): mkdir(TEMPORARY_FOLDERPATH)
     if not os.path.exists(initial_run_folderpath): mkdir(initial_run_folderpath)
+    if not os.path.exists(initial_run_results_folderpath): mkdir(initial_run_results_folderpath)
 
     shutil.copy(idf_filepath, edited_idf_filepath)
 
@@ -96,6 +99,17 @@ def generate_variables(idf_filepath, epw_filepath):
         idf_to.write('\nOutput:VariableDictionary,IDF;')
 
     op.simulate(edited_idf_filepath, epw_filepath, base_dir_path=initial_run_folderpath)
+
+    move_to_rdd_filepath = os.path.join(initial_run_results_folderpath, "eplusout.rdd")
+    move_to_eio_filepath = os.path.join(initial_run_results_folderpath, "eplusout.eio")
+    shutil.copy(rdd_filepath, move_to_rdd_filepath)
+    shutil.copy(eio_filepath, move_to_eio_filepath)
+
+    shutil.rmtree(initial_run_folderpath)
+
+    return move_to_rdd_filepath, move_to_eio_filepath
+
+def get_variable_list(rdd_filepath):
 
     variable_names = []
     with open(rdd_filepath, "r") as rdd_file:
@@ -107,8 +121,6 @@ def generate_variables(idf_filepath, epw_filepath):
                 variable_names.append(variable_name)
 
     variable_names.sort()
-
-    shutil.rmtree(initial_run_folderpath)
 
     return variable_names
 

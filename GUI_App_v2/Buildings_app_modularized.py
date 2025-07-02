@@ -49,6 +49,8 @@ os.mkdir(UPLOAD_DIRECTORY)
 DATA_IDF_FILEPATH = None
 DATA_EPW_FILEPATH = None
 PRESELECTED_VARIABLES = EPGen.preselected_variables()
+INITIAL_RUN_EIO_FILEPATH = None
+INITIAL_RUN_RDD_FILEPATH = None
 
 SIMULATION_SETTINGS = {
     "name": None,
@@ -434,11 +436,15 @@ def unhide_generate_data_button(val1, val2, val3, val4, val5, val6):
     prevent_initial_call=True
 )
 def generate_variables(n_clicks, val1, val2):
+    global INITIAL_RUN_EIO_FILEPATH
+    global INITIAL_RUN_RDD_FILEPATH
 
     if get_callback_id() == 'EPGen_Button_GenerateVariables':
         try:
-            variable_list = EPGen.generate_variables(DATA_IDF_FILEPATH, DATA_EPW_FILEPATH)
-            return 'Variables Generated', variable_list
+            eio_filepath, rdd_filepath, variables_list = EPGen.generate_variables(DATA_IDF_FILEPATH, DATA_EPW_FILEPATH)
+            INITIAL_RUN_EIO_FILEPATH = eio_filepath
+            INITIAL_RUN_RDD_FILEPATH = rdd_filepath
+            return 'Variables Generated', variables_list
         except Exception as e:
             return 'Failed to Generate', []
     else: return 'Generate Variables', []

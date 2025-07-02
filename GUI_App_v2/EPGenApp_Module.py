@@ -225,6 +225,8 @@ tab_layout=[
 
                     # Box 2 C2
                     html.Div([
+                        dcc.Store(id='generate_variables_intial_run_eio_filepath', data=None),
+                        dcc.Store(id='generate_variables_intial_run_rdd_filepath', data=None),
                         html.Button('Generate Variables',
                             id = 'EPGen_Button_GenerateVariables',
                             className = "btn btn-secondary btn-lg col-12",
@@ -560,8 +562,9 @@ tab_layout=[
 ]
 
 def generate_variables(idf_filepath, epw_filepath):
-    variables_list = data_generator.generate_variables(idf_filepath, epw_filepath)
-    return variables_list
+    rdd_filepath, eio_filepath = data_generator.initial_run(idf_filepath, epw_filepath)
+    variables_list = data_generator.get_variable_list(rdd_filepath)
+    return eio_filepath, rdd_filepath, variables_list
 
 def get_schedules(eio_filepath, idf_filepath):
 
