@@ -584,6 +584,7 @@ def update_schedule(n_clicks, schedule_name, schedule_input):
             EPGen.update_schedule(DATA_IDF_FILEPATH, schedule_name, schedule_input)
             return "Schedule Updated Sucessfully"
         except Exception as e:
+            print(e)
             return 'Failed to Update'
 
 '''

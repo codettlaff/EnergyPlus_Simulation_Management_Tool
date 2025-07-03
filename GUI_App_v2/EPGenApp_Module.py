@@ -672,19 +672,76 @@ def text_to_schedule(text):
 
     return new_schedule
 
+def delete_schedule(schedule_name, idf_filepath):
+
+    with open(idf_filepath, 'r') as file:
+        lines = file.readlines()
+
+    new_lines = []
+    skip_block = False
+    found_target = False
+
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        stripped = line.strip()
+
+        if not skip_block and stripped.lower().startswith('schedule:compact'):
+            # Peek ahead to see if the next line is the one we're deleting
+            if i + 1 < len(lines):
+                next_line = lines[i + 1].strip()
+                if schedule_name.lower() in next_line.lower().split(',')[0]:
+                    # This is the block to delete — keep 'Schedule:Compact,' but skip lines until ;
+                    found_target = True
+                    skip_block = True
+                    i += 2  # Skip schedule name line too
+                    while i < len(lines):
+                        if ';' in lines[i]:
+                            i += 1
+                            break
+                        i += 1
+                    continue  # Skip to next outer iteration without appending
+        # If not skipping, add line
+        new_lines.append(line)
+        i += 1
+
+    if found_target:
+        with open(idf_filepath, 'w') as file:
+            file.writelines(new_lines)
+
+def replace_in_file(filepath, string1, string2):
+
+    with open(filepath, 'r') as file:
+        content = file.read()
+
+    content = content.replace(string1, string2)
+
+    with open(filepath, 'w') as file:
+        file.write(content)
+
 # Error: RecordDoesNotExistError('Queryset set contains no value.')
 def update_schedule(idf_filepath, schedule_name, schedule_content):
 
+    temporary_name = 'temporary_schedule_name'
+
     edited_idf = op.Epm.load(idf_filepath)
-
-    # Step 1 Get compact schedule from edited idf
-    Edited_ScheduleCompact = edited_idf.Schedule_Compact # Contains All Schedule Tables
-
+    schedule_compact = edited_idf.Schedule_Compact  # Contains All Schedule Tables
     new_schedule = text_to_schedule(schedule_content)
 
-    Edited_ScheduleCompact.add(new_schedule)
+    new_name = new_schedule['name'].lower()
+    new_schedule['name'] = temporary_name
 
+    schedule_compact.add(new_schedule)
     edited_idf.save(idf_filepath)
+
+    # Delete old Schedules
+    delete_schedule(schedule_name, idf_filepath)
+    replace_in_file(idf_filepath, schedule_name, new_name)
+    replace_in_file(idf_filepath, temporary_name, new_name)
+
+    # Make sure idf file still works
+    edited_idf = op.Epm.load(idf_filepath)
+
 
 """
 
