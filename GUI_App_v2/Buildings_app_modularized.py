@@ -58,9 +58,10 @@ SIMULATION_SETTINGS = {
     "end_datetime": None,
     "reporting_frequency": None,
     "timestep_minutes": None,
-    "variables": [],
+    "variables": PRESELECTED_VARIABLES,
     "ep_version": None
 }
+
 BUILDING_INFORMATION = {
     "building_type": None,
     "prototype": None,
@@ -72,8 +73,11 @@ BUILDING_INFORMATION = {
     "building_id": None
 }
 
-RESULTS_VARIABLES_PICKLE_FILEPATH = None
-RESULTS_EIO_PICKLE_FILEPATH = None
+RESULTS_FILEPATHS = {
+    'variables_pickle_filepath': None,
+    'eio_pickle_filepath': None,
+    'aggregated_pickle_filepath': None
+}
 
 ########## Data Aggregation ##########
 
@@ -400,14 +404,16 @@ def unhide_simulation_details(val1, val2, val3, val4, val5):
 # Simulation Details
 @app.callback(
     Output('gen_simulation_settings', 'data'),
+    Input('simulation_name', 'value'),
     Input('sim_TimeStep', 'value'),
     Input('sim_run_period', 'start_date'),
     Input('sim_run_period', 'end_date'),
     Input('simReportFreq_selection', 'value'),
     prevent_initial_call=True
 )
-def update_simulation_details(timestep, start_date, end_date, report_freq_selection):
+def update_simulation_details(simulation_name, timestep, start_date, end_date, report_freq_selection):
     global SIMULATION_SETTINGS
+    SIMULATION_SETTINGS['name'] = simulation_name
     SIMULATION_SETTINGS['timestep_minutes'] = timestep
     SIMULATION_SETTINGS['start_datetime'] = format_datetime(start_date)
     SIMULATION_SETTINGS['end_datetime'] = format_datetime(end_date)
@@ -600,267 +606,27 @@ def update_schedule(n_clicks, schedule_name, schedule_input):
 def unhide_generate_data_button(trig1, trig2, trig3, trig4, trig5):
     if valid_filepath(DATA_IDF_FILEPATH) and valid_filepath(DATA_EPW_FILEPATH):
         for key, value in SIMULATION_SETTINGS.items():
-            if key != 'ep_version' and value != None:
-                return False
-    return True
+            if key == 'ep_version' or (value is not None and value != '' and value != []):
+                pass
+            else: return True
+    else: return True
+    return False
 
-'''
-
-# Update Simulation Name
+# Generate Data
 @app.callback(
-    Input(component_id = 'folder_name', component_property = 'value')
-)
-def update_simulation_name(simulation_name):
-    global SIMULATION_FOLDERNAME
-    SIMULATION_FOLDERNAME = simulation_name
-
-@app.callback(
-    Output(component_id = 'building_details', component_property = 'hidden'),
-    Output(component_id = 'upload_files', component_property = 'hidden'),
-    Output(component_id = 'simulation_details', component_property = 'hidden', allow_duplicate = True),
-    Output(component_id = 'schedules', component_property = 'hidden', allow_duplicate = True),
-    Output(component_id = 'generate_variables', component_property = 'hidden', allow_duplicate = True),
-    Output(component_id = 'download_variables', component_property = 'hidden', allow_duplicate = True),
-    Output(component_id = 'final_download', component_property = 'hidden', allow_duplicate = True),
-    State(component_id = 'folder_name', component_property = 'value'),
-    Input(component_id = 'database_selection', component_property = 'value'),
-    prevent_initial_call = True)
-def EPGen_Radiobutton_DatabaseSelection_Interaction(folder_name, database_selection):
-    building_details, upload_files, simulation_details , schedules, generate_variables, download_variables, final_download = EPGen.EPGen_Radiobutton_DatabaseSelection_Interaction_Function(folder_name, database_selection)
-    return building_details, upload_files, simulation_details , schedules, generate_variables, download_variables, final_download
-
-@app.callback(
-    Output(component_id = 'upload_idf', component_property = 'children'),
-    Input(component_id = 'upload_idf', component_property = 'filename'),
-    State(component_id = 'upload_idf', component_property = 'contents'),
-    prevent_initial_call = False)
-def EPGen_Upload_IDF_Interaction(filename, content):
-    message = EPGen.EPGen_Upload_IDF_Interaction_Function(filename, content)
-    return message
-
-@app.callback(
-    Output(component_id = 'upload_epw', component_property = 'children'),
-    Input(component_id = 'upload_epw', component_property = 'filename'),
-    State(component_id = 'upload_epw', component_property = 'contents'),
-    prevent_initial_call = False)
-def EPGen_Upload_EPW_Interaction(filename, content):
-    message = EPGen.EPGen_Upload_EPW_Interaction_Function(filename, content)
-    return message
-
-@app.callback(
-    Output(component_id = 'simulation_details', component_property = 'hidden', allow_duplicate = True),
-    Input(component_id = 'version_selection', component_property = 'value'),
-    prevent_initial_call = True)
-def EPGen_Dropdown_EPVersion_Interaction(version_selection):
-    simulation_details = EPGen.EPGen_Dropdown_EPVersion_Interaction_Function(version_selection)
-    return simulation_details
-
-@app.callback(
-    Output(component_id = 'simulation_details', component_property = 'hidden', allow_duplicate = True),
-    Input(component_id = 'location_selection', component_property = 'value'),
-    prevent_initial_call = True)
-def EPGen_Dropdown_Location_Interaction(location_selection):
-    simulation_details = EPGen.EPGen_Dropdown_Location_Interaction_Function(location_selection)
-    return simulation_details
-
-@app.callback(
-    Output(component_id = 'generate_variables', component_property = 'hidden', allow_duplicate = True),
-    Input(component_id = 'simReportFreq_selection', component_property = 'value'),
-    prevent_initial_call = True)
-def EPGen_Dropdown_SimReportFreq_Interaction(simReportFreq_selection):
-    generate_variables = EPGen.EPGen_Dropdown_SimReportFreq_Interaction_Function(simReportFreq_selection)
-    return generate_variables
-
-# Variable selection radio button interaction
-@app.callback(
-    Output(component_id = 'schedules', component_property = 'hidden', allow_duplicate = True),
-    Output(component_id = 'people_schedules', component_property = 'options'),
-    Output(component_id = 'equip_schedules', component_property = 'options'),
-    Output(component_id = 'light_schedules', component_property = 'options'),
-    Output(component_id = 'heating_schedules', component_property = 'options'),
-    Output(component_id = 'cooling_schedules', component_property = 'options'),
-    Output(component_id = 'temperature_schedules', component_property = 'options'),
-    Input(component_id = 'EPGen_Radiobutton_EditSchedules', component_property = 'value'),
-    prevent_initial_call = True)
-def EPGen_RadioButton_EditSchedule_Interaction(EPGen_Radiobutton_VariableSelection):
-    schedules, People_Schedules, Equip_Schedules, Light_Schedules, HeatingSetpoint_Schedules, CoolingSetpoint_Schedules, TemperatureSetpoint_Schedules = EPGen.EPGen_RadioButton_EditSchedule_Interaction_Function(EPGen_Radiobutton_VariableSelection)
-    return schedules, People_Schedules, Equip_Schedules, Light_Schedules, HeatingSetpoint_Schedules, CoolingSetpoint_Schedules, TemperatureSetpoint_Schedules
-
-@app.callback(
-    Output(component_id = 'final_download', component_property = 'hidden', allow_duplicate = True),
-    Input(component_id = 'download_selection', component_property = 'value'),
-    prevent_initial_call = True)
-def EPGen_Dropdown_DownloadSelection_Interaction(download_selection):
-    final_download = EPGen.EPGen_Dropdown_DownloadSelection_Interaction_Function(download_selection)
-    return final_download
-
-# Level 1 list
-@app.callback(
-    Output(component_id = 'level_1', component_property = 'options'),
-    Output(component_id = 'level_2', component_property = 'options', allow_duplicate = True),
-    Output(component_id = 'level_3', component_property = 'options', allow_duplicate = True),
-    Output(component_id = 'location_selection', component_property = 'options'),
-    Output(component_id = 'level_1', component_property = 'value'),
-    Output(component_id = 'level_2', component_property = 'value', allow_duplicate = True),
-    Output(component_id = 'level_3', component_property = 'value', allow_duplicate = True),
-    Output(component_id = 'location_selection', component_property = 'value'),
-    Input(component_id = 'buildingType_selection', component_property = 'value'),
-    prevent_initial_call = True)
-def EPGen_Dropdown_BuildingType_Interaction(buildingType_selection):
-    level_1_list, level_2_list, level_3_list, Weather_list, level_1_value, level_2_value, level_3_value, Weather_value = EPGen.EPGen_Dropdown_BuildingType_Interaction_Function(buildingType_selection)
-    return level_1_list, level_2_list, level_3_list, Weather_list, level_1_value, level_2_value, level_3_value, Weather_value
-
-# Level 2 list
-@app.callback(
-    Output(component_id = 'level_2', component_property = 'options', allow_duplicate = True),
-    Output(component_id = 'level_3', component_property = 'options', allow_duplicate = True),
-    Output(component_id = 'level_2', component_property = 'value', allow_duplicate = True),
-    Output(component_id = 'level_3', component_property = 'value', allow_duplicate = True),
-    State(component_id = 'buildingType_selection', component_property = 'value'),
-    Input(component_id = 'level_1', component_property = 'value'),
-    prevent_initial_call = True)
-def EPGen_Dropdown_SubLevel1_Interaction(buildingType_selection, level_1):
-    level_2_list, level_3_list, level_2_value, level_3_value = EPGen.EPGen_Dropdown_SubLevel1_Interaction_Function(buildingType_selection, level_1)
-    return level_2_list, level_3_list, level_2_value, level_3_value
-
-# Level 3 list
-@app.callback(
-    Output(component_id = 'level_3', component_property = 'options', allow_duplicate = True),
-    Output(component_id = 'level_3', component_property = 'value', allow_duplicate = True),
-    State(component_id = 'buildingType_selection', component_property = 'value'),
-    State(component_id = 'level_1', component_property = 'value'),
-    Input(component_id = 'level_2', component_property = 'value'),
-    prevent_initial_call = True)
-def EPGen_Dropdown_SubLevel2_Interaction(buildingType_selection, level_1, level_2):
-    level_3_list, level_3_value = EPGen.EPGen_Dropdown_SubLevel2_Interaction_Function(buildingType_selection, level_1, level_2)
-    return level_3_list, level_3_value
-
-# Update IDF and Weather File Selection
-@ app.callback(
-    Input('buildingType_selection', 'value'),
-    Input('level_1', 'value'),
-    Input('level_2', 'value'),
-    Input('level_3', 'value'),
-    Input('location_selection', 'value'),
-    prevent_initial_call=True
-)
-def Update_IDF_Weather_Files(buildingType, level1, level2, level3, location):
-    global DATA_IDF_FILEPATH
-    global DATA_WEATHER_FILEPATH
-    global BUILDING_TYPE
-
-    BUILDING_TYPE = buildingType
-
-    idf_filepath, weather_filepath = EPGen.Update_IDF_Weather_Files(buildingType, level1, level2, level3, location)
-    if idf_filepath is not None: DATA_IDF_FILEPATH = idf_filepath
-    if weather_filepath is not None: DATA_WEATHER_FILEPATH = weather_filepath
-
-# Generate Variable List Button (Initial Run)
-@app.callback(
-    Output(component_id = 'your_variable_selection', component_property = 'options'),
-    Output(component_id = 'our_variable_selection', component_property = 'options'),
-    State(component_id = 'database_selection', component_property = 'value'),
-    State(component_id = 'buildingType_selection', component_property = 'value'),
-    State(component_id = 'level_1', component_property = 'value'),
-    State(component_id = 'level_2', component_property = 'value'),
-    State(component_id = 'level_3', component_property = 'value'),
-    State(component_id = 'location_selection', component_property = 'value'),
-    Input(component_id = 'EPGen_Button_GenerateVariables', component_property = 'n_clicks'),
-    prevent_initial_call = True)
-def EPGen_Button_GenerateVariables_Interaction(database_selection, buildingType_selection, level_1, level_2, level_3, location_selection, n_clicks):
-    your_variable_selection, our_variable_selection = EPGen.EPGen_Button_GenerateVariables_Interaction_Function(database_selection, buildingType_selection, level_1, level_2, level_3, location_selection, n_clicks)
-    return your_variable_selection, our_variable_selection
-
-# User Variable Selection Interaction
-@app.callback(
-    Input(component_id = 'your_variable_selection', component_property = 'value'),
-    Input(component_id = 'our_variable_selection', component_property = 'value'),
-    Input('EPGen_Radiobutton_VariableSelection', 'value'), # 1: All Preselected Variables 2: Custom Variable Selection
+    Output('EPGen_Button_GenerateData', 'children'),
+    Input('EPGen_Button_GenerateData', 'n_clicks'),
     prevent_initial_call = True
 )
-def update_simulation_variables_list(your_variable_selection, our_variable_selection, variable_selection_button):
+def generate_data(n_clicks):
+    global RESULTS_FILEPATHS
+    try:
+        RESULTS_FILEPATHS['variables_pickle_filepath'], RESULTS_FILEPATHS['eio_pickle_filepath'] = EPGen.generate_data(DATA_IDF_FILEPATH, DATA_EPW_FILEPATH, SIMULATION_SETTINGS, RESULTS_FILEPATHS)
+        return 'Data Generated'
+    except Exception as e:
+        return "Generation Failed"
 
-    global SIMULATION_VARIABLE_LIST
-    sim_variable_list = EPGen.update_simulation_variables_list(your_variable_selection, our_variable_selection, variable_selection_button)
-    SIMULATION_VARIABLE_LIST = sim_variable_list
-
-# Edit Schedules
-@app.callback(
-    Output(component_id = 'update_selected_schedule', component_property = 'children', allow_duplicate = True),
-    Input(component_id = 'people_schedules', component_property = 'value'),
-    Input(component_id = 'equip_schedules', component_property = 'value'),
-    Input(component_id = 'light_schedules', component_property = 'value'),
-    Input(component_id = 'heating_schedules', component_property = 'value'),
-    Input(component_id = 'cooling_schedules', component_property = 'value'),
-    Input(component_id = 'temperature_schedules', component_property = 'value'),
-    prevent_initial_call = True)
-def EPGen_Dropdown_EditSchedule_Interaction(people_schedules, equip_schedules, light_schedules, heating_schedules, cooling_schedules, temperature_schedules):
-    update_selected_schedule = EPGen.EPGen_Dropdown_EditSchedule_Interaction_Function(people_schedules, equip_schedules, light_schedules, heating_schedules, cooling_schedules, temperature_schedules)
-    return update_selected_schedule
-
-@app.callback(
-    Output(component_id = 'update_selected_schedule', component_property = 'children', allow_duplicate = True),
-    State(component_id = 'people_schedules', component_property = 'value'),
-    State(component_id = 'equip_schedules', component_property = 'value'),
-    State(component_id = 'light_schedules', component_property = 'value'),
-    State(component_id = 'heating_schedules', component_property = 'value'),
-    State(component_id = 'cooling_schedules', component_property = 'value'),
-    State(component_id = 'temperature_schedules', component_property = 'value'),
-    State(component_id = 'schedule_input', component_property = 'value'),
-    Input(component_id = 'update_selected_schedule', component_property = 'n_clicks'),
-    prevent_initial_call = True)
-def EPGen_Button_UpdateSelectedSchedule_Interaction(people_schedules, equip_schedules, light_schedules, heating_schedules, cooling_schedules, temperature_schedules, schedule_input, n_clicks):
-    update_selected_schedule = EPGen.EPGen_Button_UpdateSelectedSchedule_Interaction_Function(people_schedules, equip_schedules, light_schedules, heating_schedules, cooling_schedules, temperature_schedules, schedule_input, n_clicks)
-    return update_selected_schedule
-
-@app.callback(
-    Output(component_id = 'download_variables', component_property = 'hidden', allow_duplicate = True),
-    Input(component_id = 'EPGen_Radiobutton_EditSchedules', component_property = 'value'),
-    prevent_initial_call = True)
-def EPGen_RadioButton_EditSchedules_Interaction_2(EPGen_Radiobutton_VariableSelection):
-    download_variables = EPGen.EPGen_RadioButton_EditSchedules_Interaction_2_Function(EPGen_Radiobutton_VariableSelection)
-    return download_variables
-
-@app.callback(
-    Output(component_id = 'download_variables', component_property = 'hidden', allow_duplicate = True),
-    Input(component_id = 'done_updating_schedule', component_property = 'n_clicks'),
-    prevent_initial_call = True)
-def EPGen_Button_DoneUpdatingSchedule_Interaction(n_clicks):
-    download_variables = EPGen.EPGen_Button_DoneUpdatingSchedule_Interaction_Function(n_clicks)
-    return download_variables
-
-@app.callback(
-    Output(component_id = 'final_download', component_property = 'hidden'),
-    Input(component_id = 'download_selection', component_property = 'value'),
-    prevent_initial_call = True)
-def EPGen_Checkbox_DownloadSelection_Interaction(download_selection):
-    final_download = EPGen.EPGen_Checkbox_DownloadSelection_Interaction_Function(download_selection)
-    return final_download
-
-# Simulation Settings Box
-@app.callback(
-    Input(component_id = 'sim_run_period', component_property = 'start_date'),
-    Input(component_id = 'sim_run_period', component_property = 'end_date'),
-    Input(component_id = 'sim_TimeStep', component_property = 'value'),
-    Input(component_id = 'simReportFreq_selection', component_property = 'value')
-)
-def update_simulation_settings(start_date, end_date, sim_TimeStep, simReportFreq_selection):
-
-    global SIMULATION_SETTINGS
-    start_date = datetime.fromisoformat(start_date)
-    end_date = datetime.fromisoformat(end_date)
-    SIMULATION_SETTINGS = {
-    "name": SIMULATION_FOLDERNAME,
-    "idf_year": start_date.year,
-    "start_month": start_date.month,
-    "start_day": start_date.day,
-    "end_month": end_date.month,
-    "end_day": end_date.day,
-    "reporting_frequency": simReportFreq_selection,
-    "timestep_minutes": sim_TimeStep
-    }
-    print(SIMULATION_SETTINGS)
-
+'''
 # Generate Data Button
 @app.callback(
     Output(component_id = 'EPGen_Button_GenerateData', component_property = 'children'),

@@ -186,7 +186,9 @@ def parse_eio_file(filepath, category_key_list=None):
 
     return tables
 
-def simulate_variables(idf_filepath, epw_filepath, variable_names, simulation_settings, results_folderpath=RESULTS_FOLDERPATH):
+def simulate_variables(idf_filepath, epw_filepath, simulation_settings, results_folderpath=RESULTS_FOLDERPATH):
+
+    variable_names = simulation_settings['variables']
 
     edited_idf_filepath = os.path.join(TEMPORARY_FOLDERPATH, "edited.idf")
     sim_results_folderpath = os.path.join(results_folderpath, simulation_settings["name"])

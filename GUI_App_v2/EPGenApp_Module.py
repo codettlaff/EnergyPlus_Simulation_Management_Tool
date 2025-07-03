@@ -744,6 +744,13 @@ def update_schedule(idf_filepath, schedule_name, schedule_content):
     # Make sure idf file still works
     edited_idf = op.Epm.load(idf_filepath)
 
+def generate_data(idf_filepath, epw_filepath, simulation_settings, results_folderpath):
+
+    simulation_results_folderpath = data_generator.simulate_variables(idf_filepath, epw_filepath, simulation_settings, results_folderpath)
+    variables_pickle_filepath = os.path.join(simulation_results_folderpath, "Sim_ProcessedData", "Output_Variables.pickle")
+    eio_pickle_filepath = os.path.join(simulation_results_folderpath, "Sim_ProcessedData", "eio.pickle")
+
+    return variables_pickle_filepath, eio_pickle_filepath
 
 """
 
@@ -1066,34 +1073,7 @@ def EPGen_Checkbox_DownloadSelection_Interaction_Function(download_selection):
 
     return final_download
 
-def EPGen_Button_GenerateData_Interaction_Function(results_folderpath, start_date, end_date, Sim_TimeStep, Sim_OutputVariable_ReportingFrequency, n_clicks):
 
-    global SIMULATION_RESULTS_FOLDERPATH
-
-    print("generating_data")
-    simulation_settings = {
-        "name": SIMULATION_FOLDERNAME,
-        "idf_year": int(start_date.split("-")[0]),
-        "start_month": int(start_date.split("-")[1]),
-        "start_day": int(start_date.split("-")[2]),
-        "end_month": int(end_date.split("-")[1]),
-        "end_day": int(end_date.split("-")[2]),
-        "reporting_frequency": Sim_OutputVariable_ReportingFrequency,
-        "timestep_minutes": Sim_TimeStep,
-    }
-
-    idf_filepath = DATA_IDF_FILEPATH
-    weather_filepath = DATA_WEATHER_FILEPATH
-    results_folderpath = EP_Gen.simulate_variables(DATA_IDF_FILEPATH, DATA_WEATHER_FILEPATH, variable_names=SIMULATION_VARIABLE_LIST, simulation_settings=simulation_settings, results_folderpath=results_folderpath)
-
-    SIMULATION_RESULTS_FOLDERPATH = results_folderpath
-    VARIABLES_PICKLE_FILEPATH = os.path.join(SIMULATION_RESULTS_FOLDERPATH, 'Sim_ProcessedData', 'Output_Variables.pickle')
-    EIO_PICKLE_FILEPATH = os.path.join(SIMULATION_RESULTS_FOLDERPATH, 'Sim_ProcessedData', 'eio.pickle')
-
-    button_text = "Data Generated"
-    return button_text, SIMULATION_RESULTS_FOLDERPATH, VARIABLES_PICKLE_FILEPATH, EIO_PICKLE_FILEPATH
-
-"""
 def EPGen_Button_GenerateData_Interaction_Function(download_selection, start_date, end_date, Sim_TimeStep, Sim_OutputVariable_ReportingFrequency, Var_selection, your_vars, n_clicks):
 
     edited_idf_folder_path = os.path.join(SIMULATION_FOLDERPATH,"Edited_idf_folder")
@@ -1647,7 +1627,7 @@ def EPGen_Button_GenerateData_Interaction_Function(download_selection, start_dat
     button_text = "Data Generated"
 
     return button_text
-"""
+
 
 def EPGen_Button_DownloadFiles_Interaction_Function(download_selection, n_clicks):
 
@@ -1658,7 +1638,7 @@ def EPGen_Button_DownloadFiles_Interaction_Function(download_selection, n_clicks
     elif download_selection == [2]:
         return dcc.send_file(eio_pickle_filepath)
 
-"""
+
 def EPGen_Button_DownloadFiles_Interaction_Function(download_selection, n_clicks):
 
     Sim_IDFProcessedData_FolderName = 'Sim_ProcessedData'
@@ -1672,7 +1652,7 @@ def EPGen_Button_DownloadFiles_Interaction_Function(download_selection, n_clicks
             if item.endswith(".zip"):
                 download_path = os.path.join(Sim_IDFProcessedData_FolderPath,item)
     return dcc.send_file(download_path)
-"""
+    
 
 def upload_to_db(conn, building_type, variables_pickle_filepath, eio_pickle_filepath, simulation_results_folderpath, simulation_settings, simulation_variable_list):
 
