@@ -199,7 +199,9 @@ def simulate_variables(idf_filepath, epw_filepath, simulation_settings, results_
     eio_filepath = os.path.join(sim_results_output_folderpath, "eplusout.eio")
     eio_pickle_filepath = os.path.join(sim_results_processed_data_folderpath, "eio.pickle")
 
+    temporary_folderpath = os.path.join(TEMPORARY_FOLDERPATH, "temp")
     if not os.path.exists(TEMPORARY_FOLDERPATH): mkdir(TEMPORARY_FOLDERPATH)
+    if not os.path.exists(temporary_folderpath): mkdir(temporary_folderpath)
     if not os.path.exists(results_folderpath): mkdir(results_folderpath)
     if not os.path.exists(sim_results_folderpath): mkdir(sim_results_folderpath)
     if not os.path.exists(sim_results_output_folderpath): mkdir(sim_results_output_folderpath)
@@ -218,10 +220,10 @@ def simulate_variables(idf_filepath, epw_filepath, simulation_settings, results_
 
     # Editing Run Period
     current_idf_run_period = current_idf.RunPeriod.one()
-    current_idf_run_period['begin_day_of_month'] = simulation_settings["start_day"]
-    current_idf_run_period['begin_month'] = simulation_settings["start_month"]
-    current_idf_run_period['end_day_of_month'] = simulation_settings["end_day"]
-    current_idf_run_period['end_month'] = simulation_settings["end_month"]
+    current_idf_run_period['begin_day_of_month'] = simulation_settings["start_datetime"].day
+    current_idf_run_period['begin_month'] = simulation_settings["start_datetime"].month
+    current_idf_run_period['end_day_of_month'] = simulation_settings["end_datetime"].day
+    current_idf_run_period['end_month'] = simulation_settings["end_datetime"].month
 
     # Editing Time Step
     current_idf_timestep = current_idf.Timestep.one()
@@ -240,22 +242,24 @@ def simulate_variables(idf_filepath, epw_filepath, simulation_settings, results_
         output_variable_query_set['variable_name'] = variable
 
         current_idf.save(edited_idf_filepath)
-        op.simulate(edited_idf_filepath, epw_filepath, base_dir_path=TEMPORARY_FOLDERPATH)
+        op.simulate(edited_idf_filepath, epw_filepath, base_dir_path=temporary_folderpath)
         os.remove(edited_idf_filepath)
 
-        from_csv_filepath = os.path.join(TEMPORARY_FOLDERPATH, 'eplusout.csv')
+        from_csv_filepath = os.path.join(temporary_folderpath, 'eplusout.csv')
         to_csv_filepath = os.path.join(sim_results_processed_data_folderpath, data_csv_filename)
         if os.path.exists(from_csv_filepath):
             shutil.copy(from_csv_filepath, to_csv_filepath)
             os.remove(from_csv_filepath)
         else: print(f"No Results for {variable}\n")
 
-        for filename in os.listdir(TEMPORARY_FOLDERPATH):
+        for filename in os.listdir(temporary_folderpath):
 
-            filepath = os.path.join(TEMPORARY_FOLDERPATH, filename)
+            filepath = os.path.join(temporary_folderpath, filename)
             to_filepath = os.path.join(sim_results_output_folderpath, os.path.basename(filepath))
             shutil.copy(filepath, to_filepath)
             os.remove(filepath)
+
+        shutil.rmtree(temporary_folderpath)
 
     # Process Time Series Data
     output_variable_data_dict = {}
@@ -299,11 +303,11 @@ def simulate_variables(idf_filepath, epw_filepath, simulation_settings, results_
             time_split = datetime_split[1].split(':')
 
         if int(time_split[0]) == 24: # Handle conversion from 24th hour to 0th hour of next day.
-            current_date = datetime(simulation_settings["idf_year"], int(date_split[0]), int(date_split[1]), hour=0)
+            current_date = datetime(simulation_settings["start_datetime"].year, int(date_split[0]), int(date_split[1]), hour=0)
             formatted_datetime = current_date + timedelta(days=1)
 
         else:
-            formatted_datetime = datetime(simulation_settings["idf_year"], int(date_split[0]), int(date_split[1]), hour=int(time_split[0]), minute=int(time_split[1]))
+            formatted_datetime = datetime(simulation_settings["start_datetime"].year, int(date_split[0]), int(date_split[1]), hour=int(time_split[0]), minute=int(time_split[1]))
 
         formatted_datetime_list.append(formatted_datetime)
 

@@ -44,6 +44,9 @@ SPECIAL_IDF_FILEPATH = os.path.join(DATA_FOLDERPATH, 'Special.idf')
 if os.path.exists(UPLOAD_DIRECTORY): shutil.rmtree(UPLOAD_DIRECTORY)
 os.mkdir(UPLOAD_DIRECTORY)
 
+TEMPORARY_FOLDERPATH = os.path.join(os.path.dirname(__file__), '..', 'Data_Generation', 'TEMPORARY_FOLDERPATH')
+if os.path.exists(TEMPORARY_FOLDERPATH): shutil.rmtree(TEMPORARY_FOLDERPATH)
+
 ########## System Variables ##########
 
 DATA_IDF_FILEPATH = None
@@ -621,7 +624,7 @@ def unhide_generate_data_button(trig1, trig2, trig3, trig4, trig5):
 def generate_data(n_clicks):
     global RESULTS_FILEPATHS
     try:
-        RESULTS_FILEPATHS['variables_pickle_filepath'], RESULTS_FILEPATHS['eio_pickle_filepath'] = EPGen.generate_data(DATA_IDF_FILEPATH, DATA_EPW_FILEPATH, SIMULATION_SETTINGS, RESULTS_FILEPATHS)
+        RESULTS_FILEPATHS['variables_pickle_filepath'], RESULTS_FILEPATHS['eio_pickle_filepath'] = EPGen.generate_data(DATA_IDF_FILEPATH, DATA_EPW_FILEPATH, SIMULATION_SETTINGS, RESULTS_FOLDERPATH)
         return 'Data Generated'
     except Exception as e:
         return "Generation Failed"
