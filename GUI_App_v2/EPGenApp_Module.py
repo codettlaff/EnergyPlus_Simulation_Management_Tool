@@ -525,6 +525,7 @@ tab_layout=[
 
                         html.Button('Upload to Database',
                             id = 'EPGen_Button_UploadtoDb',
+                            hidden = True,
                             className = "btn btn-secondary btn-lg col-12",
                             style = {
                                 'width':'90%',
@@ -533,6 +534,7 @@ tab_layout=[
 
                         html.Button('Download Files',
                             id = 'EPGen_Button_DownloadFiles',
+                            hidden = True,
                             className = "btn btn-primary btn-lg col-12",
                             style = {
                                 'width':'90%',

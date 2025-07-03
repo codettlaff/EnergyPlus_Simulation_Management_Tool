@@ -590,7 +590,7 @@ def update_schedule(n_clicks, schedule_name, schedule_input):
 # Unhide Generate Data Button
 # Needed for Generation: Valid IDF Path, Valid EPW Path, Valid Simulation Settings.
 @app.callback(
-    Output('EPGen_Button_GenerateData', 'hidden'),
+    Output('final_download', 'hidden'),
     Input('gen_upload_idf_filepath', 'data'),
     Input('gen_upload_epw_filepath', 'data'),
     Input('pnnl_prototype_idf_filepath', 'data'),
