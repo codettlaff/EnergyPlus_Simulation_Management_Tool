@@ -587,6 +587,23 @@ def update_schedule(n_clicks, schedule_name, schedule_input):
             print(e)
             return 'Failed to Update'
 
+# Unhide Generate Data Button
+# Needed for Generation: Valid IDF Path, Valid EPW Path, Valid Simulation Settings.
+@app.callback(
+    Output('EPGen_Button_GenerateData', 'hidden'),
+    Input('gen_upload_idf_filepath', 'data'),
+    Input('gen_upload_epw_filepath', 'data'),
+    Input('pnnl_prototype_idf_filepath', 'data'),
+    Input('pnnl_prototype_weather_filepath', 'data'),
+    Input('gen_simulation_settings', 'data'),
+    prevent_initial_call = True)
+def unhide_generate_data_button(trig1, trig2, trig3, trig4, trig5):
+    if valid_filepath(DATA_IDF_FILEPATH) and valid_filepath(DATA_EPW_FILEPATH):
+        for key, value in SIMULATION_SETTINGS.items():
+            if key != 'ep_version' and value != None:
+                return False
+    return True
+
 '''
 
 # Update Simulation Name

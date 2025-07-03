@@ -263,7 +263,7 @@ tab_layout=[
                         dcc.RadioItems(
                             id = 'EPGen_Radiobutton_VariableSelection',
                             labelStyle = {'display': 'block'},
-                            value = 0,
+                            value = 1,
                             options = [
                                 {'label' : " All Preselected Variables", 'value' : 1},
                                 {'label' : " Select Variables", 'value' : 2}
