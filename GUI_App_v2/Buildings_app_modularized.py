@@ -556,6 +556,17 @@ def handle_schedule_selection(people_schedule_selection, equip_schedule_selectio
     elif get_callback_id() == 'temperature_schedules':
         return temperature_schedule_selection, [], [], [], [], [], no_update
 
+# Upload Selected Schedule
+@app.callback(
+    Output('schedule_input', 'value'),
+    Input('load_schedule_button', 'n_clicks'),
+    State('schedule_name', 'data'),
+    prevent_initial_call=True
+)
+def load_schedule(n_clicks, schedule_name):
+    text = EPGen.schedule_compact_to_text(DATA_IDF_FILEPATH, schedule_name)
+    return text
+
 # Update Schedule Selection
 @app.callback(
     Output('update_schedule_button', 'children'),
@@ -570,7 +581,7 @@ def update_schedule(n_clicks, schedule_name, schedule_input):
         return 'Update Schedule'
     else:
         try:
-            EPGen.update_schedule(schedule_name, DATA_IDF_FILEPATH, schedule_input)
+            EPGen.update_schedule(DATA_IDF_FILEPATH, schedule_name, schedule_input)
             return "Schedule Updated Sucessfully"
         except Exception as e:
             return 'Failed to Update'

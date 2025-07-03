@@ -385,7 +385,15 @@ tab_layout=[
                                    'height': 100},
                         ),
 
-                        html.Button('Update Schedule',
+                            html.Button('Load Selected Schedule',
+                            id = 'load_schedule_button',
+                            className = "btn btn-secondary btn-lg col-12",
+                            style = {
+                                'width':'90%',
+                                'margin':'5%'
+                                },),
+
+                        html.Button('Update Selected Schedule',
                             id = 'update_schedule_button',
                             className = "btn btn-secondary btn-lg col-12",
                             style = {
@@ -637,36 +645,44 @@ def get_schedules(eio_filepath, idf_filepath):
 
     return schedules
 
+def schedule_compact_to_text(idf_filepath, schedule_name):
+
+    idf = op.Epm.load(idf_filepath)
+    schedule_compact = idf.Schedule_Compact
+    current_schedule = schedule_compact.one(lambda x: x.name == schedule_name.lower())
+    return str(current_schedule)
+
+def text_to_schedule(text):
+
+    lines = text.splitlines()
+    lines = lines[1:] # Removes first line 'Schedule:Compact'
+    clean_lines = [line.strip() for line in lines]
+
+    new_schedule = {}
+
+    for line in clean_lines:
+
+        current_line_elements = line.split('!')
+        current_value = current_line_elements[0].strip()
+        if current_value[-1] == ',':
+            current_value = current_value[:-1]
+
+        current_key = current_line_elements[1].lower().strip().replace(' ', '_')
+        new_schedule[current_key] = current_value
+
+    return new_schedule
+
 # Error: RecordDoesNotExistError('Queryset set contains no value.')
-def update_schedule(schedule_name, idf_filepath, schedule_content):
+def update_schedule(idf_filepath, schedule_name, schedule_content):
 
     edited_idf = op.Epm.load(idf_filepath)
 
     # Step 1 Get compact schedule from edited idf
-    Edited_ScheduleCompact = edited_idf.Schedule_Compact
+    Edited_ScheduleCompact = edited_idf.Schedule_Compact # Contains All Schedule Tables
 
-    # Step 2 Get table from compact schedule which corresponds to desired schedule
-    Current_Schedule_1 = Edited_ScheduleCompact.one(lambda x: x.name == schedule_name.lower())
+    new_schedule = text_to_schedule(schedule_content)
 
-    Current_Schedule_1.name = schedule_name.lower()
-
-    lines  = schedule_content.split('\n')
-
-    Rough_schedule_lines_list = [line.strip() for line in lines]
-
-    new_schedule_rough = {}
-
-    for line1 in Rough_schedule_lines_list:
-        Current_line_elements = line1.split('!-')
-        Current_value = Current_line_elements[0].strip()
-        Current_key = Current_line_elements[1].lower().strip().replace(' ', '_')
-
-        if Current_value[-1] == ',':
-            Current_value = Current_value[:-1]
-
-        new_schedule_rough[Current_key] = Current_value
-
-    new_sch = Edited_ScheduleCompact.add(new_schedule_rough)
+    Edited_ScheduleCompact.add(new_schedule)
 
     edited_idf.save(idf_filepath)
 
