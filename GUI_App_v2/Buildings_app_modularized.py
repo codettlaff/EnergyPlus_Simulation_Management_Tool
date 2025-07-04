@@ -603,14 +603,38 @@ def generate_data(n_clicks):
 @app.callback(
     Output('download_variables_pickle_button', 'hidden'),
     Output('download_eio_pickle_button', 'hidden'),
+    Output('upload_to_db_button', 'hidden'),
     Input('results_filepaths', 'data'),
     prevent_initial_call = True
 )
 def unhide_download_buttons(results_filepaths):
     global RESULTS_FILEPATHS
     if RESULTS_FILEPATHS['variables_pickle_filepath'] is not None and RESULTS_FILEPATHS['eio_pickle_filepath'] is not None:
-        return False, False
-    else: return True, True
+        return False, False, False
+    else: return True, True, True
+
+# Download Variables Pickle
+@app.callback(
+    Output('download_variables_pickle_button', 'children'),
+    Output('download_variables_pickle', 'data'),
+    Input('download_variables_pickle_button', 'n_clicks'),
+    prevent_initial_call = True
+)
+def download_variables_pickle(n_clicks):
+    return 'Downloaded Variables Pickle', dcc.send_file(RESULTS_FILEPATHS['variables_pickle_filepath'])
+
+# Download Eio Pickle
+@app.callback(
+    Output('download_eio_pickle_button', 'children'),
+    Output('download_eio_pickle', 'data'),
+    Input('download_eio_pickle_button', 'n_clicks'),
+    prevent_initial_call = True
+)
+def download_eio_pickle(n_clicks):
+    return 'Downloaded Eio Pickle', dcc.send_file(RESULTS_FILEPATHS['eio_pickle_filepath'])
+
+
+
 
 """
 
