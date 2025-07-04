@@ -296,42 +296,11 @@ def data_source_selection(selection):
     prevent_initial_call=True
 )
 def pnnl_prototypes_dropdown(building_type, level1, level2, level3, location):
-
     global DATA_IDF_FILEPATH
     global DATA_EPW_FILEPATH
-
-    folderpath1 = os.path.join(DATA_FOLDERPATH, building_type + '_Prototypes')
-    options1 = os.listdir(folderpath1)
-    options2 = []
-    options3 = []
-
-    idf_filepath = None
-    epw_filepath = None
-
-    if os.path.exists(folderpath1) and level1:
-        folderpath2 = os.path.join(folderpath1, level1)
-        options2 = os.listdir(folderpath2)
-        if os.path.exists(folderpath2) and level2:
-            folderpath3 = os.path.join(folderpath2, level2)
-            options3 = os.listdir(folderpath3)
-            if os.path.exists(folderpath3) and level3:
-                idf_filepath = os.path.join(folderpath3, level3)
-                if os.path.exists(idf_filepath):
-                    to_idf_filepath = os.path.join(UPLOAD_DIRECTORY, os.path.basename(idf_filepath))
-                    shutil.copy(idf_filepath, to_idf_filepath)
-                    DATA_IDF_FILEPATH = to_idf_filepath
-
-    weather_foldername = 'TMY3_WeatherFiles_' + building_type
-    weather_folderpath = os.path.join(DATA_FOLDERPATH, weather_foldername)
-    location_options = os.listdir(weather_folderpath)
-
-    if location:
-        epw_filepath = os.path.join(weather_folderpath, location)
-        if os.path.exists(epw_filepath):
-            to_epw_filepath = os.path.join(UPLOAD_DIRECTORY, os.path.basename(epw_filepath))
-            shutil.copy(epw_filepath, to_epw_filepath)
-            DATA_EPW_FILEPATH = to_epw_filepath
-
+    options1, options2, options3, location_options, idf_filepath, epw_filepath = EPGen.pnnl_prototypes_dropdown(building_type, level1, level2, level3, location, DATA_FOLDERPATH, UPLOAD_DIRECTORY)
+    DATA_IDF_FILEPATH = idf_filepath
+    DATA_EPW_FILEPATH = epw_filepath
     return options1, options2, options3, location_options, idf_filepath, epw_filepath
 
 # Upload IDF File Interaction
@@ -591,7 +560,7 @@ def update_schedule(n_clicks, schedule_name, schedule_input):
     else:
         try:
             EPGen.update_schedule(DATA_IDF_FILEPATH, schedule_name, schedule_input)
-            return "Schedule Updated Sucessfully"
+            return "Schedule Updated Successfully"
         except Exception as e:
             print(e)
             return 'Failed to Update'
@@ -629,40 +598,7 @@ def generate_data(n_clicks):
     except Exception as e:
         return "Generation Failed"
 
-'''
-# Generate Data Button
-@app.callback(
-    Output(component_id = 'EPGen_Button_GenerateData', component_property = 'children'),
-    State(component_id = 'download_selection', component_property = 'value'),
-    State(component_id = 'sim_run_period', component_property = 'start_date'),
-    State(component_id = 'sim_run_period', component_property = 'end_date'),
-    State(component_id = 'sim_TimeStep', component_property = 'value'),
-    State(component_id = 'simReportFreq_selection', component_property = 'value'),
-    State(component_id = 'EPGen_Radiobutton_VariableSelection', component_property = 'value'),
-    State(component_id = 'your_variable_selection', component_property = 'value'),
-    Input(component_id = 'EPGen_Button_GenerateData', component_property = 'n_clicks'),
-    prevent_initial_call = True)
-def EPGen_Button_GenerateData_Interaction(download_selection, start_date, end_date, Sim_TimeStep, Sim_OutputVariable_ReportingFrequency, Var_selection, your_vars, n_clicks):
-    global SIMULATION_RESULTS_FOLDERPATH, VARIABLES_PICKLE_FILEPATH, EIO_PICKLE_FILEPATH
-    button_text, SIMULATION_RESULTS_FOLDERPATH, VARIABLES_PICKLE_FILEPATH, EIO_PICKLE_FILEPATH = EPGen.EPGen_Button_GenerateData_Interaction_Function(RESULTS_FOLDERPATH, start_date, end_date, Sim_TimeStep, Sim_OutputVariable_ReportingFrequency, n_clicks)
-    return button_text
-
-@app.callback(
-    Output(component_id = 'EPGen_Download_DownloadFiles', component_property = 'data'),
-    State(component_id = 'download_selection', component_property = 'value'),
-    Input(component_id = 'EPGen_Button_DownloadFiles', component_property = 'n_clicks'),
-    prevent_initial_call = True)
-def EPGen_Button_DownloadFiles_Interaction(download_selection, n_clicks):
-    download_path = EPGen.EPGen_Button_DownloadFiles_Interaction_Function(download_selection, n_clicks)
-    return download_path
-
-@app.callback(
-    Output(component_id = 'EPGen_Button_EndSession', component_property = 'children'),
-    Input(component_id = 'EPGen_Button_EndSession', component_property = 'n_clicks'),
-    prevent_initial_call = True)
-def EPGen_Button_EndSession_Interaction(n_clicks):
-    message = EPGen.EPGen_Button_EndSession_Interaction_Function(n_clicks)
-    return message
+"""
 
 ##########################################################################################################
 
@@ -1104,7 +1040,7 @@ def agg_upload_to_db(n_clicks):
     return message
     
 '''
-
+"""
 
 # Running the App
 if __name__ == '__main__':

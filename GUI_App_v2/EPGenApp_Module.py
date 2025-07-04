@@ -564,6 +564,40 @@ tab_layout=[
 
 ]
 
+def pnnl_prototypes_dropdown(building_type, level1, level2, level3, location, data_folderpath, upload_folderpath):
+
+    folderpath1 = os.path.join(data_folderpath, building_type + '_Prototypes')
+    options1 = os.listdir(folderpath1)
+    options2 = []
+    options3 = []
+
+    idf_filepath = None
+    epw_filepath = None
+
+    if os.path.exists(folderpath1) and level1:
+        folderpath2 = os.path.join(folderpath1, level1)
+        options2 = os.listdir(folderpath2)
+        if os.path.exists(folderpath2) and level2:
+            folderpath3 = os.path.join(folderpath2, level2)
+            options3 = os.listdir(folderpath3)
+            if os.path.exists(folderpath3) and level3:
+                idf_filepath = os.path.join(folderpath3, level3)
+                if os.path.exists(idf_filepath):
+                    to_idf_filepath = os.path.join(upload_folderpath, os.path.basename(idf_filepath))
+                    shutil.copy(idf_filepath, to_idf_filepath)
+
+    weather_foldername = 'TMY3_WeatherFiles_' + building_type
+    weather_folderpath = os.path.join(data_folderpath, weather_foldername)
+    location_options = os.listdir(weather_folderpath)
+
+    if location:
+        epw_filepath = os.path.join(weather_folderpath, location)
+        if os.path.exists(epw_filepath):
+            to_epw_filepath = os.path.join(upload_folderpath, os.path.basename(epw_filepath))
+            shutil.copy(epw_filepath, to_epw_filepath)
+
+    return options1, options2, options3, location_options, idf_filepath, epw_filepath
+
 def initial_run(idf_filepath, epw_filepath):
     rdd_filepath, eio_filepath = data_generator.initial_run(idf_filepath, epw_filepath)
     return rdd_filepath, eio_filepath
