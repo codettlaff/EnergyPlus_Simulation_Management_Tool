@@ -514,7 +514,11 @@ tab_layout=[
 
                     # Box 2 C3
                     html.Div([
-
+                        dcc.Store(id='results_filepaths', data={
+                            'variables_pickle_filepath': None,
+                            'eio_pickle_filepath': None,
+                            'aggregated_pickle_filepath': None
+                        }),
                         html.Button('Generate Data',
                             id = 'EPGen_Button_GenerateData',
                             className = "btn btn-secondary btn-lg col-12",
@@ -532,8 +536,8 @@ tab_layout=[
                                 'margin':'5%'
                                 },),
 
-                        html.Button('Download Files',
-                            id = 'EPGen_Button_DownloadFiles',
+                        html.Button('Download Variables Pickle File',
+                            id = 'download_variables_pickle_button',
                             hidden = True,
                             className = "btn btn-primary btn-lg col-12",
                             style = {
@@ -541,7 +545,18 @@ tab_layout=[
                                 'margin-left':'5%',
                                 'margin-bottom':'5%'
                                 },),
-                        dcc.Download(id = 'EPGen_Download_DownloadFiles'),
+                        dcc.Download(id = 'download_variables_pickle'),
+
+                        html.Button('Download Eio Pickle File',
+                            id = 'download_eio_pickle_button',
+                            hidden = True,
+                            className = "btn btn-primary btn-lg col-12",
+                            style = {
+                                'width':'90%',
+                                'margin-left':'5%',
+                                'margin-bottom':'5%'
+                                },),
+                        dcc.Download(id = 'download_eio_pickle'),
 
                         ],id = 'final_download',
                         hidden = True,

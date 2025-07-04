@@ -587,6 +587,7 @@ def unhide_generate_data_button(trig1, trig2, trig3, trig4, trig5):
 # Generate Data
 @app.callback(
     Output('EPGen_Button_GenerateData', 'children'),
+    Output('results_filepaths', 'data'),
     Input('EPGen_Button_GenerateData', 'n_clicks'),
     prevent_initial_call = True
 )
@@ -594,9 +595,22 @@ def generate_data(n_clicks):
     global RESULTS_FILEPATHS
     try:
         RESULTS_FILEPATHS['variables_pickle_filepath'], RESULTS_FILEPATHS['eio_pickle_filepath'] = EPGen.generate_data(DATA_IDF_FILEPATH, DATA_EPW_FILEPATH, SIMULATION_SETTINGS, RESULTS_FOLDERPATH)
-        return 'Data Generated'
+        return 'Data Generated', RESULTS_FILEPATHS
     except Exception as e:
-        return "Generation Failed"
+        return "Generation Failed", no_update
+
+# Unhide Download Buttons
+@app.callback(
+    Output('download_variables_pickle_button', 'hidden'),
+    Output('download_eio_pickle_button', 'hidden'),
+    Input('results_filepaths', 'data'),
+    prevent_initial_call = True
+)
+def unhide_download_buttons(results_filepaths):
+    global RESULTS_FILEPATHS
+    if RESULTS_FILEPATHS['variables_pickle_filepath'] is not None and RESULTS_FILEPATHS['eio_pickle_filepath'] is not None:
+        return False, False
+    else: return True, True
 
 """
 
