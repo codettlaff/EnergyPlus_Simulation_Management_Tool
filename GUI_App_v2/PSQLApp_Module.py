@@ -5,6 +5,7 @@ Created on Mon Jun 09 10:42:28 2025
 """
 
 # Importing Required Modules
+import math
 import os
 import sys
 import pandas as pd
@@ -307,6 +308,10 @@ tab_layout = [
 # Casey's Code
 
 def connect(db_settings):
+    if 'port' in db_settings:
+        if not (isinstance(db_settings['port'], int) and db_settings['port'] > 0): db_settings.pop('port')
+    if 'host' in db_settings:
+        if db_settings['host'] is None: db_settings.pop('host')
     return psycopg2.connect(**db_settings)
 
 def create_database(db_settings):

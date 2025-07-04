@@ -304,6 +304,8 @@ def PSQL_Radiobutton_CreateSelectDatabase_Interaction_Function(data_source):
 # Casey's Code
 
 def connect_to_database(db_settings):
+    if db_settings['port'] is None: db_settings.pop('port')
+    if db_settings['host'] is None: db_settings.pop('host')
     return psycopg2.connect(**db_settings)
 
 def create_database(username, password, port, dbname):

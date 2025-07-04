@@ -633,8 +633,19 @@ def download_variables_pickle(n_clicks):
 def download_eio_pickle(n_clicks):
     return 'Downloaded Eio Pickle', dcc.send_file(RESULTS_FILEPATHS['eio_pickle_filepath'])
 
-
-
+# Upload to DB Button
+@app.callback(
+    Output('upload_to_db_button', 'children'),
+    Input('upload_to_db_button', 'n_clicks'),
+    prevent_initial_call = True
+)
+def upload_to_db(n_clicks):
+    global BUILDING_INFORMATION, ZONES_DF
+    try:
+        BUILDING_INFORMATION['building_id'], ZONES_DF = EPGen.upload_to_db(DATA_IDF_FILEPATH, DATA_EPW_FILEPATH, SIMULATION_SETTINGS, BUILDING_INFORMATION, DB_SETTINGS, RESULTS_FILEPATHS)
+        return 'Uploaded to Database'
+    except Exception as e:
+        return "Upload Failed"
 
 """
 

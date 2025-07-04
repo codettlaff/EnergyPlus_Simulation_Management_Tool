@@ -7,7 +7,7 @@ import pickle
 import datetime
 import copy
 
-def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_results_folderpath, simulation_variable_list, aggregation_type=1, aggregation_zone_list='all_zones'):
+def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_variable_list, aggregation_type=1, aggregation_zone_list='all_zones'):
 
     # Read Pickle Files
     with open(variables_pickle_filepath, "rb") as f1: IDF_OutputVariable_Dict = pickle.load(f1)
@@ -534,6 +534,7 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_re
     # Creating Sim_AggregatedData Folder
     # =============================================================================
 
+    simulation_results_folderpath = os.path.join(variables_pickle_filepath, '..', '..')
     aggregation_folderpath = os.path.join(simulation_results_folderpath, 'Sim_Aggregated_Data')
     aggregation_pickle_filepath = os.path.join(aggregation_folderpath, Aggregation_File_Name)
     if not os.path.exists(aggregation_folderpath): os.makedirs(aggregation_folderpath)

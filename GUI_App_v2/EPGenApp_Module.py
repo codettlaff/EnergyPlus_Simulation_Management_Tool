@@ -24,6 +24,7 @@ import dash_bootstrap_components as dbc
 
 # Importing User-Defined Modules
 import MyDashApp_Module as AppFuncs
+import PSQLApp_Module as psql
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'Data_Generation_v2'))
 import EP_DataGenerator_Script_v2_20250512 as data_generator
@@ -800,6 +801,39 @@ def generate_data(idf_filepath, epw_filepath, simulation_settings, results_folde
     eio_pickle_filepath = os.path.join(simulation_results_folderpath, "Sim_ProcessedData", "eio.pickle")
 
     return variables_pickle_filepath, eio_pickle_filepath
+
+def upload_to_db(idf_filepath, epw_filepath, simulation_settings, building_information, db_settings, results_filepaths):
+
+    variables_pickle_filepath = results_filepaths["variables_pickle_filepath"]
+    eio_pickle_filepath = results_filepaths["eio_pickle_filepath"]
+    variable_list = simulation_settings["variables"]
+    all_zone_aggregation_pickle_filepath = data_aggregator.aggregate_data(variables_pickle_filepath, eio_pickle_filepath, variable_list)
+
+    conn = psql.connect(db_settings)
+
+    start_datetime = simulation_settings["start_datetime"]
+    end_datetime = simulation_settings["end_datetime"]
+
+    db_uploader.populate_datetimes_table(conn, base_time_resolution=1, start_datetime=start_datetime, end_datetime=end_datetime)
+    idf_filename = os.path.basename(idf_filepath)
+    building_id = db_uploader.get_building_id(conn, building_information['building_type'], idf_filename)
+
+    with open(all_zone_aggregation_pickle_filepath, "rb") as f: data_dict = pickle.load(f)
+    simulation_name = simulation_settings["name"]
+    location = db_uploader.get_location_from_epw_filepath(os.path.basename(epw_filepath))
+    epw_climate_zone = db_uploader.get_climate_zone(location)
+    time_resolution = simulation_settings["timestep_minutes"]
+    zones_df = db_uploader.upload_time_series_data(conn, data_dict, simulation_name, simulation_settings, building_id, epw_climate_zone, time_resolution, aggregation_zones=None)
+
+    return building_id, zones_df
+
+def EPGen_Button_EndSession_Interaction_Function(n_clicks):
+
+    for directory in os.listdir(WORKSPACE_DIRECTORY):
+
+        shutil.rmtree(os.path.join(WORKSPACE_DIRECTORY, directory))
+
+    return "Session Completed"
 
 """
 
