@@ -339,7 +339,6 @@ def create_database(db_settings):
     # Create Empty Tables, Populate Prototypical Buildings Table
     try:
         conn = connect(db_settings)
-        db_creator.create_database(conn)
         db_creator.create_tables(conn)
         db_uploader.populate_buildings_table(conn)
     except psycopg2.Error as e:
