@@ -131,7 +131,7 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_va
                 if (Current_EIO_Dict_Key in Eio_OutputFile_Dict):  # Key present in Eio_OutputFile_Dict
 
                     # Creating key1 for column Name
-                    key1 = key + element
+                    key1 = key + ' ' + element
 
                     # Initializing Aggregation_Dict with None
                     Aggregation_DF[key1] = None
@@ -189,7 +189,7 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_va
         Aggregation_Dict[Aggregated_Zone_Name_2] = copy.deepcopy(Aggregation_DF_Equipment)
 
         # FOR LOOP: For each Aggregation_VariableName in Aggregation_VariableNames_List
-        for variable_name in simulation_variable_list:
+        for variable_name in Aggregation_Dict[Aggregated_Zone_Name_1].columns:
 
             # Getting Current_Aggregation_Variable Type
             Current_Aggregation_Variable_Type = variable_name.split(' ')[0]
@@ -446,11 +446,10 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_va
                     CurrentLevel_List = []
 
                     # Creating Current_VariableName_1
-                    variable_name_1 = variable_name.split('_')[0] + '_' + \
-                                                         variable_name.split('_')[1] + ".csv"
+                    Current_Aggregation_VariableName_1 = variable_name.split(' ')[0] + '_' + variable_name.split(' ')[1] + ".csv"
 
                     # Get Current_Element
-                    Current_Element = variable_name.split('_')[2]
+                    Current_Element = variable_name.split(' ')[2]
 
                     # Creating Current_EIO_Dict_Key
                     Current_EIO_Dict_Key = Current_Element + ' ' + 'Internal Gains Nominal'
