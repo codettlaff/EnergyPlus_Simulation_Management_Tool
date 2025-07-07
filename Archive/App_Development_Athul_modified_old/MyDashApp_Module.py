@@ -15,6 +15,8 @@ import re
 import zlib
 import zipfile
 
+
+
 # My App Module
 
 def CreateTimeVector(TimeDuration, TimeStep):
@@ -54,6 +56,8 @@ def Compute_with_Sines(TimeVector, Sine1, Sine2, Computation_Option):
     
     return Sines_DF
 
+
+
 def create_simulation_folder(simName_FilePath, IDF_FilePath, Weather_FilePath):
     # Create the main folder
     os.makedirs(simName_FilePath, exist_ok=True)
@@ -77,7 +81,7 @@ def create_simulation_folder(simName_FilePath, IDF_FilePath, Weather_FilePath):
     print(f"Files copied to {temp_folder}")
 
 # function for saving the uploaded file
-def save_file(name, content, UPLOAD_DIRECTORY):
+def save_file(name, content,UPLOAD_DIRECTORY):
     """Decode and store a file uploaded with Plotly Dash."""
     data = content.encode("utf8").split(b";base64,")[1]
 

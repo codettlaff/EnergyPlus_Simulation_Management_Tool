@@ -6,7 +6,6 @@ Created on Tue Jan 30 15:32:25 2024
 
 # Importing Required Modules
 import shutil
-import sys
 import os
 import re
 import datetime
@@ -25,262 +24,50 @@ import dash_bootstrap_components as dbc
 # Importing User-Defined Modules
 import MyDashApp_Module as AppFuncs
 
-database_dir = os.path.join(os.path.dirname(__file__), '..', 'Database')
-sys.path.append(database_dir)
-import Database_Creator as DB_Creator
-import Data_Uploader as DB_Uploader
+UPLOAD_DIRECTORY = os.path.join(os.getcwd(), "EP_APP_Uploads")
+UPLOAD_DIRECTORY_AGG_PICKLE = os.path.join(UPLOAD_DIRECTORY, "Pickle_Upload")
+UPLOAD_DIRECTORY_AGG_EIO = os.path.join(UPLOAD_DIRECTORY, "EIO_Upload")
+UPLOAD_DIRECTORY_VIS = os.path.join(UPLOAD_DIRECTORY, "Visualization")
+WORKSPACE_DIRECTORY = os.path.join(os.getcwd(), "EP_APP_Workspace")
+SIMULATION_FOLDERPATH = 'abc123'
+SIMULATION_FOLDERNAME = 'abc123'
+DATA_DIRECTORY =  os.path.join(os.getcwd(), "..", "..", "Data")
 
-database_generation_dir = os.path.join(os.path.dirname(__file__), '..', 'Data_Generation')
-sys.path.append(database_generation_dir)
-import EP_DataAggregation_v2_20250619 as EP_Agg
-
-tab_layout =[
-    
-            dbc.Row([
-
-                # First Column
-                dbc.Col([
-                    dcc.Store(id='agg_input_variables_pickle_filepath'),
-                    dcc.Store(id='agg_input_eio_pickle_filepath'),
-                    # Input selection
-                    dcc.RadioItems(
-                    id = 'agg_input_selection',
-                    labelStyle = {'display': 'block'},
-                    options = [
-                        {'label' : " Continue Session", 'value' : 1},
-                        {'label' : " Upload Files", 'value' : 2}
-                        ]  ,
-                    value = 1,
-                    className = 'ps-4 p-3',
-                    style = {
-                        'width': '100%',
-                        'borderWidth': '1px',
-                        'borderStyle': 'solid',
-                        'borderRadius': '5px',
-                        }
-                    ),
-
-                    html.Br(),
-
-                    # Box 2 C1
-                    html.Div([
-                        dcc.Store(id='upload_variable_pickle_filepath', data=None),
-                        dcc.Store(id='upload_eio_pickle_filepath', data=None),
-                        # Upload Pickled Variable file
-                        dcc.Upload(['Upload Pickled Variable file'],
-                            className = 'center',
-                            id = 'agg_upload_variables_pickle',
-                            style = {
-                                'width': '90%',
-                                'height': '40px',
-                                'lineHeight': '40px',
-                                'borderWidth': '1px',
-                                'borderStyle': 'dashed',
-                                'borderRadius': '5px',
-                                'textAlign': 'center',
-                                'margin-left': '5%',
-                                'margin-top': '5%'
-                                }),
-
-                        # Upload EIO file
-                        dcc.Upload(['Upload EIO file'],
-                            className = 'center',
-                            id = 'agg_upload_eio_pickle',
-                            style = {
-                                'width': '90%',
-                                'height': '40px',
-                                'lineHeight': '40px',
-                                'borderWidth': '1px',
-                                'borderStyle': 'dashed',
-                                'borderRadius': '5px',
-                                'textAlign': 'center',
-                                'margin': '5%',
-                                }),
-
-                        ],id = 'agg_inputs_upload_files',
-                        hidden = True,
-                        style = {
-                            'borderWidth': '1px',
-                            'borderStyle': 'solid',
-                            'borderRadius': '5px',
-                            #'display':'none'
-                            }),
-
-                    html.Br(),
-
-                    # Aggregation Variables
-                    html.Div([
-                        dcc.RadioItems(
-                            id = 'agg_variable_all_or_select',
-                            labelStyle = {'display': 'block'},
-                            options = [
-                                {'label' : " All Variables", 'value' : 1},
-                                {'label' : " Select Variables", 'value' : 2}
-                                ]  ,
-                            value = 1,
-                            className = 'ps-4 p-3',
-                        ),
-
-                        html.Label("Available Variables",
-                            className = 'text-left ms-4'),
-                        dcc.Dropdown(['Var1','Var2','Var3'], '',
-                            multi = True,
-                            id='agg_variable_selection',
-                            style = {
-                                'width': '95%',
-                                'margin-left': '2.5%',
-                                'margin-bottom': '2.5%'
-                                }),
-
-                    ],id = 'agg_variables_menu',
-                    hidden = True,
-                    style = {
-                        'borderWidth': '1px',
-                        'borderStyle': 'solid',
-                        'borderRadius': '5px',
-                        },),
-
-                    html.Br(),
-
-                ], xs = 12, sm = 12, md = 6, lg = 6, xl = 6,),
-
-
-                # Second Column
-                dbc.Col([
-
-                    # Box 1 C2
-                    html.Div([
-                        dcc.Store(id='aggregation_settings', data={
-                            'aggregation_zone_list': [[]],
-                            'aggregation_type': None
-                        }),
-                        # Zone selection
-                        html.Label("Available Zones",
-                            className = 'text-left ms-4 mt-1'),
-                        dcc.Dropdown(['Zone list 1','Zone list 2','Zone list 3'], '',
-                            id='agg_zone_list',
-                            style = {
-                                'width': '95%',
-                                'margin-left': '2.5%',   
-                                }),
-
-                        dcc.RadioItems(
-                            id = 'aggregate_to_selection',
-                            labelStyle = {'display': 'block'},
-                            options = [
-                                {'label' : " Aggregate to one", 'value' : 1},
-                                {'label' : " Custom Aggregation", 'value' : 2}
-                                ]  ,
-                            value = 1,
-                            className = 'ps-4 p-3',
-                        ),
-
-                        html.Label("Input Custom Aggregation Zone List",
-                            className = 'text-left ms-4 mt-1'),
-                        dcc.Textarea(
-                            id='custom_aggregation_zone_list',
-                            placeholder="zone_1,zone_2,zone_3;zone_4,zone_5,zone_6",
-                            value=None,
-                            style={'width': '90%',
-                                   'margin-left':'5%',
-                                   'height': 30},
-                        ),
-
-                        # Type of Aggregation
-                        html.Label("Type of Aggregation",
-                            className = 'text-left ms-4 mt-1'),
-                        dcc.Dropdown([
-                            {'label' : " Average", 'value' : 1},
-                            {'label' : " Weighted Floor Area Average", 'value' : 2},
-                            {'label' : " Weighted Volume Average", 'value' : 3},
-                            ],
-                            id='aggregation_type',
-                            value=1,
-                            style = {
-                                'width': '95%',
-                                'margin-left': '2.5%', 
-                                'margin-bottom': '2.5%'  
-                                }),
-
-                    ],id = 'aggregation_details_menu',
-                    hidden = True,
-                    style = {
-                        'borderWidth': '1px',
-                        'borderStyle': 'solid',
-                        'borderRadius': '5px',
-                        },),
-
-                    html.Br(),
-
-                    # Box 2 C2
-                    html.Div([
-
-                        html.Button('Aggregate',
-                            id = 'EPAgg_Button_Aggregate',
-                            className = "btn btn-secondary btn-lg col-12",
-                            style = {
-                                'width':'90%',
-                                'margin':'5%'
-                                },),
-
-                        html.Button('Upload to Database',
-                            id = 'EPAgg_Button_UploadtoDb',
-                            className = "btn btn-secondary btn-lg col-12",
-                            style = {
-                                'width':'90%',
-                                'margin':'5%'
-                                },),
-
-                        html.Button('Download',
-                            id = 'EPAgg_Button_Download',
-                            className = "btn btn-primary btn-lg col-12",
-                            style = {
-                                'width':'90%',
-                                'margin-left':'5%',
-                                'margin-bottom':'5%'
-                                },),
-                        dcc.Download(id = 'EPAgg_Download_DownloadFiles'),
-
-                    ],id = 'EPAgg_Div_FinalDownload',
-                    hidden = True,
-                    style = {
-                        'borderWidth': '1px',
-                        'borderStyle': 'solid',
-                        'borderRadius': '5px',
-                        },),
-
-                    html.Br(),
-
-                ], xs = 12, sm = 12, md = 6, lg = 6, xl = 6,),
-
-                html.Button('End Session',
-                    id = 'Button_es_aggregation',
-                    className = "btn btn-primary btn-lg col-12",
-                    style = {
-                        'width':'98%',
-                        'margin-left':'1%'
-                        },),
-
-                ])
-            
-]
-
-def get_variable_list(variables_pickle_filepath):
-
-    variables_list = []
-    with open(variables_pickle_filepath, 'rb') as f: data_dict = pickle.load(f)
-    for key, value in data_dict.items():
-        if key != 'DateTime_List': variables_list.append(key)
-
-    return variables_list
-
-def get_zone_list(eio_pickle_filepath):
-
-    with open(eio_pickle_filepath, 'rb') as f: eio_dict = pickle.load(f)
-    zone_list = list(eio_dict['Zone Information'][eio_dict['Zone Information']['  Part of Total Building Area']  == 'Yes']['Zone Name'])
-    return zone_list
-
-"""
+OUR_VARIABLE_LIST = ['Schedule_Value_',
+                        'Facility_Total_HVAC_Electric_Demand_Power_',
+                        'Site_Diffuse_Solar_Radiation_Rate_per_Area_',
+                        'Site_Direct_Solar_Radiation_Rate_per_Area_',
+                        'Site_Outdoor_Air_Drybulb_Temperature_',
+                        'Site_Solar_Altitude_Angle_',
+                        'Surface_Inside_Face_Internal_Gains_Radiation_Heat_Gain_Rate_',
+                        'Surface_Inside_Face_Lights_Radiation_Heat_Gain_Rate_',
+                        'Surface_Inside_Face_Solar_Radiation_Heat_Gain_Rate_',
+                        'Surface_Inside_Face_Temperature_',
+                        'Zone_Windows_Total_Transmitted_Solar_Radiation_Rate_',
+                        'Zone_Air_Temperature_',
+                        'Zone_People_Convective_Heating_Rate_',
+                        'Zone_Lights_Convective_Heating_Rate_',
+                        'Zone_Electric_Equipment_Convective_Heating_Rate_',
+                        'Zone_Gas_Equipment_Convective_Heating_Rate_',
+                        'Zone_Other_Equipment_Convective_Heating_Rate_',
+                        'Zone_Hot_Water_Equipment_Convective_Heating_Rate_',
+                        'Zone_Steam_Equipment_Convective_Heating_Rate_',
+                        'Zone_People_Radiant_Heating_Rate_',
+                        'Zone_Lights_Radiant_Heating_Rate_',
+                        'Zone_Electric_Equipment_Radiant_Heating_Rate_',
+                        'Zone_Gas_Equipment_Radiant_Heating_Rate_',
+                        'Zone_Other_Equipment_Radiant_Heating_Rate_',
+                        'Zone_Hot_Water_Equipment_Radiant_Heating_Rate_',
+                        'Zone_Steam_Equipment_Radiant_Heating_Rate_',
+                        'Zone_Lights_Visible_Radiation_Heating_Rate_',
+                        'Zone_Total_Internal_Convective_Heating_Rate_',
+                        'Zone_Total_Internal_Radiant_Heating_Rate_',
+                        'Zone_Total_Internal_Total_Heating_Rate_',
+                        'Zone_Total_Internal_Visible_Radiation_Heating_Rate_',
+                        'Zone_Air_System_Sensible_Cooling_Rate_',
+                        'Zone_Air_System_Sensible_Heating_Rate_',
+                        'System_Node_Temperature_',
+                        'System_Node_Mass_Flow_Rate_']
 
 def EPAgg_RadioButton_InputSelection_Interaction_Function(value):
 
@@ -309,8 +96,7 @@ def EPAgg_Upload_Pickle_Interaction_Function(filename, content):
     else:
         message = 'Upload Pickled Variable file'
 
-    variables_pickle_filepath = os.path.join(UPLOAD_DIRECTORY_AGG_PICKLE, filename)
-    return message, variables_pickle_filepath
+    return message
 
 def EPAgg_Upload_EIO_Interaction_Function(filename, content):
     if filename is not None and content is not None:
@@ -320,8 +106,7 @@ def EPAgg_Upload_EIO_Interaction_Function(filename, content):
     else:
         message = 'Upload EIO file'
 
-    eio_pickle_filepath = os.path.join(UPLOAD_DIRECTORY_AGG_EIO, filename)
-    return message, eio_pickle_filepath
+    return message
 
 def EPAgg_DropDown_AggregationVariables_Interaction_Function(selection, value):
 
@@ -342,8 +127,6 @@ def EPAgg_DropDown_AggregationVariables_Interaction_Function(selection, value):
         div = True
 
     return div
-
-
 
 def EPAgg_RadioButton_AggregationVariables_Interaction_Function(InputSelection, VariableSelection):
 
@@ -425,8 +208,6 @@ def EPAgg_RadioButton_AggregationVariables_Interaction_Function(InputSelection, 
 
     return pre_list, custom_list, zone_list
 
-
-
 def EPAgg_DropDown_TypeOfAggregation_Interaction_Function(value):
 
     if value != None:
@@ -439,42 +220,7 @@ def EPAgg_DropDown_TypeOfAggregation_Interaction_Function(value):
 
     return div
 
-# Use when Pickle files are uploaded
-def get_simulation_settings(variables_pickle_filepath):
-
-    with open(variables_pickle_filepath, 'rb') as f: data_dict = pickle.load(f)
-
-    # Get DateTime_List from data_dict
-    datetime_list = data_dict.get("DateTime_List", [])
-    if not datetime_list:
-        raise ValueError("DateTime_List is missing or empty in data_dict")
-
-    # Determine time resolution from DateTime_List
-    time_resolution = (datetime_list[1] - datetime_list[0]).seconds // 60  # Convert to minutes
-
-    start_datetime = datetime_list[0]
-    end_datetime = datetime_list[-1]
-
-    simulation_settings = {
-        "name": "new_simulation",
-        "idf_year": start_datetime.year,
-        "start_month": start_datetime.month,
-        "start_day": start_datetime.day,
-        "end_month": end_datetime.month,
-        "end_day": (end_datetime - datetime.timedelta(days=1)).day,
-        "reporting_frequency": "timestep",
-        "timestep_minutes": time_resolution
-    }
-
-    return simulation_settings
-
-def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_results_folderpath, simulation_variable_list, aggregation_type, aggregation_zone_list):
-
-    aggregation_pickle_filepath = EP_Agg.aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_results_folderpath, simulation_variable_list, aggregation_type, aggregation_zone_list)
-    return aggregation_pickle_filepath
-
-'''
-def EPAgg_Button_Aggregate_Interaction_Function(selected_variable_list, aggregate_to, custom_zone_list, Type_Aggregation, n_clicks):
+def EPAgg_Button_Aggregate_Interaction_Function(variable_selection, custom_variables, aggregate_to, custom_zone_list, Type_Aggregation, n_clicks):
 
     # Retrieing Aggregation Folder Path
     Aggregation_FolderPath = os.path.join(WORKSPACE_DIRECTORY, 'Aggregation')
@@ -487,6 +233,17 @@ def EPAgg_Button_Aggregate_Interaction_Function(selected_variable_list, aggregat
     Eio_OutputFile_Dict_file = open(os.path.join(Aggregation_FolderPath,'Eio_OutputFile.pickle'),"rb")
 
     Eio_OutputFile_Dict = pickle.load(Eio_OutputFile_Dict_file)
+
+    # Getting variable selection for aggregation
+    selected_variable_list = []
+
+    if variable_selection == 1:  # Pre selected variables
+
+        selected_variable_list = OUR_VARIABLE_LIST
+
+    elif variable_selection == 2:  # Custom variables
+
+        selected_variable_list = custom_variables
 
     # Getting Aggregation Zone list
     if aggregate_to == 1:  # Aggregate to one
@@ -986,57 +743,13 @@ def EPAgg_Button_Aggregate_Interaction_Function(selected_variable_list, aggregat
 
     pickle.dump(Aggregation_Dict, open(os.path.join(results_path,'Aggregation_Dictionary.pickle'), "wb"))
 
-
-
     return "Aggregation Completed"
 
-'''
+def EPAgg_Button_Download_Interaction_Function(n_clicks):
+    download_path = []
+    results_path = os.path.join(WORKSPACE_DIRECTORY, "Aggregation", "Results")
 
-def EPAgg_Button_Download_Interaction_Function(aggregation_pickle_filepath):
-    return dcc.send_file(aggregation_pickle_filepath)
-
-def upload_to_db(conn, epw_filepath, aggregation_pickle_filepath, eio_pickle_filepath, building_id, simulation_settings, aggregation_zones, zones_df):
-
-    start_datetime = datetime.datetime(
-        simulation_settings["idf_year"],
-        simulation_settings["start_month"],
-        simulation_settings["start_day"]
-    )
-    start_datetime = start_datetime + datetime.timedelta(minutes=simulation_settings["timestep_minutes"])
-    end_datetime = datetime.datetime(
-        simulation_settings["idf_year"],
-        simulation_settings["end_month"],
-        simulation_settings["end_day"]
-    )
-    end_datetime = end_datetime + datetime.timedelta(days=1)
-    time_resolution = simulation_settings["timestep_minutes"]
-
-    DB_Uploader.populate_datetimes_table(conn, base_time_resolution=1, start_datetime=start_datetime,
-                                         end_datetime=end_datetime)
-
-    # If building_id = None, the user uploaded pickle files rather than continuing session
-    # Insert new 'custom' building into the buildings table
-    # retrieve simulation settings from the aggregation pickle file
-
-    with open(aggregation_pickle_filepath, "rb") as f: data_dict = pickle.load(f)
-
-    simulation_name = SIMULATION_FOLDERNAME
-
-    # Get EPW Climate Zone
-    if epw_filepath is not None:
-        location = DB_Uploader.get_location_from_epw_filepath(os.path.basename(epw_filepath))
-        epw_climate_zone = DB_Uploader.get_climate_zone(location)
-    else: epw_climate_zone = 'NA'
-
-    if zones_df is not None:
-        aggregation_zones = {
-            "Aggregated Zone": zones_df
-        }
-    else: aggregation_zones = None
-
-    zones_df = DB_Uploader.upload_time_series_data(conn, data_dict, simulation_name, simulation_settings, building_id,
-                                        epw_climate_zone, time_resolution, aggregation_zones)
-
-    return ('Data Uploaded')
-
-"""
+    for item in os.listdir(results_path):
+        if item.endswith(".pickle"):
+            download_path = os.path.join(results_path,item)
+    return dcc.send_file(download_path)

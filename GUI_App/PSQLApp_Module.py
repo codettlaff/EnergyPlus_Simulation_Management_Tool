@@ -5,7 +5,6 @@ Created on Mon Jun 09 10:42:28 2025
 """
 
 # Importing Required Modules
-import math
 import os
 import sys
 import pandas as pd
@@ -17,13 +16,12 @@ import plotly.express as px
 import plotly.graph_objects as go
 import dash_bootstrap_components as dbc
 
-database_creator_script_dir = os.path.join(os.path.dirname(__file__), '..', 'Database_v2')
+database_creator_script_dir = os.path.join(os.path.dirname(__file__), '..', 'Database')
 sys.path.append(database_creator_script_dir)
-import Database_Creator as db_creator
-import Data_Uploader as db_uploader
+import Database_Creator
+import Data_Uploader
 
-DATABASES_CSV_FILEPATH = os.path.join(os.path.dirname(__file__), 'databases.csv')
-def databases_csv_filepath(): return DATABASES_CSV_FILEPATH
+DATABASES_CSV_FILEPATH = os.path.join(os.path.dirname('__file__'), 'databases.csv')
 
 # Layout
 tab_layout = [
@@ -37,15 +35,10 @@ tab_layout = [
             # Box 1 C1
             # Using Database?
             html.Div([
-                html.Label("Database Selection", style={
-                    'font-weight': 'bold',
-                    'font-size': '1.2rem',
-                    'margin-bottom': '10px',
-                    'display': 'block'
-                }),
+                html.Br(),
 
                 html.Label(
-                    "Use Database:",
+                    "Are you using a database?",
                     style={
                         'margin': '1.5% 0 1% 3%',
                         'font-weight': '600',
@@ -57,8 +50,8 @@ tab_layout = [
                     id='PSQL_RadioButton_UsingDatabase',
                     labelStyle={'display': 'block'},
                     options=[
-                        {'label': " Yes", 'value': True},
-                        {'label': " No", 'value': False}
+                        {'label': " Yes", 'value': 1},
+                        {'label': " No", 'value': 2}
                     ],
                     value='',
                     style={
@@ -190,29 +183,6 @@ tab_layout = [
                         'margin': '2%'
                     }),
 
-                    # Host Name
-                    dbc.Stack([
-                        html.Label(
-                            "Host Name:",
-                            style={
-                                'width': '30%',
-                                'margin-top': 'auto',
-                                'margin-bottom': 'auto'
-                            }
-                        ),
-                        dcc.Textarea(
-                            id='PSQL_Textarea_HostName',
-                            value='',
-                            style={
-                                'width': '70%',
-                                'height': 50
-                            }
-                        ),
-                    ], direction="horizontal", style={
-                        'align-items': 'center',
-                        'margin': '2%'
-                    }),
-
                     # Database Name
                     dbc.Stack([
                         html.Label(
@@ -305,96 +275,122 @@ tab_layout = [
 ]
 
 
+# Helper Functions
+def PSQL_Radiobutton_UsingDatabase_Interaction_Function(data_selection):
+    if data_selection == 1:
+        return False
+    else:
+        return True 
+    
+def PSQL_Radiobutton_CreateSelectDatabase_Interaction_Function(data_source):
+    """
+    Determines the behavior of data selection and upload controls 
+    based on the selected data source radio button.
+
+    Args:
+        data_source (int): 1 for upload, 2 for selection, others for both.
+
+    Returns:
+        tuple: (data_selection, upload_data)
+    """
+    options = {
+        1: (False, True),   # Enter Info
+        2: (True, False)    # Existing Db list
+    }
+
+    # Default to (True, True) if data_source is not 1 or 2
+    return options.get(data_source, (True, True))
+
 # Casey's Code
 
-def get_building_information(idf_filepath):
-    idf_filename = os.path.basename(idf_filepath)
-    building_information = db_uploader.get_building_information(idf_filename)
-    return building_information
-
-def connect(db_settings):
-    if 'port' in db_settings:
-        if not (isinstance(db_settings['port'], int) and db_settings['port'] > 0): db_settings.pop('port')
-    if 'host' in db_settings:
-        if db_settings['host'] is None: db_settings.pop('host')
+def connect_to_database(db_settings):
     return psycopg2.connect(**db_settings)
 
-def create_database(db_settings):
+def create_database(username, password, port, dbname):
+    """
+    1. call create_database function in database_creator script, which returns a conn object. if this was done sucessfully, continue.
+    1. if databases csv file does not exist, create it (have global variable DATABASES_CSV_FILEPATH)
+    2. add current database as row in databases csv
+    """
+    db_settings = None
 
-    dbname = db_settings['dbname']
-    db_settings['dbname'] = 'postgres'
     try:
-        conn = connect(db_settings)
-        conn.autocommit = True
-        cursor = conn.cursor()
-        cursor.execute(f"CREATE DATABASE {dbname};")
+        conn, db_settings = Database_Creator.create_database(username, password, port, dbname)
+        Database_Creator.create_tables(conn)
+        Data_Uploader.populate_buildings_table(conn)
         conn.close()
-    except psycopg2.Error as e:
-        if e.pgcode == '42P04': return "Database Already Created" # Duplicate Database
-        else: return "Invalid Information"
-
-    # Try Connecting to Newly Created Database
-    db_settings['dbname'] = dbname
-    try:
-        conn = connect(db_settings)
-        conn.close()
-    except psycopg2.Error as e:
-        return "Invalid Information"
-
-    # Create Empty Tables, Populate Prototypical Buildings Table
-    try:
-        conn = connect(db_settings)
-        db_creator.create_tables(conn)
-        db_uploader.populate_buildings_table(conn)
-    except psycopg2.Error as e:
-        print("Failed to Create Tables: ", e)
-        return "Failed to Create Database"
+    except Exception as e:
+        print(e)
 
     if not os.path.isfile(DATABASES_CSV_FILEPATH):
-        pd.DataFrame(columns=["dbname", "user", "password", "host", "port"]).to_csv(DATABASES_CSV_FILEPATH, index=False)
+        pd.DataFrame(columns=["username", "password", "port", "database_name"]).to_csv(DATABASES_CSV_FILEPATH, index=False)
+
+    new_record = {
+        "username": username,
+        "password": password,
+        "port": port,
+        "database_name": dbname
+    }
 
     df = pd.read_csv(DATABASES_CSV_FILEPATH)
-    df = pd.concat([df, pd.DataFrame([db_settings])], ignore_index=True)
+    df = pd.concat([df, pd.DataFrame([new_record])], ignore_index=True)
     df.to_csv(DATABASES_CSV_FILEPATH, index=False)
 
-    return 'Database Created'
+    return db_settings
 
-def get_db_names():
+def populate_existing_db_dropdown(selection):
+    # Only update the dropdown if "Select Database" was chosen (value = 2)
+    if selection != 2:
+        return []
+
+    # Load database names from CSV
+    if not os.path.isfile(DATABASES_CSV_FILEPATH):
+        return []
+
     df = pd.read_csv(DATABASES_CSV_FILEPATH)
-    dbnames = df["dbname"].dropna().unique().tolist()
+    if "database_name" not in df.columns:
+        return []
+    dbnames = df["database_name"].dropna().unique().tolist()
     return [{"label": name, "value": name} for name in dbnames]
 
-def get_db_settings(dbname):
-    df = pd.read_csv(DATABASES_CSV_FILEPATH)
-    record = df[df["dbname"] == dbname].iloc[0]
-    record_dict = record.to_dict()
-    return record_dict
+def get_conn_from_dbname(database_name):
 
-########## Temporary Functions for Testing ##########
+    db_settings = None
+    try:
+        df = pd.read_csv(DATABASES_CSV_FILEPATH)
+        record = df[df["database_name"] == database_name].iloc[0]
 
-def delete_all_databases():
+        if record["port"] == "localhost":
+            conn = psycopg2.connect(
+                dbname=record["database_name"],
+                user=record["username"],
+                password=record["password"],
+                host="localhost"
+            )
+            db_settings = {
+                "dbname": record["database_name"],
+                "user": record["username"],
+                "password": record["password"],
+                "host": "localhost"
+            }
+        else:
+            conn = psycopg2.connect(
+                dbname=record["database_name"],
+                user=record["username"],
+                password=record["password"],
+                port=record["port"]
+            )
+            db_settings = {
+                "dbname": record["database_name"],
+                "user": record["username"],
+                "password": record["password"],
+                "post": record["port"]
+            }
 
-    conn = psycopg2.connect(
-        dbname="postgres",
-        user="Casey",
-        password="OfficeLarge",
-        host="localhost",
-        port=5432  # Replace with your target port
-    )
-    conn.autocommit = True
-    cursor = conn.cursor()
+        conn.close()
 
-    cursor.execute("""
-        SELECT datname FROM pg_database
-        WHERE datname NOT IN ('postgres', 'template0', 'template1');
-    """)
-    databases = cursor.fetchall()
-
-    for (dbname,) in databases:
-        try:
-            cursor.execute(f"DROP DATABASE IF EXISTS {dbname};")
-            print(f"Deleted database: {dbname}")
-        except Exception as e:
-            print(f"Error deleting {dbname}: {e}")
-
-# delete_all_databases()
+        print(f"Connected to {database_name}")
+        return db_settings
+    except Exception as e:
+        print(f"Could not connect to {database_name}: {e}")
+        return None
