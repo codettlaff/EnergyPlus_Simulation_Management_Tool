@@ -307,6 +307,11 @@ tab_layout = [
 
 # Casey's Code
 
+def get_building_information(idf_filepath):
+    idf_filename = os.path.basename(idf_filepath)
+    building_information = db_uploader.get_building_information(idf_filename)
+    return building_information
+
 def connect(db_settings):
     if 'port' in db_settings:
         if not (isinstance(db_settings['port'], int) and db_settings['port'] > 0): db_settings.pop('port')

@@ -313,8 +313,7 @@ def data_source_selection(selection):
     prevent_initial_call=True
 )
 def pnnl_prototypes_dropdown(building_type, level1, level2, level3, location):
-    global DATA_IDF_FILEPATH
-    global DATA_EPW_FILEPATH
+    global DATA_IDF_FILEPATH, DATA_EPW_FILEPATH, BUILDING_INFORMATION
     options1, options2, options3, location_options, idf_filepath, epw_filepath = EPGen.pnnl_prototypes_dropdown(building_type, level1, level2, level3, location, DATA_FOLDERPATH, UPLOAD_DIRECTORY)
     DATA_IDF_FILEPATH = idf_filepath
     DATA_EPW_FILEPATH = epw_filepath
@@ -379,7 +378,10 @@ def unhide_simulation_details(val1, val2, val3, val4, val5):
     global DATA_EPW_FILEPATH
     # if get_callback_id() == 'data_source_selection': return True # Refresh
     if DATA_IDF_FILEPATH is not None and DATA_EPW_FILEPATH is not None:
-        if os.path.exists(DATA_IDF_FILEPATH) and os.path.exists(DATA_EPW_FILEPATH): return False
+        if os.path.exists(DATA_IDF_FILEPATH) and os.path.exists(DATA_EPW_FILEPATH):
+            building_information = PSQL.get_building_information(DATA_IDF_FILEPATH)
+            BUILDING_INFORMATION = building_information
+            return False
     else: return True
 
 

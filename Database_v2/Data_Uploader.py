@@ -21,7 +21,8 @@ def get_location_from_epw_filepath(epw_file_path):
 
     return location
 
-def get_climate_zone(location):
+def get_climate_zone(location=None, climate_zone=None):
+
     climate_zones = {
         "Miami": "1A",
         "Tampa": "2A",
@@ -41,8 +42,95 @@ def get_climate_zone(location):
         "Fairbanks": "8"
     }
 
-    return climate_zones.get(location, "Climate Zone not found.")
+    if location: return climate_zones.get(location, "Climate Zone not found.")
+    if climate_zone:
+        reversed_zones = {v: k for k, v in climate_zones.items()}
+        return reversed_zones.get(climate_zone, "Location not found.")
+
 # Passed
+
+def get_building_information(idf_filename):
+    idf_filename = idf_filename.replace('.idf', '')
+
+    # Determine building type
+    if 'ASHRAE' in idf_filename or 'IECC' in idf_filename:
+        building_type = 'Commercial'
+    elif ('MS' in idf_filename or 'SS' in idf_filename) and any(x in idf_filename for x in ['tier1', 'tier2', 'HUD']):
+        building_type = 'Manufactured'
+    elif '+MF+' in idf_filename or '+SF+' in idf_filename:
+        building_type = 'Residential'
+    else:
+        building_type = 'Custom'
+
+    # Default fields
+    heating_type = foundation_type = idf_location = idf_climate_zone = None
+
+    # Parse based on type
+    if building_type == 'Commercial':
+        code_map = {'ASHRAE': 'ASHRAE', 'IECC': 'IEC'}
+        parts = idf_filename.split('_')
+        energy_code = next((code_map[k] for k in code_map if k in parts[0]), parts[0])
+        year = parts[2].replace('STD', '')
+        energy_code += year
+        prototype, idf_location = parts[1], parts[3]
+        idf_climate_zone = get_climate_zone(idf_location)
+
+    elif building_type == 'Manufactured':
+        parts = idf_filename.split('_')
+        proto_map = {'MS': 'Multi-section', 'SF': 'Single-section'}
+        code_map = {'tier1': 'Final-Rule-Tier1', 'tier2': 'Final-Rule-Tier2', 'HUD': 'Final-Rule-HUD'}
+        heat_map = {
+            'electricfurnace': 'Electric-Resistance',
+            'gasfurnace': 'Gas-Furnace',
+            'heatpump': 'Heat-Pump',
+            'oilfurnace': 'Oil-Furnace'
+        }
+        prototype = proto_map.get(parts[0], parts[0])
+        idf_location, idf_climate_zone = parts[1], parts[2]
+        energy_code = code_map.get(parts[3], parts[3])
+        heating_type = heat_map.get(parts[4], parts[4])
+
+    elif building_type == 'Residential':
+        parts = idf_filename.split('+')
+        proto_map = {'MS': 'Multi-section', 'SF': 'Single-section'}
+        heat_map = {
+            'electricres': 'Electric-Resistance',
+            'gasfurnances': 'Gas-Furnace',
+            'hp': 'Heat-Pump',
+            'oilfurnance': 'Oil-Furnace'
+        }
+        foundation_map = {
+            'crawlspace': 'Crawlspace',
+            'heatedbsmt': 'Heated-basement',
+            'unheatedbsmt': 'Unheated-basement',
+            'slab': 'Slab'
+        }
+        prototype = proto_map.get(parts[1], parts[1])
+        idf_climate_zone = parts[2][2:4]
+        energy_code = parts[5].replace('_', '')
+        heating_type = heat_map.get(parts[3], parts[3])
+        foundation_type = foundation_map.get(parts[4], parts[4])
+        idf_location = get_climate_zone(idf_climate_zone)
+
+    else:
+        prototype = None
+        energy_code = None
+        idf_climate_zone = None
+        idf_location = None
+        heating_type = None
+        foundation_type = None
+
+    building_information = {
+        "building_type": building_type,
+        "prototype": prototype,
+        "energy_code": energy_code,
+        "idf_climate_zone": idf_climate_zone,
+        "idf_location": idf_location,
+        "heating_type": heating_type,
+        "foundation_type": foundation_type,
+    }
+
+    return building_information
 
 def populate_datetimes_table(conn, base_time_resolution=1, start_datetime=datetime(2013, 1, 1, 0, 0), end_datetime=datetime(2014, 1, 1, 0, 0)):
     """
