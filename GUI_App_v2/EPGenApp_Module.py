@@ -183,7 +183,7 @@ tab_layout=[
                             max_date_allowed=date(2021, 12, 31),
                             #initial_visible_month=date(2020, 1, 1),
                             start_date=date(2020, 1, 1),
-                            end_date=date(2020, 12, 31),
+                            end_date=date(2020, 1, 2),
                             display_format='M/D',
                             style = {
                                 'width': '100%',
@@ -199,7 +199,7 @@ tab_layout=[
                             html.Label("Simulation Reporting Frequency:",
                                 className = 'text'),
                             dcc.Dropdown(['timestep','hourly','detailed','daily','monthly','runperiod','environment','annual'],
-                                '',
+                                value='timestep',
                                 id = 'simReportFreq_selection',
                                 style = {
                                     'width':'70%',

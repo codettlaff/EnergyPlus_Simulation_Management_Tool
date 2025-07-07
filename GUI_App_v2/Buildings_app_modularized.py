@@ -57,10 +57,10 @@ INITIAL_RUN_RDD_FILEPATH = None
 
 SIMULATION_SETTINGS = {
     "name": None,
-    "start_datetime": None,
-    "end_datetime": None,
-    "reporting_frequency": None,
-    "timestep_minutes": None,
+    "start_datetime": date(2020, 1, 1),
+    "end_datetime": date(2020, 1, 2),
+    "reporting_frequency": 'timestep',
+    "timestep_minutes": 5,
     "variables": PRESELECTED_VARIABLES,
     "ep_version": None
 }
@@ -374,7 +374,7 @@ def EPGen_Dropdown_EPVersion_Interaction(version_selection):
 def unhide_simulation_details(val1, val2, val3, val4, val5):
     global DATA_IDF_FILEPATH
     global DATA_EPW_FILEPATH
-    if get_callback_id() == 'data_source_selection': return True # Refresh
+    # if get_callback_id() == 'data_source_selection': return True # Refresh
     if DATA_IDF_FILEPATH is not None and DATA_EPW_FILEPATH is not None:
         if os.path.exists(DATA_IDF_FILEPATH) and os.path.exists(DATA_EPW_FILEPATH): return False
     else: return True
