@@ -1,6 +1,7 @@
 # Created: 20250205
 
 import psycopg2
+from psycopg2.extras import execute_values
 import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
@@ -585,20 +586,23 @@ def populate_variables_table(conn, data_dict, zone_ids):
 
     records = list(zip(insert_variable_names, insert_zone_ids))
 
+    result = []
     query = """
-    INSERT INTO variables (variable_name, zone_id)
-    VALUES (%s, %s)
-    ON CONFLICT DO NOTHING
-    RETURNING id, variable_name, zone_id;
+        INSERT INTO variables (variable_name, zone_id)
+        VALUES (%s, %s)
+        ON CONFLICT (variable_name, zone_id)
+        DO UPDATE SET variable_name = EXCLUDED.variable_name
+        RETURNING id, variable_name, zone_id;
     """
-
     with conn.cursor() as cursor:
-        cursor.executemany(query, records)  # Batch insert
+        for record in records:
+            cursor.execute(query, record)
+            result.append(cursor.fetchone())
         conn.commit()
 
         # Fetch the variable_id and variable_name for the inserted/updated records
-        cursor.execute("SELECT id, variable_name, zone_id FROM variables ORDER BY id;")
-        result = cursor.fetchall()
+        #cursor.execute("SELECT id, variable_name, zone_id FROM variables ORDER BY id;")
+        #result = cursor.fetchall()
 
     # Convert to DataFrame
     df = pd.DataFrame(result, columns=["variable_id", "variable_name", "zone_id"])
