@@ -518,7 +518,11 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_va
                                 ColName4)
 
                     # Filling Aggregation_Dict with Current_Aggregation_Variable and Current_EIO_Dict_Key_Level
-                    Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = Current_Aggregation_Variable[Current_DF_Cols_Desired_Corrected].mean(1)
+                    Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = (
+                        Current_Aggregation_Variable[Current_DF_Cols_Desired_Corrected]
+                        .mean(axis=1)
+                        .fillna(0.0)
+                    )
 
                     Aggregation_Dict[Aggregated_Zone_Name_2][Current_EIO_Dict_Key_Level] = pd.DataFrame(np.array([sum(CurrentLevel_List) / len(CurrentLevel_List)]))
 
