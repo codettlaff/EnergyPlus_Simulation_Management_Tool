@@ -12,7 +12,7 @@ import re
 import datetime
 import pickle
 import copy
-from datetime import date
+from datetime import date, timedelta
 from dash import Dash, dcc, html, Input, Output, State, dash_table
 import pandas as pd
 import numpy as np
@@ -796,8 +796,10 @@ def upload_to_db(idf_filepath, epw_filepath, simulation_settings, building_infor
 
     conn = psql.connect(db_settings)
 
-    start_datetime = simulation_settings["start_datetime"]
-    end_datetime = simulation_settings["end_datetime"]
+    start_datetime = simulation_settings['start_datetime']
+    start_datetime = start_datetime + timedelta(minutes=simulation_settings["timestep_minutes"])
+    end_datetime = simulation_settings['end_datetime']
+    end_datetime = end_datetime + timedelta(days=1)
 
     db_uploader.populate_datetimes_table(conn, base_time_resolution=1, start_datetime=start_datetime, end_datetime=end_datetime)
     idf_filename = os.path.basename(idf_filepath)
