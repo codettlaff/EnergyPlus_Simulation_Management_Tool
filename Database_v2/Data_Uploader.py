@@ -310,7 +310,7 @@ def get_building_id(conn, building_type, building_name):
     # Initialize query parameters
     prototype, energy_code, climate_zone, heating_type, foundation_type = None, None, None, None, None
 
-    if building_type == "Commercial_Prototypes":
+    if building_type == "Commercial":
         # Example Name: ASHRAE901_Hospital_STD2013_Tampa
         match = re.match(r"(ASHRAE\d{3}|IECC\d{4})_(\w+)_STD(\d{4})_([A-Za-z]+)", building_name)
         if match:
@@ -319,7 +319,7 @@ def get_building_id(conn, building_type, building_name):
             location = match.group(4)
             climate_zone = get_climate_zone(location)
 
-    elif building_type == "Residential_Prototypes":
+    elif building_type == "Residential":
         # Example Name: US+MF+CZ1AWH+elecres+crawlspace+IECC_2021
         match = re.match(r"US\+([A-Za-z-]+)\+CZ(\d+[A-Z]*)\+([a-z-]+)\+([a-z-]+)\+(IECC_\d{4})", building_name)
         if match:
@@ -329,7 +329,7 @@ def get_building_id(conn, building_type, building_name):
             foundation_type = match.group(4).replace('crawlspace', 'Crawlspace').replace('unheatedbsmt', 'Unheated-basement').replace('heatedbsmt', 'Heated-basement').replace('slab', 'Slab')
             energy_code = match.group(5).replace('_', '')
 
-    elif building_type == "Manufactured_Prototypes":
+    elif building_type == "Manufactured":
         # Example Name: MS_Miami_1A_HUD_electricfurnace
         match = re.match(r"([A-Za-z]+)_([A-Za-z]+)_(\d+[A-Z]*)_(HUD|Final-Rule)_(\w+)", building_name)
         if match:
