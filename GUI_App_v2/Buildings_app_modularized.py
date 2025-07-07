@@ -673,13 +673,63 @@ def upload_to_db(n_clicks):
     except Exception as e:
         return "Upload Failed"
 
-"""
 
 ##########################################################################################################
 
 #################### Aggregation #########################################################################
 
 ##########################################################################################################
+
+# Unhide Input Files Upload Menu
+@app.callback(
+    Output(component_id = 'agg_inputs_upload_files', component_property = 'hidden'),
+    Input(component_id = 'agg_input_selection', component_property = 'value'), # 1: Continue Session, 2: Upload Files
+    prevent_initial_call = True)
+def unhide_upload_files(value):
+    if value == 2: return False
+    else: return True
+
+# Upload Variables Pickle
+@app.callback(
+    Output('agg_upload_variables_pickle', 'children'),
+    Input('agg_upload_variables_pickle', 'filename'),
+    Input('agg_upload_variables_pickle', 'contents'),
+    prevent_initial_call = True)
+def agg_upload_variables_pickle(filename, contents):
+    global RESULTS_FILEPATHS
+
+    try:
+        upload_filepath = os.path.join(RESULTS_FOLDERPATH, filename)
+        data = contents.encode("utf8").split(b";base64,")[1]
+        with open(upload_filepath, "wb") as fp:
+            fp.write(base64.decodebytes(data))
+        RESULTS_FILEPATHS['variables_pickle_filepath'] = upload_filepath
+        short_name = filename[:20] + "..." if len(filename) > 10 else filename
+        return f"Uploaded {short_name}"
+    except Exception as e:
+        return "Upload Failed", None
+
+# Upload EIO Pickle Filepath
+@app.callback(
+    Output('agg_upload_eio_pickle', 'children'),
+    Input('agg_upload_eio_pickle', 'filename'),
+    Input('agg_upload_eio_pickle', 'contents'),
+    prevent_initial_call = True)
+def agg_upload_eio_pickle(filename, contents):
+    global RESULTS_FILEPATHS
+
+    try:
+        upload_filepath = os.path.join(RESULTS_FOLDERPATH, filename)
+        data = contents.encode("utf8").split(b";base64,")[1]
+        with open(upload_filepath, "wb") as fp:
+            fp.write(base64.decodebytes(data))
+        RESULTS_FILEPATHS['eio_pickle_filepath'] = upload_filepath
+        short_name = filename[:20] + "..." if len(filename) > 10 else filename
+        return f"Uploaded {short_name}"
+    except Exception as e:
+        return "Upload Failed", None
+
+"""
 
 
 @app.callback(
@@ -975,7 +1025,7 @@ def EPVis_Button_TimeGeneratedData_Interaction(table_gen, column_gen, table_agg,
 def EPVis_Button_TimeAggregatedData_Interaction(table_gen, column_gen, table_agg, column_agg, n_clicks):
     figure = EPVis.EPVis_Button_TimeGeneratedData_Interaction_Function(table_gen, column_gen, table_agg, column_agg, n_clicks)
     return figure
-'''
+    
 @app.callback(
     Output(component_id = 'EPVis_Graph_TimeSeries', component_property = 'figure',allow_duplicate = True),
     State(component_id = 'EPVis_DropDown_GeneratedDataTables', component_property = 'value'),
@@ -1026,7 +1076,7 @@ def EPVis_Button_TimeGeneratedData_Interaction(table_gen, column_gen, table_agg,
     figure = px.line(melted_df, x='Date', y='Value', color='Variable', labels={'Date': 'Date', 'Value': 'Variable', 'Variable': 'Data Series'})
 
     return figure
-'''
+
 
 # Want to make sure windows go away when 'No' is selected.
 @app.callback(
@@ -1114,7 +1164,6 @@ def agg_upload_to_db(n_clicks):
 
     return message
     
-'''
 """
 
 # Running the App

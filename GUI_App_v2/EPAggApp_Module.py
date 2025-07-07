@@ -43,13 +43,13 @@ tab_layout =[
 
                     # Input selection
                     dcc.RadioItems(
-                    id = 'EPAgg_RadioButton_InputSelection',
+                    id = 'agg_input_selection',
                     labelStyle = {'display': 'block'},
                     options = [
                         {'label' : " Continue Session", 'value' : 1},
                         {'label' : " Upload Files", 'value' : 2}
                         ]  ,
-                    value = '',
+                    value = 1,
                     className = 'ps-4 p-3',
                     style = {
                         'width': '100%',
@@ -67,7 +67,7 @@ tab_layout =[
                         # Upload Pickled Variable file
                         dcc.Upload(['Upload Pickled Variable file'],
                             className = 'center',
-                            id = 'EPAgg_Upload_Pickle',
+                            id = 'agg_upload_variables_pickle',
                             style = {
                                 'width': '90%',
                                 'height': '40px',
@@ -83,7 +83,7 @@ tab_layout =[
                         # Upload EIO file
                         dcc.Upload(['Upload EIO file'],
                             className = 'center',
-                            id = 'EPAgg_Upload_EIO',
+                            id = 'agg_upload_eio_pickle',
                             style = {
                                 'width': '90%',
                                 'height': '40px',
@@ -95,7 +95,7 @@ tab_layout =[
                                 'margin': '5%',
                                 }),
 
-                        ],id = 'EPAgg_Div_UploadFiles',
+                        ],id = 'agg_inputs_upload_files',
                         hidden = True,
                         style = {
                             'borderWidth': '1px',
