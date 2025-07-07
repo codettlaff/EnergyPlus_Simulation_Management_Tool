@@ -474,7 +474,7 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_va
                     Current_EIO_Dict_DF = Eio_OutputFile_Dict[Current_EIO_Dict_Key]
 
                     # Getting Current_Aggregation_Variable from IDF_OutputVariable_Dict
-                    Current_Aggregation_Variable = IDF_OutputVariable_Dict[variable_name_1]
+                    Current_Aggregation_Variable = IDF_OutputVariable_Dict[key]
 
                     #  Getting Current_Aggregation_Variable_ColName_List
                     Current_Aggregation_Variable_ColName_List = Current_Aggregation_Variable.columns
