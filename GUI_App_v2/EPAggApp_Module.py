@@ -111,13 +111,13 @@ tab_layout =[
                     # Aggregation Variables
                     html.Div([
                         dcc.RadioItems(
-                            id = 'EPAgg_RadioButton_AggregationVariables',
+                            id = 'agg_variable_all_or_select',
                             labelStyle = {'display': 'block'},
                             options = [
                                 {'label' : " All Variables", 'value' : 1},
                                 {'label' : " Select Variables", 'value' : 2}
                                 ]  ,
-                            value = '',
+                            value = 1,
                             className = 'ps-4 p-3',
                         ),
 
@@ -150,7 +150,10 @@ tab_layout =[
 
                     # Box 1 C2
                     html.Div([
-
+                        dcc.Store(id='aggregation_settings', data={
+                            'aggregation_zone_list': [[]],
+                            'aggregation_type': None
+                        }),
                         # Zone selection
                         html.Label("Available Zones",
                             className = 'text-left ms-4 mt-1'),
@@ -162,21 +165,22 @@ tab_layout =[
                                 }),
 
                         dcc.RadioItems(
-                            id = 'EPAgg_RadioButton_AggregateTo',
+                            id = 'aggregate_to_selection',
                             labelStyle = {'display': 'block'},
                             options = [
                                 {'label' : " Aggregate to one", 'value' : 1},
                                 {'label' : " Custom Aggregation", 'value' : 2}
                                 ]  ,
-                            value = '',
+                            value = 1,
                             className = 'ps-4 p-3',
                         ),
 
-                        html.Label("Input Custom Aggregation Zone List (No spaces, only \",\" and \";\" for seperators)",
+                        html.Label("Input Custom Aggregation Zone List",
                             className = 'text-left ms-4 mt-1'),
                         dcc.Textarea(
-                            id='EPAgg_DropDown_CustomAggregationZoneList',
-                            value='',
+                            id='custom_aggregation_zone_list',
+                            placeholder="zone_1,zone_2,zone_3;zone_4,zone_5,zone_6",
+                            value=None,
                             style={'width': '90%',
                                    'margin-left':'5%',
                                    'height': 30},
@@ -189,15 +193,16 @@ tab_layout =[
                             {'label' : " Average", 'value' : 1},
                             {'label' : " Weighted Floor Area Average", 'value' : 2},
                             {'label' : " Weighted Volume Average", 'value' : 3},
-                            ], '',
-                            id='EPAgg_DropDown_TypeOfAggregation',
+                            ],
+                            id='aggregation_type',
+                            value=1,
                             style = {
                                 'width': '95%',
                                 'margin-left': '2.5%', 
                                 'margin-bottom': '2.5%'  
                                 }),
 
-                    ],id = 'aggregation_details',
+                    ],id = 'aggregation_details_menu',
                     hidden = True,
                     style = {
                         'borderWidth': '1px',

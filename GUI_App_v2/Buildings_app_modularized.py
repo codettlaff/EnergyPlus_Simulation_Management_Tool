@@ -768,7 +768,7 @@ def agg_populate_available_variables_dropdown(variables_menu_hidden, variables_p
     else: return []
 
 @app.callback(
-    Output('aggregation_details', 'hidden'),
+    Output('aggregation_details_menu', 'hidden'),
     Input('agg_input_variables_pickle_filepath', 'data'),
     Input('agg_input_eio_pickle_filepath', 'data'),
     prevent_initial_call = True)
@@ -778,7 +778,7 @@ def unhide_aggregation_details_menu(variables_pickle_filepath, eio_pickle_filepa
 
 @app.callback(
     Output('agg_zone_list', 'options'),
-    Input('aggregation_details', 'hidden'),
+    Input('aggregation_details_menu', 'hidden'),
     State('agg_input_eio_pickle_filepath', 'data'),
     prevent_initial_call = True
 )
@@ -788,6 +788,44 @@ def agg_populate_available_zones_dropdown(aggregation_details_hidden, eio_pickle
         return zone_list
     else: return []
 
+@app.callback(
+    Output('aggregation_settings', 'data'),
+    Input('aggregate_to_selection', 'value'),
+    Input('custom_aggregation_zone_list', 'value'),
+    Input('aggregation_type', 'value'),
+    Input('agg_variable_all_or_select', 'value'),
+    Input('agg_variable_selection', 'value'),
+    State('agg_zone_list', 'options'),
+    State('agg_variables_selection', 'options'),
+    prevent_initial_call = True)
+def set_aggregation_settings(aggregate_to_selection, aggregation_zone_list, aggregation_type, agg_variable_button_selection, agg_variable_selection, zone_list, variable_list):
+
+    if agg_variable_button_selection == 1 and len(variable_list) > 0:
+        variable_selection = variable_list
+    elif agg_variable_button_selection == 2 and len(agg_variable_selection) > 0:
+        variable_selection = agg_variable_selection
+    else: return no_update
+
+    if aggregate_to_selection == 1 and zone_list is not None:
+        final_aggregation_zone_list = zone_list
+    elif aggregate_to_selection == 2 and aggregation_zone_list is not None:
+        split1 = aggregation_zone_list.split(';')
+        final_aggregation_zone_list = []
+        for list in split1:
+            split2 = list.split(',')
+            inner_list = []
+            for item in split2:
+                inner_list.append(item)
+            final_aggregation_zone_list.append(inner_list)
+    else: return no_update
+
+    aggregation_settings = {
+        'aggregation_zone_list': final_aggregation_zone_list,
+        'aggregation_type': aggregation_type,
+        'aggregation_variable_list': variable_selection
+    }
+
+    return aggregation_settings
 
 """
 
