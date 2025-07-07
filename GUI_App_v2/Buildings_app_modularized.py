@@ -269,16 +269,22 @@ def update_simulation_name(simulation_name):
 @app.callback(
     Output('building_details', 'hidden'),
     Output('upload_files', 'hidden'),
-    Input('data_source_selection', 'value')
+    Output('simulation_name', 'value'),
+    Input('data_source_selection', 'value'),
+    prevent_initial_call=True
 )
 def data_source_selection(selection):
     global DATA_IDF_FILEPATH
     global DATA_EPW_FILEPATH
     DATA_IDF_FILEPATH = None # Refresh
     DATA_EPW_FILEPATH = None # Refresh
-    if selection == 1: return False, True
-    elif selection == 2: return True, False
-    else: return True, True
+    if selection == 1: return False, True, no_update
+    elif selection == 2: return True, False, no_update
+    elif selection == 3:
+        DATA_IDF_FILEPATH = os.path.join(DATA_FOLDERPATH, 'Commercial_Prototypes', 'ASHRAE', '90_1_2013', 'ASHRAE901_OfficeSmall_STD2013_Seattle.idf')
+        DATA_EPW_FILEPATH = os.path.join(DATA_FOLDERPATH, 'TMY3_WeatherFiles_Commercial', 'USA_WA_Seattle-Tacoma.Intl.AP.727930_TMY3.epw')
+        return True, True, 'Seattle_OfficeSmall'
+    else: return True, True, no_update
 
 # PNNL Prototypes Drop-Down Menu
 @app.callback(

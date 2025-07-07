@@ -365,62 +365,31 @@ def get_db_settings(dbname):
     record_dict = record.to_dict()
     return record_dict
 
-"""
+########## Temporary Functions for Testing ##########
 
-def populate_existing_db_dropdown(selection):
-    # Only update the dropdown if "Select Database" was chosen (value = 2)
-    if selection != 2:
-        return []
+def delete_all_databases():
 
-    # Load database names from CSV
-    if not os.path.isfile(DATABASES_CSV_FILEPATH):
-        return []
+    conn = psycopg2.connect(
+        dbname="postgres",
+        user="Casey",
+        password="OfficeLarge",
+        host="localhost",
+        port=5432  # Replace with your target port
+    )
+    conn.autocommit = True
+    cursor = conn.cursor()
 
-    df = pd.read_csv(DATABASES_CSV_FILEPATH)
-    if "database_name" not in df.columns:
-        return []
-    dbnames = df["database_name"].dropna().unique().tolist()
-    return [{"label": name, "value": name} for name in dbnames]
+    cursor.execute("""
+        SELECT datname FROM pg_database
+        WHERE datname NOT IN ('postgres', 'template0', 'template1');
+    """)
+    databases = cursor.fetchall()
 
-def get_conn_from_dbname(database_name):
+    for (dbname,) in databases:
+        try:
+            cursor.execute(f"DROP DATABASE IF EXISTS {dbname};")
+            print(f"Deleted database: {dbname}")
+        except Exception as e:
+            print(f"Error deleting {dbname}: {e}")
 
-    db_settings = None
-    try:
-        df = pd.read_csv(DATABASES_CSV_FILEPATH)
-        record = df[df["database_name"] == database_name].iloc[0]
-
-        if record["port"] == "localhost":
-            conn = psycopg2.connect(
-                dbname=record["database_name"],
-                user=record["username"],
-                password=record["password"],
-                host="localhost"
-            )
-            db_settings = {
-                "dbname": record["database_name"],
-                "user": record["username"],
-                "password": record["password"],
-                "host": "localhost"
-            }
-        else:
-            conn = psycopg2.connect(
-                dbname=record["database_name"],
-                user=record["username"],
-                password=record["password"],
-                port=record["port"]
-            )
-            db_settings = {
-                "dbname": record["database_name"],
-                "user": record["username"],
-                "password": record["password"],
-                "post": record["port"]
-            }
-
-        conn.close()
-
-        print(f"Connected to {database_name}")
-        return db_settings
-    except Exception as e:
-        print(f"Could not 
-
-"""
+# delete_all_databases()

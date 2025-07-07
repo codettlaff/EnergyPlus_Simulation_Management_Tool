@@ -81,7 +81,8 @@ tab_layout=[
                         value = '1',
                         options = [
                             {'label' : " PNNL Prototypical Buildings", 'value' : 1},
-                            {'label' : " Upload Files", 'value' : 2}
+                            {'label' : " Upload Files", 'value' : 2},
+                            {'label': " Default IDF and EPW", 'value': 3},
                             ]  ,
                         className = 'ps-4 p-3',
                         style = {
