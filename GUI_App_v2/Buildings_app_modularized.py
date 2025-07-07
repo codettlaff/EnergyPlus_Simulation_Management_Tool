@@ -296,8 +296,12 @@ def data_source_selection(selection):
     if selection == 1: return False, True, no_update
     elif selection == 2: return True, False, no_update
     elif selection == 3:
-        DATA_IDF_FILEPATH = os.path.join(DATA_FOLDERPATH, 'Commercial_Prototypes', 'ASHRAE', '90_1_2013', 'ASHRAE901_OfficeSmall_STD2013_Seattle.idf')
-        DATA_EPW_FILEPATH = os.path.join(DATA_FOLDERPATH, 'TMY3_WeatherFiles_Commercial', 'USA_WA_Seattle-Tacoma.Intl.AP.727930_TMY3.epw')
+        data_idf_filepath = os.path.join(DATA_FOLDERPATH, 'Commercial_Prototypes', 'ASHRAE', '90_1_2013', 'ASHRAE901_OfficeSmall_STD2013_Seattle.idf')
+        data_epw_filepath = os.path.join(DATA_FOLDERPATH, 'TMY3_WeatherFiles_Commercial', 'USA_WA_Seattle-Tacoma.Intl.AP.727930_TMY3.epw')
+        DATA_IDF_FILEPATH = os.path.join(UPLOAD_DIRECTORY, os.path.basename(data_idf_filepath))
+        DATA_EPW_FILEPATH = os.path.join(UPLOAD_DIRECTORY, os.path.basename(data_epw_filepath))
+        shutil.copy(data_idf_filepath, DATA_IDF_FILEPATH)
+        shutil.copy(data_epw_filepath, DATA_EPW_FILEPATH)
         BUILDING_INFORMATION = default_building_information
         return True, True, 'Seattle_OfficeSmall'
     else: return True, True, no_update
@@ -491,10 +495,13 @@ def unhide_edit_schedules(generate_hidden, edit_selection, trigger1, trigger2):
     Input('EPGen_Radiobutton_EditSchedules', 'value'),
     Input('generate_variables_intial_run_eio_filepath', 'data'),
     Input('generate_variables_intial_run_rdd_filepath', 'data'),
+    Input('data_source_selection', 'data'),
     prevent_initial_call=True
 )
-def fill_schedule_dropdowns(edit_selection, trigger1, trigger2):
+def fill_schedule_dropdowns(edit_selection, trigger1, trigger2, data_source_selection):
     global INITIAL_RUN_EIO_FILEPATH, INITIAL_RUN_RDD_FILEPATH
+
+    if get_callback_id() == 'data_source_selection' and data_source_selection != 3: return no_update * 6
 
     if edit_selection != 1:
         return [no_update] * 6  # Only proceed if user wants to edit schedules
