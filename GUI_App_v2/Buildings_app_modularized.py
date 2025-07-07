@@ -757,14 +757,35 @@ def unhide_agg_variables_menu(upload_variables, upload_eio):
     else: return True
 
 @app.callback(
-    Output('agg_available_variables', 'options'),
+    Output('agg_variable_selection', 'options'),
     Input('agg_variables_menu', 'hidden'),
     State('agg_input_variables_pickle_filepath', 'data'),
     prevent_initial_call = True)
-def populate_avaiable_variables_dropdown(variables_menu_hidden, variables_pickle_filepath):
+def agg_populate_available_variables_dropdown(variables_menu_hidden, variables_pickle_filepath):
     if variables_menu_hidden == False:
         variables = EPAgg.get_variable_list(variables_pickle_filepath)
         return variables
+    else: return []
+
+@app.callback(
+    Output('aggregation_details', 'hidden'),
+    Input('agg_input_variables_pickle_filepath', 'data'),
+    Input('agg_input_eio_pickle_filepath', 'data'),
+    prevent_initial_call = True)
+def unhide_aggregation_details_menu(variables_pickle_filepath, eio_pickle_filepath):
+    if valid_filepath(variables_pickle_filepath) and valid_filepath(eio_pickle_filepath): return False
+    else: return True
+
+@app.callback(
+    Output('agg_zone_list', 'options'),
+    Input('aggregation_details', 'hidden'),
+    State('agg_input_eio_pickle_filepath', 'data'),
+    prevent_initial_call = True
+)
+def agg_populate_available_zones_dropdown(aggregation_details_hidden, eio_pickle_filepath):
+    if aggregation_details_hidden == False:
+        zone_list = EPAgg.get_zone_list(eio_pickle_filepath)
+        return zone_list
     else: return []
 
 

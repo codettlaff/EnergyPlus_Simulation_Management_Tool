@@ -125,7 +125,7 @@ tab_layout =[
                             className = 'text-left ms-4'),
                         dcc.Dropdown(['Var1','Var2','Var3'], '',
                             multi = True,
-                            id='agg_available_variables',
+                            id='agg_variable_selection',
                             style = {
                                 'width': '95%',
                                 'margin-left': '2.5%',
@@ -152,10 +152,10 @@ tab_layout =[
                     html.Div([
 
                         # Zone selection
-                        html.Label("Zone Lists",
+                        html.Label("Available Zones",
                             className = 'text-left ms-4 mt-1'),
                         dcc.Dropdown(['Zone list 1','Zone list 2','Zone list 3'], '',
-                            id='EPAgg_DropDown_ZoneList',
+                            id='agg_zone_list',
                             style = {
                                 'width': '95%',
                                 'margin-left': '2.5%',   
@@ -197,7 +197,7 @@ tab_layout =[
                                 'margin-bottom': '2.5%'  
                                 }),
 
-                    ],id = 'EPAgg_Div_AggregationDetails',
+                    ],id = 'aggregation_details',
                     hidden = True,
                     style = {
                         'borderWidth': '1px',
@@ -268,6 +268,12 @@ def get_variable_list(variables_pickle_filepath):
         if key != 'DateTime_List': variables_list.append(key)
 
     return variables_list
+
+def get_zone_list(eio_pickle_filepath):
+
+    with open(eio_pickle_filepath, 'rb') as f: eio_dict = pickle.load(f)
+    zone_list = list(eio_dict['Zone Information'][eio_dict['Zone Information']['  Part of Total Building Area']  == 'Yes']['Zone Name'])
+    return zone_list
 
 """
 
@@ -414,11 +420,7 @@ def EPAgg_RadioButton_AggregationVariables_Interaction_Function(InputSelection, 
 
     return pre_list, custom_list, zone_list
 
-def get_zone_list(eio_pickle_filepath):
 
-    with open(eio_pickle_filepath, 'rb') as f: eio_dict = pickle.load(f)
-    zone_list = list(eio_dict['Zone Information'][eio_dict['Zone Information']['  Part of Total Building Area']  == 'Yes']['Zone Name'])
-    return zone_list
 
 def EPAgg_DropDown_TypeOfAggregation_Interaction_Function(value):
 
