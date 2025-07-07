@@ -446,7 +446,7 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_va
                     CurrentLevel_List = []
 
                     # Creating Current_VariableName_1
-                    Current_Aggregation_VariableName_1 = variable_name.split(' ')[0] + '_' + variable_name.split(' ')[1] + ".csv"
+                    Current_Aggregation_VariableName_1 = variable_name.split(' ')[0] + ' ' + variable_name.split(' ')[1]
 
                     # Get Current_Element
                     Current_Element = variable_name.split(' ')[2]
@@ -474,7 +474,7 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_va
                     Current_EIO_Dict_DF = Eio_OutputFile_Dict[Current_EIO_Dict_Key]
 
                     # Getting Current_Aggregation_Variable from IDF_OutputVariable_Dict
-                    Current_Aggregation_Variable = IDF_OutputVariable_Dict[key]
+                    Current_Aggregation_Variable = IDF_OutputVariable_Dict[Current_Aggregation_VariableName_1]
 
                     #  Getting Current_Aggregation_Variable_ColName_List
                     Current_Aggregation_Variable_ColName_List = Current_Aggregation_Variable.columns
@@ -491,14 +491,14 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_va
                         # Un-Elegant Solution: when we run into non-thermal zones, we skip them.
                         try:
                             ColName2 = str(
-                                Current_EIO_Dict_DF[Current_EIO_Dict_DF['Zone Name'] == ColName1]['Schedule Name'].iloc[
+                                Current_EIO_Dict_DF[Current_EIO_Dict_DF['Zone Name'] == ColName1.strip()]['Schedule Name'].iloc[
                                     0])
                             # Appending ColName2 to Current_DF_Cols_Desired
                             Current_DF_Cols_Desired.append(ColName2)
 
                             # Getting Equipment Level
                             Current_EquipmentLevel = float(
-                                Current_EIO_Dict_DF[Current_EIO_Dict_DF['Zone Name'] == ColName1][
+                                Current_EIO_Dict_DF[Current_EIO_Dict_DF['Zone Name'] == ColName1.strip()][
                                     Current_EIO_Dict_Key_Level_ColName].iloc[0])
 
                             # Appending Current_EquipmentLevel to CurrentLevel_List
@@ -518,11 +518,9 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_va
                                 ColName4)
 
                     # Filling Aggregation_Dict with Current_Aggregation_Variable and Current_EIO_Dict_Key_Level
-                    Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = \
-                    Current_Aggregation_Variable[Current_DF_Cols_Desired_Corrected].mean(1)
+                    Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = Current_Aggregation_Variable[Current_DF_Cols_Desired_Corrected].mean(1)
 
-                    Aggregation_Dict[Aggregated_Zone_Name_2][Current_EIO_Dict_Key_Level] = pd.DataFrame(
-                        np.array([sum(CurrentLevel_List) / len(CurrentLevel_List)]))
+                    Aggregation_Dict[Aggregated_Zone_Name_2][Current_EIO_Dict_Key_Level] = pd.DataFrame(np.array([sum(CurrentLevel_List) / len(CurrentLevel_List)]))
 
                 except Exception as e:
                     print(e)
