@@ -75,6 +75,16 @@ BUILDING_INFORMATION = {
     "foundation_type": None,
     "building_id": None
 }
+default_building_information = {
+    "building_type": "Commercial",
+    "prototype": "OfficeSmall",
+    "energy_code": "ASHRAE2013",
+    "idf_climate_zone": "4C",
+    "idf_location": "Seattle",
+    "heating_type": None,
+    "foundation_type": None,
+    "building_id": None
+}
 
 RESULTS_FILEPATHS = {
     'variables_pickle_filepath': None,
@@ -274,15 +284,16 @@ def update_simulation_name(simulation_name):
     prevent_initial_call=True
 )
 def data_source_selection(selection):
-    global DATA_IDF_FILEPATH
-    global DATA_EPW_FILEPATH
+    global DATA_IDF_FILEPATH, DATA_EPW_FILEPATH, BUILDING_INFORMATION
     DATA_IDF_FILEPATH = None # Refresh
     DATA_EPW_FILEPATH = None # Refresh
+    BUILDING_INFORMATION = None # Refresh
     if selection == 1: return False, True, no_update
     elif selection == 2: return True, False, no_update
     elif selection == 3:
         DATA_IDF_FILEPATH = os.path.join(DATA_FOLDERPATH, 'Commercial_Prototypes', 'ASHRAE', '90_1_2013', 'ASHRAE901_OfficeSmall_STD2013_Seattle.idf')
         DATA_EPW_FILEPATH = os.path.join(DATA_FOLDERPATH, 'TMY3_WeatherFiles_Commercial', 'USA_WA_Seattle-Tacoma.Intl.AP.727930_TMY3.epw')
+        BUILDING_INFORMATION = default_building_information
         return True, True, 'Seattle_OfficeSmall'
     else: return True, True, no_update
 
@@ -353,15 +364,7 @@ def upload_idf(filename, content):
     except Exception as e:
         return "Upload Failed", None
 
-# Version Selection
-@app.callback(
-    Input(component_id = 'version_selection', component_property = 'value'),
-    prevent_initial_call = True)
-def EPGen_Dropdown_EPVersion_Interaction(version_selection):
-    global SIMULATION_SETTINGS
-    SIMULATION_SETTINGS['ep_version'] = version_selection
-
-# Unhide Simulation Details
+# Callback triggered by change in IDF and EPW filepath.
 @app.callback(
     Output('simulation_details', 'hidden'),
     Input('pnnl_prototype_idf_filepath', 'data'),
@@ -378,6 +381,7 @@ def unhide_simulation_details(val1, val2, val3, val4, val5):
     if DATA_IDF_FILEPATH is not None and DATA_EPW_FILEPATH is not None:
         if os.path.exists(DATA_IDF_FILEPATH) and os.path.exists(DATA_EPW_FILEPATH): return False
     else: return True
+
 
 # Simulation Details
 @app.callback(
