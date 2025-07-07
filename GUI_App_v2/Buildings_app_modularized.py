@@ -692,6 +692,7 @@ def unhide_upload_files(value):
 # Upload Variables Pickle
 @app.callback(
     Output('agg_upload_variables_pickle', 'children'),
+    Output('upload_variable_pickle_filepath', 'data'),
     Input('agg_upload_variables_pickle', 'filename'),
     Input('agg_upload_variables_pickle', 'contents'),
     prevent_initial_call = True)
@@ -705,13 +706,14 @@ def agg_upload_variables_pickle(filename, contents):
             fp.write(base64.decodebytes(data))
         RESULTS_FILEPATHS['variables_pickle_filepath'] = upload_filepath
         short_name = filename[:20] + "..." if len(filename) > 10 else filename
-        return f"Uploaded {short_name}"
+        return f"Uploaded {short_name}", upload_filepath
     except Exception as e:
         return "Upload Failed", None
 
 # Upload EIO Pickle Filepath
 @app.callback(
     Output('agg_upload_eio_pickle', 'children'),
+    Output('upload_eio_pickle_filepath', 'data'),
     Input('agg_upload_eio_pickle', 'filename'),
     Input('agg_upload_eio_pickle', 'contents'),
     prevent_initial_call = True)
@@ -725,9 +727,35 @@ def agg_upload_eio_pickle(filename, contents):
             fp.write(base64.decodebytes(data))
         RESULTS_FILEPATHS['eio_pickle_filepath'] = upload_filepath
         short_name = filename[:20] + "..." if len(filename) > 10 else filename
-        return f"Uploaded {short_name}"
+        return f"Uploaded {short_name}", upload_filepath
     except Exception as e:
         return "Upload Failed", None
+
+# Set Inputs Filepaths for Aggregation
+@app.callback(
+    Output('agg_input_variables_pickle_filepath', 'data'),
+    Output('agg_input_eio_pickle_filepath', 'data'),
+    Input('upload_variable_pickle_filepath', 'data'),
+    Input('upload_eio_pickle_filepath', 'data'),
+    State('agg_input_selection', 'value'),
+    prevent_initial_call = True
+)
+def agg_set_input_filepaths(upload_variables, upload_eio, input_selection):
+    if input_selection == 2 and valid_filepath(RESULTS_FILEPATHS['variables_pickle_filepath']) and valid_filepath(RESULTS_FILEPATHS['eio_pickle_filepath']):
+        return RESULTS_FILEPATHS['variables_pickle_filepath'], RESULTS_FILEPATHS['eio_pickle_filepath']
+    elif input_selection == 1 and valid_filepath(upload_variables) and valid_filepath(upload_eio):
+        return upload_variables, upload_eio
+    else: return None, None
+
+@app.callback(
+    Output('agg_variables_menu', 'hidden'),
+    Input('agg_input_variables_pickle_filepath', 'data'),
+    Input('agg_input_eio_pickle_filepath', 'data'),
+    preevent_initial_call = True)
+def unhide_agg_variables_menu(upload_variables, upload_eio):
+    if valid_filepath(upload_variables) and valid_filepath(upload_eio): return False
+    else: return True
+
 
 """
 

@@ -40,7 +40,8 @@ tab_layout =[
 
                 # First Column
                 dbc.Col([
-
+                    dcc.Store(id='agg_input_variables_pickle_filepath'),
+                    dcc.Store(id='agg_input_eio_pickle_filepath'),
                     # Input selection
                     dcc.RadioItems(
                     id = 'agg_input_selection',
@@ -63,7 +64,8 @@ tab_layout =[
 
                     # Box 2 C1
                     html.Div([
-
+                        dcc.Store(id='upload_variable_pickle_filepath', data=None),
+                        dcc.Store(id='upload_eio_pickle_filepath', data=None),
                         # Upload Pickled Variable file
                         dcc.Upload(['Upload Pickled Variable file'],
                             className = 'center',
@@ -130,7 +132,7 @@ tab_layout =[
                                 'margin-bottom': '2.5%'
                                 }),
 
-                    ],id = 'EPAgg_Div_AggregationVariables',
+                    ],id = 'agg_variables_menu',
                     hidden = True,
                     style = {
                         'borderWidth': '1px',
