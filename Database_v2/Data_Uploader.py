@@ -406,7 +406,9 @@ def populate_simulations_table(conn, building_id, simulation_name='Unnamed Simul
                 """
                 INSERT INTO simulations (simulation_name, building_id, epw_climate_zone, time_resolution)
                 VALUES (%s, %s, %s, %s)
-                RETURNING id
+                ON CONFLICT (simulation_name, building_id, epw_climate_zone, time_resolution)
+                DO UPDATE SET simulation_name = EXCLUDED.simulation_name
+                RETURNING id;
                 """,
                 (simulation_name, building_id, epw_climate_zone, time_resolution)
             )
@@ -775,7 +777,8 @@ def upload_time_series_data(conn, data_dict, simulation_name, simulation_setting
                     # Insert data using executemany for efficiency
                     insert_query = """
                                 INSERT INTO timeseriesdata (variable_id, datetime_id, value)
-                                VALUES (%s, %s, %s);
+                                VALUES (%s, %s, %s)
+                                ON CONFLICT DO NOTHING;
                                 """
 
                     cursor.executemany(insert_query, data_to_insert)
