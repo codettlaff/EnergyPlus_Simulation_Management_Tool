@@ -284,10 +284,15 @@ def update_simulation_name(simulation_name):
     prevent_initial_call=True
 )
 def data_source_selection(selection):
-    global DATA_IDF_FILEPATH, DATA_EPW_FILEPATH, BUILDING_INFORMATION
+    global DATA_IDF_FILEPATH, DATA_EPW_FILEPATH, BUILDING_INFORMATION, RESULTS_FILEPATHS
     DATA_IDF_FILEPATH = None # Refresh
     DATA_EPW_FILEPATH = None # Refresh
     BUILDING_INFORMATION = None # Refresh
+    RESULTS_FILEPATHS = {
+        'variables_pickle_filepath': None,
+        'eio_pickle_filepath': None,
+        'aggregated_pickle_filepath': None
+    } # Refresh
     if selection == 1: return False, True, no_update
     elif selection == 2: return True, False, no_update
     elif selection == 3:
@@ -586,8 +591,9 @@ def update_schedule(n_clicks, schedule_name, schedule_input):
     Input('pnnl_prototype_idf_filepath', 'data'),
     Input('pnnl_prototype_weather_filepath', 'data'),
     Input('gen_simulation_settings', 'data'),
+    Input('data_source_selection', 'value'), # Refreshes Everything
     prevent_initial_call = True)
-def unhide_generate_data_button(trig1, trig2, trig3, trig4, trig5):
+def unhide_generate_data_button(trig1, trig2, trig3, trig4, trig5, data_source_selection):
     if valid_filepath(DATA_IDF_FILEPATH) and valid_filepath(DATA_EPW_FILEPATH):
         for key, value in SIMULATION_SETTINGS.items():
             if key == 'ep_version' or (value is not None and value != '' and value != []):
@@ -617,9 +623,10 @@ def generate_data(n_clicks):
     Output('download_eio_pickle_button', 'hidden'),
     Output('upload_to_db_button', 'hidden'),
     Input('results_filepaths', 'data'),
+    Input('data_source_selection', 'value'), # Refreshes Everything
     prevent_initial_call = True
 )
-def unhide_download_buttons(results_filepaths):
+def unhide_download_buttons(results_filepaths, trig):
     global RESULTS_FILEPATHS
     if RESULTS_FILEPATHS['variables_pickle_filepath'] is not None and RESULTS_FILEPATHS['eio_pickle_filepath'] is not None:
         return False, False, False
