@@ -756,6 +756,17 @@ def unhide_agg_variables_menu(upload_variables, upload_eio):
     if valid_filepath(upload_variables) and valid_filepath(upload_eio): return False
     else: return True
 
+@app.callback(
+    Output('agg_available_variables', 'options'),
+    Input('agg_variables_menu', 'hidden'),
+    State('agg_input_variables_pickle_filepath', 'data'),
+    prevent_initial_call = True)
+def populate_avaiable_variables_dropdown(variables_menu_hidden, variables_pickle_filepath):
+    if variables_menu_hidden == False:
+        variables = EPAgg.get_variable_list(variables_pickle_filepath)
+        return variables
+    else: return []
+
 
 """
 

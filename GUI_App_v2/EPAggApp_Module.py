@@ -121,11 +121,11 @@ tab_layout =[
                             className = 'ps-4 p-3',
                         ),
 
-                        html.Label("Preselected Variables",
+                        html.Label("Available Variables",
                             className = 'text-left ms-4'),
                         dcc.Dropdown(['Var1','Var2','Var3'], '',
                             multi = True,
-                            id='EPAgg_DropDown_PreselectedVariables',
+                            id='agg_available_variables',
                             style = {
                                 'width': '95%',
                                 'margin-left': '2.5%',
@@ -260,6 +260,15 @@ tab_layout =[
             
 ]
 
+def get_variable_list(variables_pickle_filepath):
+
+    variables_list = []
+    with open(variables_pickle_filepath, 'rb') as f: data_dict = pickle.load(f)
+    for key, value in data_dict.items():
+        if key != 'DateTime_List': variables_list.append(key)
+
+    return variables_list
+
 """
 
 def EPAgg_RadioButton_InputSelection_Interaction_Function(value):
@@ -323,14 +332,7 @@ def EPAgg_DropDown_AggregationVariables_Interaction_Function(selection, value):
 
     return div
 
-def get_variable_list(variables_pickle_filepath):
 
-    variables_list = []
-    with open(variables_pickle_filepath, 'rb') as f: data_dict = pickle.load(f)
-    for key, value in data_dict.items():
-        if key != 'DateTime_List': variables_list.append(key)
-
-    return variables_list
 
 def EPAgg_RadioButton_AggregationVariables_Interaction_Function(InputSelection, VariableSelection):
 
