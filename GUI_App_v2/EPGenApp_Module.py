@@ -131,22 +131,6 @@ tab_layout=[
                                 'margin': '5%',
                                 }),
 
-                        # Version selection
-                        dbc.Stack([
-                            html.Label("Energy Plus Version:",
-                                className = 'text'),
-                            dcc.Dropdown(['8.0.0','9.0.0','22.0.0','23.0.0'], '',
-                                id='version_selection',
-                                style = {
-                                    'width':'60%',
-                                    'margin-left':'8%'
-                                }),
-                            ],direction="horizontal",
-                            style = {
-                                'width': '90%',
-                                'margin': '5%',
-                                }),
-
                         ],id = 'upload_files',
                         hidden = True,
                         style = {
