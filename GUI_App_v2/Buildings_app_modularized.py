@@ -881,6 +881,14 @@ def agg_download_pickle(n_clicks, aggregation_pickle_filepath):
         return 'Pickle File Downloaded', dcc.send_file(aggregation_pickle_filepath)
     else: return 'Download Failed', no_update
 
+@app.callback(
+    Output('simulation_info_box', 'hidden'),
+    Input('aggregation_pickle_filepath', 'data'),
+)
+def unhide_simulation_info_box(aggregation_pickle_filepath):
+    if valid_filepath(aggregation_pickle_filepath): return False
+    else: return True
+
 # Upload to DB Button
 @app.callback(
     Output('agg_upload_to_db_button', 'children'),

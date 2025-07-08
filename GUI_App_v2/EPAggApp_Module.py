@@ -247,7 +247,19 @@ tab_layout =[
                                 },),
                         dcc.Download(id = 'agg_download_files'),
 
-                        dcc.Input(
+
+                    ],id = 'aggregation_final_box',
+                    hidden = True,
+                    style = {
+                        'borderWidth': '1px',
+                        'borderStyle': 'solid',
+                        'borderRadius': '5px',
+                        },),
+
+                    # Simulation Information Box
+                    html.Div(
+                        children=[
+                            dcc.Input(
                             id='agg_simulation_name',
                             type='text',
                             value='',
@@ -261,13 +273,27 @@ tab_layout =[
                                 'font-size': '24px'
                                 },),
 
-                    ],id = 'aggregation_final_box',
-                    hidden = True,
-                    style = {
-                        'borderWidth': '1px',
-                        'borderStyle': 'solid',
-                        'borderRadius': '5px',
-                        },),
+                        dcc.RadioItems(
+                            id = 'agg_upload_to_db_custom_or_no',
+                            labelStyle = {'display': 'block'},
+                            options = [
+                                {'label' : " Custom Building", 'value' : 1},
+                                {'label' : " Find Building in Database", 'value' : 2}
+                                ]  ,
+                            value = 1,
+                            className = 'ps-4 p-3',
+                        ),
+                        ],
+                        hidden=True,
+                        style={
+                            'borderWidth': '1px',
+                            'borderStyle': 'solid',
+                            'borderRadius': '5px',
+                            'padding': '10px',
+                            'margin': '10px 0',
+                        },
+                        id='simulation_info_box'  # optional: add an ID if you'll reference it in callbacks
+                    ),
 
                     html.Br(),
 
