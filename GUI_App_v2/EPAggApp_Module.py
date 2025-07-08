@@ -152,7 +152,8 @@ tab_layout =[
                     html.Div([
                         dcc.Store(id='aggregation_settings', data={
                             'aggregation_zone_list': [[]],
-                            'aggregation_type': None
+                            'aggregation_type': None,
+                            'aggregation_variable_list': []
                         }),
                         # Zone selection
                         html.Label("Available Zones",
@@ -180,7 +181,7 @@ tab_layout =[
                         dcc.Textarea(
                             id='custom_aggregation_zone_list',
                             placeholder="zone_1,zone_2,zone_3;zone_4,zone_5,zone_6",
-                            value=None,
+                            value='',
                             style={'width': '90%',
                                    'margin-left':'5%',
                                    'height': 30},

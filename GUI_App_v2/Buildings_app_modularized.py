@@ -796,7 +796,7 @@ def agg_populate_available_zones_dropdown(aggregation_details_hidden, eio_pickle
     Input('agg_variable_all_or_select', 'value'),
     Input('agg_variable_selection', 'value'),
     State('agg_zone_list', 'options'),
-    State('agg_variables_selection', 'options'),
+    State('agg_variable_selection', 'options'),
     prevent_initial_call = True)
 def set_aggregation_settings(aggregate_to_selection, aggregation_zone_list, aggregation_type, agg_variable_button_selection, agg_variable_selection, zone_list, variable_list):
 
@@ -809,14 +809,17 @@ def set_aggregation_settings(aggregate_to_selection, aggregation_zone_list, aggr
     if aggregate_to_selection == 1 and zone_list is not None:
         final_aggregation_zone_list = zone_list
     elif aggregate_to_selection == 2 and aggregation_zone_list is not None:
-        split1 = aggregation_zone_list.split(';')
-        final_aggregation_zone_list = []
-        for list in split1:
-            split2 = list.split(',')
-            inner_list = []
-            for item in split2:
-                inner_list.append(item)
-            final_aggregation_zone_list.append(inner_list)
+        try:
+            split1 = aggregation_zone_list.split(';')
+            final_aggregation_zone_list = []
+            for list in split1:
+                split2 = list.split(',')
+                inner_list = []
+                for item in split2:
+                    inner_list.append(item)
+                final_aggregation_zone_list.append(inner_list)
+        except Exception as e:
+            final_aggregation_zone_list = [[]]
     else: return no_update
 
     aggregation_settings = {
