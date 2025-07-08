@@ -23,7 +23,7 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_va
         Aggregation_File_Name = 'Aggregation_Dict_OneZone.pickle'
     else:
         Aggregation_Zone_List = aggregation_zone_list
-        Aggregation_File_Name = 'Aggregation_Dict_Custom.pickle'
+        Aggregation_File_Name = 'Aggregation_Dict.pickle'
 
     Aggregation_Zone_NameStem = 'Aggregation_Zone'
 

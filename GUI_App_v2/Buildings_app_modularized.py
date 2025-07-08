@@ -870,6 +870,17 @@ def unhide_db_upload_download_buttons(aggregation_pickle_filepath):
     if valid_filepath(aggregation_pickle_filepath): return False, False
     else: return True, True
 
+@app.callback(
+    Output('agg_download_button', 'children'),
+    Output('agg_download_files', 'data'),
+    Input('agg_download_button', 'n_clicks'),
+    State('aggregation_pickle_filepath', 'data'),
+    prevent_initial_call = True
+)
+def agg_download_pickle(n_clicks, aggregation_pickle_filepath):
+    if valid_filepath(aggregation_pickle_filepath):
+        return 'Pickle File Downloaded', dcc.send_file(aggregation_pickle_filepath)
+    else: return 'Download Failed', no_update
 
 """
 

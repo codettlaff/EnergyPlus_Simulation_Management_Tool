@@ -243,7 +243,7 @@ tab_layout =[
                                 'margin-left':'5%',
                                 'margin-bottom':'5%'
                                 },),
-                        dcc.Download(id = 'EPAgg_Download_DownloadFiles'),
+                        dcc.Download(id = 'agg_download_files'),
 
                     ],id = 'aggregation_final_box',
                     hidden = True,
