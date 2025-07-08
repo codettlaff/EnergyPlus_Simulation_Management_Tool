@@ -882,6 +882,15 @@ def agg_download_pickle(n_clicks, aggregation_pickle_filepath):
         return 'Pickle File Downloaded', dcc.send_file(aggregation_pickle_filepath)
     else: return 'Download Failed', no_update
 
+# Upload to DB Button
+@app.callback(
+    Output('agg_upload_to_db_button', 'children'),
+    Input('agg_upload_to_db_button', 'n_clicks'),
+    prevent_initial_call = True
+)
+def upload_to_db(n_clicks):
+    pass
+
 """
 
 

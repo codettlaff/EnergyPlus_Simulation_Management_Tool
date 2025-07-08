@@ -12,7 +12,7 @@ import re
 import datetime
 import pickle
 import copy
-from datetime import date
+from datetime import date, timedelta
 from dash import Dash, dcc, html, Input, Output, State, dash_table
 import pandas as pd
 import numpy as np
@@ -27,12 +27,14 @@ import MyDashApp_Module as AppFuncs
 
 database_dir = os.path.join(os.path.dirname(__file__), '..', 'Database')
 sys.path.append(database_dir)
-import Database_Creator as DB_Creator
-import Data_Uploader as DB_Uploader
+import Database_Creator as db_creator
+import Data_Uploader as db_uploader
 
 database_generation_dir = os.path.join(os.path.dirname(__file__), '..', 'Data_Generation')
 sys.path.append(database_generation_dir)
 import EP_DataAggregation_v2_20250619 as EP_Agg
+
+import PSQLApp_Module as psql
 
 tab_layout =[
     
@@ -245,6 +247,20 @@ tab_layout =[
                                 },),
                         dcc.Download(id = 'agg_download_files'),
 
+                        dcc.Input(
+                            id='agg_simulation_name',
+                            type='text',
+                            value='',
+                            placeholder='Enter Simulation Name',
+                            className="center-placeholder center-input",
+                            style={
+                                'width':'100%',
+                                'height':'50px',
+                                'margin':'0%',
+                                'text-align': 'center',
+                                'font-size': '24px'
+                                },),
+
                     ],id = 'aggregation_final_box',
                     hidden = True,
                     style = {
@@ -290,6 +306,49 @@ def aggregate_data(aggregation_settings, variables_pickle_filepath, eio_pickle_f
     aggregation_zone_list = aggregation_settings['aggregation_zone_list']
     aggregation_pickle_filepath = EP_Agg.aggregate_data(variables_pickle_filepath, eio_pickle_filepath, variable_list, aggregation_type, aggregation_zone_list)
     return aggregation_pickle_filepath
+
+def upload_to_db(conn, simulation_name, epw_filepath, aggregation_pickle_filepath, building_id, simulation_settings, zones_df):
+
+    start_datetime = datetime.datetime(
+        simulation_settings["idf_year"],
+        simulation_settings["start_month"],
+        simulation_settings["start_day"]
+    )
+    start_datetime = start_datetime + datetime.timedelta(minutes=simulation_settings["timestep_minutes"])
+    end_datetime = datetime.datetime(
+        simulation_settings["idf_year"],
+        simulation_settings["end_month"],
+        simulation_settings["end_day"]
+    )
+    end_datetime = end_datetime + datetime.timedelta(days=1)
+    time_resolution = simulation_settings["timestep_minutes"]
+
+    db_uploader.populate_datetimes_table(conn, base_time_resolution=1, start_datetime=start_datetime,
+                                         end_datetime=end_datetime)
+
+    # If building_id = None, the user uploaded pickle files rather than continuing session
+    # Insert new 'custom' building into the buildings table
+    # retrieve simulation settings from the aggregation pickle file
+    building_id = db_uploader.upload_custom_building(conn)
+
+    with open(aggregation_pickle_filepath, "rb") as f: data_dict = pickle.load(f)
+
+    # Get EPW Climate Zone
+    if epw_filepath is not None:
+        location = db_uploader.get_location_from_epw_filepath(os.path.basename(epw_filepath))
+        epw_climate_zone = db_uploader.get_climate_zone(location)
+    else: epw_climate_zone = 'NA'
+
+    if zones_df is not None:
+        aggregation_zones = {
+            "Aggregated Zone": zones_df
+        }
+    else: aggregation_zones = None
+
+    zones_df = db_uploader.upload_time_series_data(conn, data_dict, simulation_name, simulation_settings, building_id,
+                                        epw_climate_zone, time_resolution, aggregation_zones)
+
+    return ('Data Uploaded')
 
 """
 
