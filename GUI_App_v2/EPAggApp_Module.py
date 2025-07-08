@@ -226,7 +226,7 @@ tab_layout =[
                                 },),
 
                         html.Button('Upload to Database',
-                            id = 'EPAgg_Button_UploadtoDb',
+                            id = 'agg_upload_to_db_button',
                             hidden = True,
                             className = "btn btn-secondary btn-lg col-12",
                             style = {
@@ -235,7 +235,7 @@ tab_layout =[
                                 },),
 
                         html.Button('Download',
-                            id = 'EPAgg_Button_Download',
+                            id = 'agg_download_button',
                             hidden = True,
                             className = "btn btn-primary btn-lg col-12",
                             style = {
