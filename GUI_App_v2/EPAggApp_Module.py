@@ -346,7 +346,16 @@ def aggregate_data(aggregation_settings, variables_pickle_filepath, eio_pickle_f
     aggregation_pickle_filepath = EP_Agg.aggregate_data(variables_pickle_filepath, eio_pickle_filepath, variable_list, aggregation_type, aggregation_zone_list)
     return aggregation_pickle_filepath
 
-def upload_to_db(conn, simulation_name, epw_filepath, aggregation_pickle_filepath, building_id, simulation_settings, zones_df):
+def upload_to_db(db_settings, aggregation_pickle_filepath, sim_name, custom_or_no, building_id):
+
+    conn = psql.connect(db_settings)
+    with open(aggregation_pickle_filepath, "rb") as f: data_dict = pickle.load(f)
+
+    # get start time, end time, time resolution from aggregation_pickle_file
+
+
+
+def old_upload_to_db(conn, simulation_name, epw_filepath, aggregation_pickle_filepath, building_id, simulation_settings, zones_df):
 
     start_datetime = datetime.datetime(
         simulation_settings["idf_year"],
@@ -388,6 +397,8 @@ def upload_to_db(conn, simulation_name, epw_filepath, aggregation_pickle_filepat
                                         epw_climate_zone, time_resolution, aggregation_zones)
 
     return ('Data Uploaded')
+
+
 
 """
 

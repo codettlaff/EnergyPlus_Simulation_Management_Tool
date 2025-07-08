@@ -881,6 +881,7 @@ def agg_download_pickle(n_clicks, aggregation_pickle_filepath):
         return 'Pickle File Downloaded', dcc.send_file(aggregation_pickle_filepath)
     else: return 'Download Failed', no_update
 
+# Unhide Simulation Informaiton Box
 @app.callback(
     Output('simulation_info_box', 'hidden'),
     Input('aggregation_pickle_filepath', 'data'),
@@ -893,10 +894,14 @@ def unhide_simulation_info_box(aggregation_pickle_filepath):
 @app.callback(
     Output('agg_upload_to_db_button', 'children'),
     Input('agg_upload_to_db_button', 'n_clicks'),
+    State('aggregation_pickle_filepath', 'data'),
+    State('agg_simulation_name', 'value'),
+    State('agg_upload_to_db_custom_or_no'),
+    State('agg_building_id', 'value'),
     prevent_initial_call = True
 )
-def upload_to_db(n_clicks):
-    pass
+def upload_to_db(n_clicks, aggregation_pickle_filepath, sim_name, custom_or_no, building_id):
+    EPAgg.upload_to_db(DB_SETTINGS, aggregation_pickle_filepath, sim_name, custom_or_no, building_id)
 
 """
 
