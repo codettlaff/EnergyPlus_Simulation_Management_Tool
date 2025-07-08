@@ -830,6 +830,17 @@ def set_aggregation_settings(aggregate_to_selection, aggregation_zone_list, aggr
 
     return aggregation_settings
 
+@app.callback(
+    Output('aggregate_data_button', 'hidden'),
+    Output('aggregation_final_box', 'hidden'),
+    Input('aggregation_settings', 'data'),
+    prevent_initial_call = True
+)
+def unhide_aggregate_data_button(aggregation_settings):
+    if aggregation_settings['aggregation_zone_list'] != [[]] and aggregation_settings['aggregation_variable_list'] != [] and aggregation_settings['aggregation_type'] is not None:
+        return False, False
+    else: return True, True
+
 """
 
 

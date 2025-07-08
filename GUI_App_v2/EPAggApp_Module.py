@@ -117,13 +117,13 @@ tab_layout =[
                                 {'label' : " All Variables", 'value' : 1},
                                 {'label' : " Select Variables", 'value' : 2}
                                 ]  ,
-                            value = 1,
+                            value = 2,
                             className = 'ps-4 p-3',
                         ),
 
                         html.Label("Available Variables",
                             className = 'text-left ms-4'),
-                        dcc.Dropdown(['Var1','Var2','Var3'], '',
+                        dcc.Dropdown([], '',
                             multi = True,
                             id='agg_variable_selection',
                             style = {
@@ -158,7 +158,7 @@ tab_layout =[
                         # Zone selection
                         html.Label("Available Zones",
                             className = 'text-left ms-4 mt-1'),
-                        dcc.Dropdown(['Zone list 1','Zone list 2','Zone list 3'], '',
+                        dcc.Dropdown([], '',
                             id='agg_zone_list',
                             style = {
                                 'width': '95%',
@@ -217,8 +217,9 @@ tab_layout =[
                     html.Div([
 
                         html.Button('Aggregate',
-                            id = 'EPAgg_Button_Aggregate',
+                            id = 'aggregate_data_button',
                             className = "btn btn-secondary btn-lg col-12",
+                            hidden = True,
                             style = {
                                 'width':'90%',
                                 'margin':'5%'
@@ -226,6 +227,7 @@ tab_layout =[
 
                         html.Button('Upload to Database',
                             id = 'EPAgg_Button_UploadtoDb',
+                            hidden = True,
                             className = "btn btn-secondary btn-lg col-12",
                             style = {
                                 'width':'90%',
@@ -234,6 +236,7 @@ tab_layout =[
 
                         html.Button('Download',
                             id = 'EPAgg_Button_Download',
+                            hidden = True,
                             className = "btn btn-primary btn-lg col-12",
                             style = {
                                 'width':'90%',
@@ -242,7 +245,7 @@ tab_layout =[
                                 },),
                         dcc.Download(id = 'EPAgg_Download_DownloadFiles'),
 
-                    ],id = 'EPAgg_Div_FinalDownload',
+                    ],id = 'aggregation_final_box',
                     hidden = True,
                     style = {
                         'borderWidth': '1px',
