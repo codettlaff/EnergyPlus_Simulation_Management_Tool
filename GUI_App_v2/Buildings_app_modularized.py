@@ -861,14 +861,13 @@ def aggregate_data(n_clicks, aggregation_settings, variables_pickle_filepath, ei
         return 'Aggregation Failed', no_update
 
 @app.callback(
-    Output('agg_upload_to_db_button', 'hidden'),
     Output('agg_download_button', 'hidden'),
     Input('aggregation_pickle_filepath', 'data'),
     prevent_initial_call = True
 )
-def unhide_db_upload_download_buttons(aggregation_pickle_filepath):
-    if valid_filepath(aggregation_pickle_filepath): return False, False
-    else: return True, True
+def unhide_download_buttons(aggregation_pickle_filepath):
+    if valid_filepath(aggregation_pickle_filepath): return False
+    else: return True
 
 @app.callback(
     Output('agg_download_button', 'children'),
