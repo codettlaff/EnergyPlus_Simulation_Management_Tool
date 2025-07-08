@@ -283,14 +283,27 @@ tab_layout =[
                             value = 1,
                             className = 'ps-4 p-3',
                         ),
+
+                        # Time-step selection
+                        dbc.Stack([
+                            html.Label("Building ID",
+                                       className='text'),
+                            daq.NumericInput(
+                                id='building_id',
+                                value=1,
+                                style={'margin-left': '28%'}
+                            ),
+                        ], direction="horizontal",
+                            style={'margin': '5%'}
+                        ),
+
                         ],
                         hidden=True,
                         style={
-                            'borderWidth': '1px',
-                            'borderStyle': 'solid',
-                            'borderRadius': '5px',
-                            'padding': '10px',
-                            'margin': '10px 0',
+                        'borderWidth': '1px',
+                        'borderStyle': 'solid',
+                        'borderRadius': '5px',
+                        'margin': '30px 0',
                         },
                         id='simulation_info_box'  # optional: add an ID if you'll reference it in callbacks
                     ),
