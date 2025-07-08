@@ -215,7 +215,7 @@ tab_layout =[
 
                     # Box 2 C2
                     html.Div([
-
+                        dcc.Store(id='aggregation_pickle_filepath', data=None),
                         html.Button('Aggregate',
                             id = 'aggregate_data_button',
                             className = "btn btn-secondary btn-lg col-12",
@@ -283,6 +283,13 @@ def get_zone_list(eio_pickle_filepath):
     with open(eio_pickle_filepath, 'rb') as f: eio_dict = pickle.load(f)
     zone_list = list(eio_dict['Zone Information'][eio_dict['Zone Information']['  Part of Total Building Area']  == 'Yes']['Zone Name'])
     return zone_list
+
+def aggregate_data(aggregation_settings, variables_pickle_filepath, eio_pickle_filepath):
+    variable_list = aggregation_settings['aggregation_variable_list']
+    aggregation_type = aggregation_settings['aggregation_type']
+    aggregation_zone_list = aggregation_settings['aggregation_zone_list']
+    aggregation_pickle_filepath = EP_Agg.aggregate_data(variables_pickle_filepath, eio_pickle_filepath, variable_list, aggregation_type, aggregation_zone_list)
+    return aggregation_pickle_filepath
 
 """
 

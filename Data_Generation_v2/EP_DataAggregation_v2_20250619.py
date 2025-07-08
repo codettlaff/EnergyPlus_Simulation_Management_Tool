@@ -22,6 +22,7 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_va
         Aggregation_Zone_List = [zone_list]
         Aggregation_File_Name = 'Aggregation_Dict_OneZone.pickle'
     else:
+        Aggregation_Zone_List = aggregation_zone_list
         Aggregation_File_Name = 'Aggregation_Dict_Custom.pickle'
 
     Aggregation_Zone_NameStem = 'Aggregation_Zone'
@@ -276,7 +277,7 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_va
 
                 try:
                     # Getting Current_Aggregation_Variable from IDF_OutputVariable_Dict
-                    Current_Aggregation_Variable = IDF_OutputVariable_Dict[variable_name[:-1]]
+                    Current_Aggregation_Variable = IDF_OutputVariable_Dict[variable_name]
 
                 except KeyError:
                     # Getting Current_Aggregation_Variable from IDF_OutputVariable_Dict
@@ -363,7 +364,7 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_va
 
                 try:
                     # Getting Current_Aggregation_Variable from IDF_OutputVariable_Dict
-                    Current_Aggregation_Variable = IDF_OutputVariable_Dict[variable_name[:-1]]
+                    Current_Aggregation_Variable = IDF_OutputVariable_Dict[variable_name]
 
                 except KeyError:
                     # Getting Current_Aggregation_Variable from IDF_OutputVariable_Dict

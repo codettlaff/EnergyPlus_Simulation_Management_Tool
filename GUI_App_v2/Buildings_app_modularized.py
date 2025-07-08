@@ -807,7 +807,8 @@ def set_aggregation_settings(aggregate_to_selection, aggregation_zone_list, aggr
     else: return no_update
 
     if aggregate_to_selection == 1 and zone_list is not None:
-        final_aggregation_zone_list = zone_list
+        final_aggregation_zone_list = []
+        final_aggregation_zone_list.append(zone_list)
     elif aggregate_to_selection == 2 and aggregation_zone_list is not None:
         try:
             split1 = aggregation_zone_list.split(';')
@@ -840,6 +841,25 @@ def unhide_aggregate_data_button(aggregation_settings):
     if aggregation_settings['aggregation_zone_list'] != [[]] and aggregation_settings['aggregation_variable_list'] != [] and aggregation_settings['aggregation_type'] is not None:
         return False, False
     else: return True, True
+
+@app.callback(
+    Output('aggregate_data_button', 'children'),
+    Output('aggregation_pickle_filepath', 'data'),
+    Input('aggregate_data_button', 'n_clicks'),
+    State('aggregation_settings', 'data'),
+    State('agg_input_variables_pickle_filepath', 'data'),
+    State('agg_input_eio_pickle_filepath', 'data'),
+    prevent_initial_call = True
+)
+def aggregate_data(n_clicks, aggregation_settings, variables_pickle_filepath, eio_pickle_filepath):
+    global RESULTS_FILEPATHS
+    try:
+        aggregated_pickle_filepath = EPAgg.aggregate_data(aggregation_settings, variables_pickle_filepath, eio_pickle_filepath)
+        RESULTS_FILEPATHS[aggregated_pickle_filepath] = aggregated_pickle_filepath
+        return 'Data Aggregated', aggregated_pickle_filepath
+    except Exception as e:
+        return 'Aggregation Failed', no_update
+
 
 """
 
