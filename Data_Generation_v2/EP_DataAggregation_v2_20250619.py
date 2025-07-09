@@ -206,9 +206,9 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_va
 
             elif (Current_Aggregation_Variable_Type == 'Zone'):  # Zone
 
-                if variable_name[:-1] in IDF_OutputVariable_Dict.keys():
+                if variable_name in IDF_OutputVariable_Dict.keys():
                     # Getting Current_Aggregation_Variable from IDF_OutputVariable_Dict
-                    Current_Aggregation_Variable = IDF_OutputVariable_Dict[variable_name[:-1]]
+                    Current_Aggregation_Variable = IDF_OutputVariable_Dict[variable_name]
 
                     # Getting Dataframe subset based on element
                     Current_DF_Cols_Desired = []
@@ -250,28 +250,24 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_va
                     if (aggregation_type == 1):  # Normal Aggregation
 
                         # Filling Aggregation_Dict with Current_Aggregation_Variable
-                        Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = \
-                        Current_Aggregation_Variable[Current_DF_Cols_Desired].mean(1)
+                        Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = (
+                            Current_Aggregation_Variable[Current_DF_Cols_Desired].mean(axis=1)
+                            .fillna(0.0)
+                        )
 
                     elif (aggregation_type == 2):  # Weighted Area Aggregation
 
                         # Filling Aggregation_Dict with Current_Aggregation_Variable
-                        Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = (
-                                                                                                         Current_Aggregation_Variable[
-                                                                                                             Current_DF_Cols_Desired].sum(
-                                                                                                             1)) / (
-                                                                                                     Zone_TotalArea_List[
-                                                                                                         Counter])
+                        Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = (Current_Aggregation_Variable[
+                                                                                       Current_DF_Cols_Desired].sum(
+                            axis=1).fillna(0.0)) / Zone_TotalArea_List[Counter]
 
                     elif (aggregation_type == 3):  # Weighted Volume Aggregation
 
                         # Filling Aggregation_Dict with Current_Aggregation_Variable
-                        Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = (
-                                                                                                         Current_Aggregation_Variable[
-                                                                                                             Current_DF_Cols_Desired].sum(
-                                                                                                             1)) / (
-                                                                                                     Zone_TotalVolume_List[
-                                                                                                         Counter])
+                        Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = (Current_Aggregation_Variable[
+                                                                                       Current_DF_Cols_Desired].sum(
+                            axis=1).fillna(0.0)) / Zone_TotalVolume_List[Counter]
 
             elif (Current_Aggregation_Variable_Type == 'Surface'):  # Surface
 
@@ -282,7 +278,7 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_va
                 except KeyError:
                     # Getting Current_Aggregation_Variable from IDF_OutputVariable_Dict
                     Current_Aggregation_Variable = IDF_OutputVariable_Dict[
-                        variable_name[:-1] + ".csv"]
+                        variable_name + ".csv"]
 
                 # Getting Dataframe subset based on element
                 Current_DF_Cols_Desired = []
@@ -342,22 +338,20 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_va
                 if (aggregation_type == 1):  # Normal Aggregation
 
                     # Filling Aggregation_Dict with Current_Aggregation_Variable
-                    Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = Current_DF[
-                        element].mean(1)
+                    Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = (
+                        Current_Aggregation_Variable[Current_DF_Cols_Desired].mean(axis=1)
+                        .fillna(0.0)
+                    )
 
                 elif (aggregation_type == 2):  # Weighted Area Aggregation
 
                     # Filling Aggregation_Dict with Current_Aggregation_Variable
-                    Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = (Current_DF[
-                                                                                                      element].sum(
-                        1)) / (Zone_TotalArea_List[Counter])
+                    Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = (Current_Aggregation_Variable[Current_DF_Cols_Desired].sum(axis=1).fillna(0.0)) / Zone_TotalArea_List[Counter]
 
                 elif (aggregation_type == 3):  # Weighted Volume Aggregation
 
                     # Filling Aggregation_Dict with Current_Aggregation_Variable
-                    Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = (Current_DF[
-                                                                                                      element].sum(
-                        1)) / (Zone_TotalVolume_List[Counter])
+                    Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = ( Current_Aggregation_Variable[Current_DF_Cols_Desired].sum(axis=1).fillna(0.0)) / Zone_TotalVolume_List[Counter]
 
 
             elif (Current_Aggregation_Variable_Type == 'System'):  # System Node
@@ -412,28 +406,20 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_va
                 if (aggregation_type == 1):  # Normal Aggregation
 
                     # Filling Aggregation_Dict with Current_Aggregation_Variable
-                    Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = \
-                    Current_Aggregation_Variable[Current_DF_Cols_Desired].mean(1)
+                    Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = (
+                        Current_Aggregation_Variable[Current_DF_Cols_Desired].mean(axis=1)
+                        .fillna(0.0)
+                    )
 
                 elif (aggregation_type == 2):  # Weighted Area Aggregation
 
                     # Filling Aggregation_Dict with Current_Aggregation_Variable
-                    Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = (
-                                                                                                     Current_Aggregation_Variable[
-                                                                                                         Current_DF_Cols_Desired].sum(
-                                                                                                         1)) / (
-                                                                                                 Zone_TotalArea_List[
-                                                                                                     Counter])
+                    Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = (Current_Aggregation_Variable[Current_DF_Cols_Desired].sum(axis=1).fillna(0.0)) / Zone_TotalArea_List[Counter]
 
                 elif (aggregation_type == 3):  # Weighted Volume Aggregation
 
                     # Filling Aggregation_Dict with Current_Aggregation_Variable
-                    Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = (
-                                                                                                     Current_Aggregation_Variable[
-                                                                                                         Current_DF_Cols_Desired].sum(
-                                                                                                         1)) / (
-                                                                                                 Zone_TotalVolume_List[
-                                                                                                     Counter])
+                    Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = ( Current_Aggregation_Variable[Current_DF_Cols_Desired].sum(axis=1).fillna(0.0)) / Zone_TotalVolume_List[Counter]
 
 
             elif (Current_Aggregation_Variable_Type == 'Schedule'):  # Schedule

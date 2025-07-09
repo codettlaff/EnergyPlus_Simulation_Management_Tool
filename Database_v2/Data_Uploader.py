@@ -469,26 +469,34 @@ def populate_zones_table(conn, data_dict, simulation_id):
     # Convert the DataFrame to a list of tuples and add simulation_id as the first item
     zones_data = [(simulation_id, *row) for row in equipment_levels.itertuples(index=False, name=None)]
 
-    try:
+    try: # Made modification here so that we only return the ids of the rows we tried to insert, not all rows
         with conn.cursor() as cursor:
-            # Insert zones into the table and return their zone_ids
-            query = """
-                INSERT INTO zones (simulation_id, zone_name, equipment_level_people, equipment_level_lights, equipment_level_electric,
-                                   equipment_level_gas, equipment_level_hot_water, equipment_level_steam, equipment_level_other)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                ON CONFLICT DO NOTHING
-                RETURNING id, zone_name
+            # Step 1: Attempt to insert all rows
+            insert_query = """
+            INSERT INTO zones (
+                simulation_id, zone_name, equipment_level_people, equipment_level_lights, equipment_level_electric,
+                equipment_level_gas, equipment_level_hot_water, equipment_level_steam, equipment_level_other
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ON CONFLICT DO NOTHING;
             """
-
-            # Execute the query for all rows and fetch the returned zone_ids
-            cursor.executemany(query, zones_data)
+            cursor.executemany(insert_query, zones_data)
             conn.commit()
 
-            # Fetch zone_id and zone_name for the inserted zones
-            cursor.execute("SELECT id, zone_name FROM zones WHERE simulation_id = %s", (simulation_id,))
+            # Step 2: Extract all zone_names we attempted to insert
+            zone_names = [row[1] for row in zones_data]
+
+            # Step 3: Fetch only the IDs of those attempted inserts
+            cursor.execute(
+                f"""
+                SELECT id, zone_name FROM zones
+                WHERE simulation_id = %s AND zone_name = ANY(%s);
+                """,
+                (simulation_id, zone_names)
+            )
             result = cursor.fetchall()
 
-        # Convert to DataFrame
+        # Step 4: Return as DataFrame
         df = pd.DataFrame(result, columns=["zone_id", "zone_name"])
         return df
 
@@ -716,22 +724,19 @@ def get_variables(conn, zone_id):
 def upload_time_series_data(conn, data_dict, simulation_name, simulation_settings, building_id, epw_climate_zone=None, time_resolution=5, aggregation_zones=None):
 
     start_datetime = simulation_settings['start_datetime']
-    start_datetime = start_datetime + timedelta(minutes=simulation_settings["timestep_minutes"])
     end_datetime = simulation_settings['end_datetime']
-    end_datetime = end_datetime + timedelta(days=1)
 
     # Create new entry in the simulations table, returning simulation_id
     simulation_id = populate_simulations_table(conn, building_id, simulation_name, epw_climate_zone)
 
     # populate zones table
     if not aggregation_zones:
-        zones = populate_zones_table(conn, data_dict, simulation_id)
+        zones = populate_zones_table(conn, data_dict, simulation_id) # fixed: this is returning zone id 1 even though that wasn't inserted this time
     else:
         zones = insert_aggregation_zones(conn, data_dict, simulation_id, aggregation_zones)
 
     # populate variables table
-    variables = populate_variables_table(conn, data_dict, zones['zone_id'].tolist()) # BUG HERE
-
+    variables = populate_variables_table(conn, data_dict, zones['zone_id'].tolist())
     # zones has columns 'zone_id', 'zone_name'
     # variables has columns 'variable_id, variable_name, zone_id'
     # combine the dataframes by adding a 'zone_name' column to variables

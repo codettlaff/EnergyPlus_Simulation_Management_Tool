@@ -346,12 +346,55 @@ def aggregate_data(aggregation_settings, variables_pickle_filepath, eio_pickle_f
     aggregation_pickle_filepath = EP_Agg.aggregate_data(variables_pickle_filepath, eio_pickle_filepath, variable_list, aggregation_type, aggregation_zone_list)
     return aggregation_pickle_filepath
 
-def upload_to_db(db_settings, aggregation_pickle_filepath, sim_name, custom_or_no, building_id):
+def get_time_res(data_dict):
+    start_datetime = data_dict['DateTime_List'][0]
+    end_datetime = data_dict['DateTime_List'][-1]
+    time_resolution = int((data_dict['DateTime_List'][1] - start_datetime).total_seconds() / 60)
+    return start_datetime, end_datetime, time_resolution
+
+def upload_to_db(variables_pickle_filepath, eio_pickle_filepath, db_settings, zones_df, aggregation_pickle_filepath, aggregation_settings, sim_name, custom_or_no, building_id):
 
     conn = psql.connect(db_settings)
     with open(aggregation_pickle_filepath, "rb") as f: data_dict = pickle.load(f)
 
     # get start time, end time, time resolution from aggregation_pickle_file
+    start_datetime, end_datetime, time_resolution = get_time_res(data_dict)
+    simulation_settings = {
+    "name": sim_name,
+    "start_datetime": start_datetime,
+    "end_datetime": end_datetime,
+    "reporting_frequency": 'timestep',
+    "timestep_minutes": time_resolution,
+    "variables": aggregation_settings['aggregation_variable_list'],
+    "ep_version": None
+    }
+
+    epw_climate_zone = 'NA'
+
+    db_uploader.populate_datetimes_table(conn, base_time_resolution=1, start_datetime=start_datetime,
+                                             end_datetime=end_datetime)
+
+    if custom_or_no == 1: building_id = db_uploader.upload_custom_building(conn)
+
+    # Not continuing from session
+    # First, do all-zones aggregation on variables.pickle and eio.pickle - got this working, all_zones_df looks good
+    if zones_df == None:
+        all_zone_aggregation_pickle_filepath = EP_Agg.aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_settings['variables'])
+        with open(all_zone_aggregation_pickle_filepath, "rb") as f: all_zone_data_dict = pickle.load(f)
+        all_zones_df = db_uploader.upload_time_series_data(conn, all_zone_data_dict, sim_name, simulation_settings, building_id, epw_climate_zone, time_resolution)
+
+    # make aggregation zone dict out of aggregation zone list - also needs zone ids
+    aggregation_zone_dict = {}
+    base_name = 'AGGREGATION_ZONE_'
+    count = 0
+    for aggregation_zone in aggregation_settings['aggregation_zone_list']:
+        count += 1
+        zones = [item.strip() for item in aggregation_zone]
+        aggregation_zone_name = base_name + str(count)
+        aggregation_zone_dict[aggregation_zone_name] = all_zones_df[all_zones_df['zone_name'].isin(zones)] # Segments all_zones_df to only include rows where the zone name is in the current aggregation zone name.
+
+    return db_uploader.upload_time_series_data(conn, data_dict, sim_name, simulation_settings, building_id, epw_climate_zone, time_resolution, aggregation_zone_dict)
+
 
 
 

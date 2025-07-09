@@ -903,21 +903,22 @@ def unhide_upload_to_db_button(simulation_name, custom_or_no, building_id, pickl
         return False
     else: return True
 
-"""
 # Upload to DB Button
 @app.callback(
     Output('agg_upload_to_db_button', 'children'),
     Input('agg_upload_to_db_button', 'n_clicks'),
+    State('agg_input_variables_pickle_filepath', 'data'),
+    State('agg_input_eio_pickle_filepath', 'data'),
     State('aggregation_pickle_filepath', 'data'),
+    State('aggregation_settings', 'data'),
     State('agg_simulation_name', 'value'),
     State('agg_upload_to_db_custom_or_no', 'value'),
-    State('agg_building_id', 'value'),
+    State('building_id', 'value'),
     prevent_initial_call = True
 )
-def upload_to_db(n_clicks, aggregation_pickle_filepath, sim_name, custom_or_no, building_id):
-    EPAgg.upload_to_db(DB_SETTINGS, aggregation_pickle_filepath, sim_name, custom_or_no, building_id)
+def upload_to_db(n_clicks, variables_pickle_filepath, eio_pickle_filepath, aggregation_pickle_filepath, aggregation_settings, sim_name, custom_or_no, building_id):
+    EPAgg.upload_to_db(variables_pickle_filepath, eio_pickle_filepath, DB_SETTINGS, ZONES_DF, aggregation_pickle_filepath, aggregation_settings, sim_name, custom_or_no, building_id)
 
-"""
 """
 
 
