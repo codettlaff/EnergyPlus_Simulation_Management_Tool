@@ -545,6 +545,7 @@ def insert_aggregation_zones(conn, data_dict, simulation_id, aggregation_zones):
             query = """
                 INSERT INTO aggregation_zones (aggregation_zone_id, composite_zone_id)
                 VALUES (%s, %s)
+                ON CONFLICT DO NOTHING
             """
 
             # Create a list of tuples for batch insertion

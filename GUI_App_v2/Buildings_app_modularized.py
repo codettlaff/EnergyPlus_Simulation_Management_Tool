@@ -917,8 +917,11 @@ def unhide_upload_to_db_button(simulation_name, custom_or_no, building_id, pickl
     prevent_initial_call = True
 )
 def upload_to_db(n_clicks, variables_pickle_filepath, eio_pickle_filepath, aggregation_pickle_filepath, aggregation_settings, sim_name, custom_or_no, building_id):
-    EPAgg.upload_to_db(variables_pickle_filepath, eio_pickle_filepath, DB_SETTINGS, ZONES_DF, aggregation_pickle_filepath, aggregation_settings, sim_name, custom_or_no, building_id)
-
+    try:
+        zones_df = EPAgg.upload_to_db(variables_pickle_filepath, eio_pickle_filepath, DB_SETTINGS, ZONES_DF, aggregation_pickle_filepath, aggregation_settings, sim_name, custom_or_no, building_id)
+        return 'Uploaded to Database'
+    except Exception as e:
+        return 'Upload Failed'
 """
 
 
