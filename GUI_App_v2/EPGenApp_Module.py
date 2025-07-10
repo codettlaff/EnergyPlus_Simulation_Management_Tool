@@ -781,9 +781,9 @@ def update_schedule(idf_filepath, schedule_name, schedule_content):
     # Make sure idf file still works
     edited_idf = op.Epm.load(idf_filepath)
 
-def generate_data(idf_filepath, epw_filepath, simulation_settings, results_folderpath):
+def generate_data(idf_filepath, epw_filepath, simulation_settings, variable_names, results_folderpath):
 
-    simulation_results_folderpath = data_generator.simulate_variables(idf_filepath, epw_filepath, simulation_settings, results_folderpath)
+    simulation_results_folderpath = data_generator.simulate_variables(idf_filepath, epw_filepath, simulation_settings, variable_names, results_folderpath)
     variables_pickle_filepath = os.path.join(simulation_results_folderpath, "Sim_ProcessedData", "Output_Variables.pickle")
     eio_pickle_filepath = os.path.join(simulation_results_folderpath, "Sim_ProcessedData", "eio.pickle")
 

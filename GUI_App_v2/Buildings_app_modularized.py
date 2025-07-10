@@ -133,8 +133,11 @@ app.layout = dbc.Container([
     dcc.Store(id='generation_idf_filepath', data=None),
     dcc.Store(id='generation_epw_filepath', data=None),
     dcc.Store(id='building_information', data=None),
-
     dcc.Store(id='generation_variable_list', data=[]),
+
+    # Generation Results
+    dcc.Store(id='generation_variables_pickle_filepath', data=None),
+    dcc.Store(id='generation_eio_pickle_filepath', data=None),
 
     dbc.Row([
         html.H1(
@@ -436,8 +439,8 @@ def update_simulation_details(simulation_name, timestep, start_date, end_date, r
     simulation_settings = {
         'name': simulation_name,
         'timestep_minutes': timestep,
-        'start_datetime': format_datetime(start_date),
-        'end_datetime': format_datetime(end_date),
+        'start_datetime': start_date, # Only a string, not a datetime, can be stored in dcc.Store
+        'end_datetime': end_date,
         'reporting_frequency': report_freq_selection
     }
     return simulation_settings
@@ -612,15 +615,21 @@ def unhide_generate_data_button(idf_filepath, epw_filepath, simulation_settings)
 # Generate Data
 @app.callback(
     Output('EPGen_Button_GenerateData', 'children'),
-    Output('results_filepaths', 'data'),
+    Output('generation_variables_pickle_filepath', 'data'),
+    Output('generation_eio_pickle_filepath', 'data'),
     Input('EPGen_Button_GenerateData', 'n_clicks'),
+    State('generation_idf_filepath', 'data'),
+    State('generation_epw_filepath', 'data'),
+    State('gen_simulation_settings', 'data'),
+    State('generation_variable_list', 'data'),
     prevent_initial_call = True
 )
-def generate_data(n_clicks):
-    global RESULTS_FILEPATHS
+def generate_data(n_clicks, idf_filepath, epw_filepath, simulation_settings, variable_names):
     try:
-        RESULTS_FILEPATHS['variables_pickle_filepath'], RESULTS_FILEPATHS['eio_pickle_filepath'] = EPGen.generate_data(DATA_IDF_FILEPATH, DATA_EPW_FILEPATH, SIMULATION_SETTINGS, RESULTS_FOLDERPATH)
-        return 'Data Generated', RESULTS_FILEPATHS
+        simulation_settings['start_datetime'] = format_datetime(simulation_settings['start_datetime'])
+        simulation_settings['end_datetime'] = format_datetime(simulation_settings['end_datetime'])
+        variables_pickle_filepath, eio_pickle_filepath = EPGen.generate_data(idf_filepath, epw_filepath, simulation_settings, variable_names, RESULTS_FOLDERPATH)
+        return 'Data Generated', variables_pickle_filepath, eio_pickle_filepath
     except Exception as e:
         return "Generation Failed", no_update
 
@@ -629,13 +638,12 @@ def generate_data(n_clicks):
     Output('download_variables_pickle_button', 'hidden'),
     Output('download_eio_pickle_button', 'hidden'),
     Output('upload_to_db_button', 'hidden'),
-    Input('results_filepaths', 'data'),
-    Input('data_source_selection', 'value'), # Refreshes Everything
+    Input('generation_variables_pickle_filepath', 'data'),
+    Input('generation_eio_pickle_filepath', 'data'),
     prevent_initial_call = True
 )
-def unhide_download_buttons(results_filepaths, trig):
-    global RESULTS_FILEPATHS
-    if RESULTS_FILEPATHS['variables_pickle_filepath'] is not None and RESULTS_FILEPATHS['eio_pickle_filepath'] is not None:
+def unhide_download_buttons(variables_pickle_filepath, eio_pickle_filepath):
+    if variables_pickle_filepath is not None and eio_pickle_filepath is not None:
         return False, False, False
     else: return True, True, True
 
