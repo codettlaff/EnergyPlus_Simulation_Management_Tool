@@ -652,20 +652,22 @@ def unhide_download_buttons(variables_pickle_filepath, eio_pickle_filepath):
     Output('download_variables_pickle_button', 'children'),
     Output('download_variables_pickle', 'data'),
     Input('download_variables_pickle_button', 'n_clicks'),
+    State('generation_variables_pickle_filepath', 'data'),
     prevent_initial_call = True
 )
-def download_variables_pickle(n_clicks):
-    return 'Downloaded Variables Pickle', dcc.send_file(RESULTS_FILEPATHS['variables_pickle_filepath'])
+def download_variables_pickle(n_clicks, variables_pickle_filepath):
+    return 'Downloaded Variables Pickle', dcc.send_file(variables_pickle_filepath)
 
 # Download Eio Pickle
 @app.callback(
     Output('download_eio_pickle_button', 'children'),
     Output('download_eio_pickle', 'data'),
     Input('download_eio_pickle_button', 'n_clicks'),
+    State('generation_eio_pickle_filepath', 'data'),
     prevent_initial_call = True
 )
-def download_eio_pickle(n_clicks):
-    return 'Downloaded Eio Pickle', dcc.send_file(RESULTS_FILEPATHS['eio_pickle_filepath'])
+def download_eio_pickle(n_clicks, eio_pickle_filepath):
+    return 'Downloaded Eio Pickle', dcc.send_file(eio_pickle_filepath)
 
 # Upload to DB Button
 @app.callback(
