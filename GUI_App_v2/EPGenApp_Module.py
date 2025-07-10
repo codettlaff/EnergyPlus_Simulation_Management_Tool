@@ -789,12 +789,21 @@ def generate_data(idf_filepath, epw_filepath, simulation_settings, variable_name
 
     return variables_pickle_filepath, eio_pickle_filepath
 
-def upload_to_db(idf_filepath, epw_filepath, simulation_settings, building_information, db_settings, results_filepaths):
+def get_location_from_epw(epw_filepath):
+    epw_filename = os.path.basename(epw_filepath).replace('.idf', '')
+    location = epw_filename.split('_')[2].split('.')[0].split('-')[0]
+    if location == 'San': location = 'SanDiego'
+    if location == 'International': location = 'InternationalFalls'
+    if location == 'Great': location = 'GreatFalls'
+    if location == 'New': location = 'NewYork'
+    if location == 'El': location = 'ElPaso'
+    if location == 'Port': location = 'PortAngeles'
+    return location
 
-    variables_pickle_filepath = results_filepaths["variables_pickle_filepath"]
-    eio_pickle_filepath = results_filepaths["eio_pickle_filepath"]
-    variable_list = simulation_settings["variables"]
-    all_zone_aggregation_pickle_filepath = data_aggregator.aggregate_data(variables_pickle_filepath, eio_pickle_filepath, variable_list)
+
+def upload_to_db(simulation_name, simulation_settings, variable_list, building_information, db_settings, results_filepaths, variable_pickle_filepath, eio_pickle_filepath):
+
+    all_zone_aggregation_pickle_filepath = data_aggregator.aggregate_data(variable_pickle_filepath, eio_pickle_filepath, variable_list)
 
     conn = psql.connect(db_settings)
 
@@ -804,13 +813,12 @@ def upload_to_db(idf_filepath, epw_filepath, simulation_settings, building_infor
     end_datetime = end_datetime + timedelta(days=1)
 
     db_uploader.populate_datetimes_table(conn, base_time_resolution=1, start_datetime=start_datetime, end_datetime=end_datetime)
-    idf_filename = os.path.basename(idf_filepath)
-    building_id = db_uploader.get_building_id(conn, building_information['building_type'], idf_filename)
+
+    building_id = db_uploader.get_building_id(conn, building_information)
 
     with open(all_zone_aggregation_pickle_filepath, "rb") as f: data_dict = pickle.load(f)
-    simulation_name = simulation_settings["name"]
-    location = db_uploader.get_location_from_epw_filepath(os.path.basename(epw_filepath))
-    epw_climate_zone = db_uploader.get_climate_zone(location)
+    location = building_information['idf_location']
+    epw_climate_zone = db_uploader.get_climate_zone(location=simulation_settings['epw_climate_zone'])
     time_resolution = simulation_settings["timestep_minutes"]
     zones_df = db_uploader.upload_time_series_data(conn, data_dict, simulation_name, simulation_settings, building_id, epw_climate_zone, time_resolution, aggregation_zones=None)
 

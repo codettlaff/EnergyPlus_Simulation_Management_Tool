@@ -296,7 +296,7 @@ def populate_buildings_table(conn):
 # This Function only needs to be run once.
 # Passed
 
-def get_building_id(conn, building_type, building_name):
+def get_building_id_old(conn, building_type, building_name):
     """
     Retrieves the building_id for a given building name from the database.
 
@@ -369,6 +369,35 @@ def get_building_id(conn, building_type, building_name):
         cursor.close()
         return None
 # Passed
+
+def get_building_id(conn, building_information):
+    # Construct SQL query
+    query = """
+            SELECT id FROM building_prototypes
+            WHERE building_type = %s AND prototype = %s AND energy_code = %s AND idf_climate_zone = %s
+        """
+    params = [building_information['building_type'], building_information['prototype'], building_information['energy_code'], building_information['idf_climate_zone']]
+
+    heating_type = building_information['heating_type']
+    foundation_type = building_information['foundation_type']
+
+    cursor = conn.cursor()
+    if heating_type:
+        query += " AND heating_type = %s"
+        params.append(heating_type)
+    if foundation_type:
+        query += " AND foundation_type = %s"
+        params.append(foundation_type)
+
+    try:
+        cursor.execute(query, params)
+        result = cursor.fetchone()
+        cursor.close()
+        return result[0] if result else None
+    except Exception as e:
+        print(f"Error retrieving building ID: {e}")
+        cursor.close()
+        return None
 
 ##### Below here Populated at Runtime #####
 

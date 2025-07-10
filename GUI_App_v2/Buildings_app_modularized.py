@@ -86,6 +86,9 @@ default_building_information = {
     "heating_type": None,
     "foundation_type": None,
 }
+CUSTOM_BUILDING_INFORMATION = {
+    "building_type": "Custom"
+}
 
 RESULTS_FILEPATHS = {
     'variables_pickle_filepath': None,
@@ -411,7 +414,7 @@ def get_building_information(idf_filepath):
             building_information = PSQL.get_building_information(idf_filepath)
             return building_information
         except Exception as e:
-            return None
+            return CUSTOM_BUILDING_INFORMATION
     else: return None
 
 # Callback triggered by change in IDF and EPW filepath.
@@ -433,15 +436,17 @@ def unhide_simulation_details(idf_filepath, epw_filepath):
     Input('sim_run_period', 'start_date'),
     Input('sim_run_period', 'end_date'),
     Input('simReportFreq_selection', 'value'),
+    Input('generation_epw_filepath', 'data'),
     prevent_initial_call=True
 )
-def update_simulation_details(simulation_name, timestep, start_date, end_date, report_freq_selection):
+def update_simulation_details(simulation_name, timestep, start_date, end_date, report_freq_selection, epw_filepath):
     simulation_settings = {
         'name': simulation_name,
         'timestep_minutes': timestep,
         'start_datetime': start_date, # Only a string, not a datetime, can be stored in dcc.Store
         'end_datetime': end_date,
-        'reporting_frequency': report_freq_selection
+        'reporting_frequency': report_freq_selection,
+        'epw_location': EPGen.get_location_from_epw(epw_filepath),
     }
     return simulation_settings
 
@@ -673,12 +678,19 @@ def download_eio_pickle(n_clicks, eio_pickle_filepath):
 @app.callback(
     Output('upload_to_db_button', 'children'),
     Input('upload_to_db_button', 'n_clicks'),
+    State('simulation_name', 'value'),
+    State('gen_simulation_settings', 'data'),
+    State('generation_variable_list', 'data'),
+    State('building_information', 'data'),
+    State('generation_variables_pickle_filepath', 'data'),
+    State('generation_eio_pickle_filepath', 'data'),
     prevent_initial_call = True
 )
-def upload_to_db(n_clicks):
-    global BUILDING_INFORMATION, ZONES_DF
+def upload_to_db(n_clicks, simulation_name, simulation_settings, variable_list, building_information, variable_pickle_filepath, eio_pickle_filepath):
     try:
-        BUILDING_INFORMATION['building_id'], ZONES_DF = EPGen.upload_to_db(DATA_IDF_FILEPATH, DATA_EPW_FILEPATH, SIMULATION_SETTINGS, BUILDING_INFORMATION, DB_SETTINGS, RESULTS_FILEPATHS)
+        simulation_settings['start_datetime'] = format_datetime(simulation_settings['start_datetime'])
+        simulation_settings['end_datetime'] = format_datetime(simulation_settings['end_datetime'])
+        building_id, zones_df = EPGen.upload_to_db(simulation_name, simulation_settings, variable_list, building_information, DB_SETTINGS, RESULTS_FILEPATHS, variable_pickle_filepath, eio_pickle_filepath)
         return 'Uploaded to Database'
     except Exception as e:
         return "Upload Failed"
