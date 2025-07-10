@@ -134,6 +134,8 @@ app.layout = dbc.Container([
     dcc.Store(id='generation_epw_filepath', data=None),
     dcc.Store(id='building_information', data=None),
 
+    dcc.Store(id='generation_variable_list', data=[]),
+
     dbc.Row([
         html.H1(
             "EnergyPlus Simulation Management Tool",
@@ -471,17 +473,17 @@ def generate_variables(n_clicks, idf_filepath, epw_filepath):
 
 # Variable Selection
 @app.callback(
+    Output('generation_variable_list', 'data'),
     Input('preselected_variable_selection', 'value'),
     Input('custom_variable_selection', 'value'),
     Input('EPGen_Radiobutton_VariableSelection', 'value'), # 1: All Preselected Variables 2: Select Variables
-    prevent_initial_call=True
+    prevent_initial_call=False
 )
 def variable_selection(preselected_variable_selection, custom_variable_selection, choice):
-    global SIMULATION_SETTINGS
     if choice == 1:
-        SIMULATION_SETTINGS['variables'] = PRESELECTED_VARIABLES
+        return PRESELECTED_VARIABLES
     elif choice == 2:
-        SIMULATION_SETTINGS['variables'] = preselected_variable_selection + custom_variable_selection
+        return preselected_variable_selection + custom_variable_selection
 
 @app.callback(
     Output('schedules', 'hidden'),
