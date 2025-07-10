@@ -463,16 +463,14 @@ def unhide_generate_variables_button(idf_filepath, epw_filepath):
 @app.callback(
     Output('EPGen_Button_GenerateVariables', 'children'),
     Output('custom_variable_selection', 'options'),
-    Output('generate_variables_intial_run_eio_filepath', 'data'),
-    Output('generate_variables_intial_run_rdd_filepath', 'data'),
+    Output('generate_variables_initial_run_eio_filepath', 'data'),
+    Output('generate_variables_initial_run_rdd_filepath', 'data'),
     Input('EPGen_Button_GenerateVariables', 'n_clicks'),
     Input('pnnl_prototype_idf_filepath', 'data'),
     Input('gen_upload_idf_filepath', 'data'),
     prevent_initial_call=True
 )
 def generate_variables(n_clicks, val1, val2):
-    global INITIAL_RUN_EIO_FILEPATH
-    global INITIAL_RUN_RDD_FILEPATH
 
     if get_callback_id() == 'EPGen_Button_GenerateVariables':
         try:
@@ -509,6 +507,7 @@ def unhide_edit_schedules(button_selection, idf_filepath, epw_filepath):
     if button_selection == 1 and valid_filepath(idf_filepath) and valid_filepath(epw_filepath): return False
     else: return True
 
+# What will cause the schedule dropdowns to change: new idf, new epw
 @app.callback(
     Output('people_schedules', 'options'),
     Output('equip_schedules', 'options'),
@@ -516,30 +515,21 @@ def unhide_edit_schedules(button_selection, idf_filepath, epw_filepath):
     Output('heating_schedules', 'options'),
     Output('cooling_schedules', 'options'),
     Output('temperature_schedules', 'options'),
-    Input('EPGen_Radiobutton_EditSchedules', 'value'),
-    Input('generate_variables_intial_run_eio_filepath', 'data'),
-    Input('generate_variables_intial_run_rdd_filepath', 'data'),
-    Input('data_source_selection', 'data'),
+    Input('edit_or_keep_schedules_button', 'value'),
+    Input('generate_variables_initial_run_eio_filepath', 'data'),
+    Input('generation_idf_filepath', 'data'),
+    Input('generation_epw_filepath', 'data'),
     prevent_initial_call=True
 )
-def fill_schedule_dropdowns(edit_selection, trigger1, trigger2, data_source_selection):
-    global INITIAL_RUN_EIO_FILEPATH, INITIAL_RUN_RDD_FILEPATH
+def fill_schedule_dropdowns(button_selection, eio_filepath, idf_filepath, epw_filepath):
 
-    if get_callback_id() == 'data_source_selection' and data_source_selection != 3: return no_update * 6
+    if button_selection == 2: return no_update * 6
 
-    if edit_selection != 1:
-        return [no_update] * 6  # Only proceed if user wants to edit schedules
+    if not valid_filepath(eio_filepath) and valid_filepath(idf_filepath) and valid_filepath(epw_filepath):
+        rdd_filepath, eio_filepath = EPGen.initial_run(idf_filepath, epw_filepath)
 
-    if not valid_filepath(DATA_IDF_FILEPATH):
-        return [no_update] * 6
-
-    if not valid_filepath(INITIAL_RUN_EIO_FILEPATH) and valid_filepath(DATA_EPW_FILEPATH):
-        rdd_filepath, eio_filepath = EPGen.initial_run(DATA_IDF_FILEPATH, DATA_EPW_FILEPATH)
-        INITIAL_RUN_EIO_FILEPATH = eio_filepath
-        INITIAL_RUN_RDD_FILEPATH = rdd_filepath
-
-    if valid_filepath(INITIAL_RUN_EIO_FILEPATH):
-        schedules = EPGen.get_schedules(INITIAL_RUN_EIO_FILEPATH, DATA_IDF_FILEPATH)
+    if valid_filepath(eio_filepath):
+        schedules = EPGen.get_schedules(eio_filepath, idf_filepath)
         return (
             schedules['people_schedules'],
             schedules['equipment_schedules'],
@@ -548,8 +538,7 @@ def fill_schedule_dropdowns(edit_selection, trigger1, trigger2, data_source_sele
             schedules['cooling_schedules'],
             schedules['temperature_schedules']
         )
-
-    return [no_update] * 6
+    else: return [no_update] * 6
 
 # Handle Schedule Selection - Makes sure only one Schedule is selected at a time.
 @app.callback(

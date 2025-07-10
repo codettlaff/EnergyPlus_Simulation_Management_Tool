@@ -213,8 +213,8 @@ tab_layout=[
 
                     # Box 2 C2
                     html.Div([
-                        dcc.Store(id='generate_variables_intial_run_eio_filepath', data=None),
-                        dcc.Store(id='generate_variables_intial_run_rdd_filepath', data=None),
+                        dcc.Store(id='generate_variables_initial_run_eio_filepath', data=None),
+                        dcc.Store(id='generate_variables_initial_run_rdd_filepath', data=None),
                         html.Button('Generate Variables',
                             id = 'EPGen_Button_GenerateVariables',
                             className = "btn btn-secondary btn-lg col-12",
