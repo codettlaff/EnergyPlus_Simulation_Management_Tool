@@ -735,15 +735,16 @@ def agg_upload_eio_pickle(filename, contents):
 @app.callback(
     Output('agg_input_variables_pickle_filepath', 'data'),
     Output('agg_input_eio_pickle_filepath', 'data'),
+    Input('results_filepaths', 'data'),
     Input('upload_variable_pickle_filepath', 'data'),
     Input('upload_eio_pickle_filepath', 'data'),
     State('agg_input_selection', 'value'),
     prevent_initial_call = True
 )
-def agg_set_input_filepaths(upload_variables, upload_eio, input_selection):
-    if input_selection == 2 and valid_filepath(RESULTS_FILEPATHS['variables_pickle_filepath']) and valid_filepath(RESULTS_FILEPATHS['eio_pickle_filepath']):
-        return RESULTS_FILEPATHS['variables_pickle_filepath'], RESULTS_FILEPATHS['eio_pickle_filepath']
-    elif input_selection == 1 and valid_filepath(upload_variables) and valid_filepath(upload_eio):
+def agg_set_input_filepaths(results_filepaths, upload_variables, upload_eio, input_selection):
+    if input_selection == 1 and valid_filepath(results_filepaths['variables_pickle_filepath']) and valid_filepath(results_filepaths['eio_pickle_filepath']):
+        return results_filepaths['variables_pickle_filepath'], results_filepaths['eio_pickle_filepath']
+    elif input_selection == 2 and valid_filepath(upload_variables) and valid_filepath(upload_eio):
         return upload_variables, upload_eio
     else: return None, None
 
