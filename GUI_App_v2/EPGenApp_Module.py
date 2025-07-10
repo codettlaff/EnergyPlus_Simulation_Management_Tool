@@ -265,7 +265,7 @@ tab_layout=[
 
                         html.Div(
                             dcc.RadioItems(
-                                id='EPGen_Radiobutton_EditSchedules',
+                                id='edit_or_keep_schedules_button',
                                 labelStyle={'display': 'block'},
                                 value=2,
                                 options=[

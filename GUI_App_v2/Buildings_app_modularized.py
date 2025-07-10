@@ -500,16 +500,14 @@ def variable_selection(preselected_variable_selection, custom_variable_selection
 
 @app.callback(
     Output('schedules', 'hidden'),
-    Input('generate_variables', 'hidden'),
-    Input('EPGen_Radiobutton_EditSchedules', 'value'),
-    Input('gen_upload_epw_filepath', 'data'),
-    Input('pnnl_prototype_weather_filepath', 'data'),
+    Input('edit_or_keep_schedules_button', 'value'),
+    Input('generation_idf_filepath', 'data'),
+    Input('generation_epw_filepath', 'data'),
     prevent_initial_call=True
 )
-def unhide_edit_schedules(generate_hidden, edit_selection, trigger1, trigger2):
-    if generate_hidden == False and edit_selection == 1 and valid_filepath(DATA_EPW_FILEPATH):
-        return False
-    return True
+def unhide_edit_schedules(button_selection, idf_filepath, epw_filepath):
+    if button_selection == 1 and valid_filepath(idf_filepath) and valid_filepath(epw_filepath): return False
+    else: return True
 
 @app.callback(
     Output('people_schedules', 'options'),
