@@ -54,12 +54,12 @@ def get_building_information(idf_filename):
     idf_filename = idf_filename.replace('.idf', '')
 
     # Determine building type
-    if 'ASHRAE' in idf_filename or 'IECC' in idf_filename:
-        building_type = 'Commercial'
-    elif ('MS' in idf_filename or 'SS' in idf_filename) and any(x in idf_filename for x in ['tier1', 'tier2', 'HUD']):
+    if ('MS' in idf_filename or 'SS' in idf_filename) and any(x in idf_filename for x in ['tier1', 'tier2', 'HUD']):
         building_type = 'Manufactured'
     elif '+MF+' in idf_filename or '+SF+' in idf_filename:
         building_type = 'Residential'
+    elif 'ASHRAE' in idf_filename or 'IECC' in idf_filename:
+        building_type = 'Commercial'
     else:
         building_type = 'Custom'
 
@@ -111,7 +111,7 @@ def get_building_information(idf_filename):
         energy_code = parts[5].replace('_', '')
         heating_type = heat_map.get(parts[3], parts[3])
         foundation_type = foundation_map.get(parts[4], parts[4])
-        idf_location = get_climate_zone(idf_climate_zone)
+        idf_location = get_climate_zone(climate_zone=idf_climate_zone)
 
     else:
         prototype = None

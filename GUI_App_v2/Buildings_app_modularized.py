@@ -76,7 +76,6 @@ BUILDING_INFORMATION = {
     "idf_location": None,
     "heating_type": None,
     "foundation_type": None,
-    "building_id": None
 }
 default_building_information = {
     "building_type": "Commercial",
@@ -86,7 +85,6 @@ default_building_information = {
     "idf_location": "Seattle",
     "heating_type": None,
     "foundation_type": None,
-    "building_id": None
 }
 
 RESULTS_FILEPATHS = {
@@ -134,6 +132,7 @@ app.layout = dbc.Container([
     dcc.Store(id='generation_default_epw_filepath', data=None),
     dcc.Store(id='generation_idf_filepath', data=None),
     dcc.Store(id='generation_epw_filepath', data=None),
+    dcc.Store(id='building_information', data=None),
 
     dbc.Row([
         html.H1(
@@ -294,26 +293,15 @@ def update_simulation_name(simulation_name):
     prevent_initial_call=True
 )
 def data_source_selection(selection):
-    global DATA_IDF_FILEPATH, DATA_EPW_FILEPATH, BUILDING_INFORMATION, RESULTS_FILEPATHS
-    DATA_IDF_FILEPATH = None # Refresh
-    DATA_EPW_FILEPATH = None # Refresh
-    BUILDING_INFORMATION = None # Refresh
-    RESULTS_FILEPATHS = {
-        'variables_pickle_filepath': None,
-        'eio_pickle_filepath': None,
-        'aggregated_pickle_filepath': None
-    } # Refresh
+
     if selection == 1: return False, True, no_update, None, None
     elif selection == 2: return True, False, no_update, None, None
     elif selection == 3:
-        data_idf_filepath = os.path.join(DATA_FOLDERPATH, 'Commercial_Prototypes', 'ASHRAE', '90_1_2013', 'ASHRAE901_OfficeSmall_STD2013_Seattle.idf')
-        data_epw_filepath = os.path.join(DATA_FOLDERPATH, 'TMY3_WeatherFiles_Commercial', 'USA_WA_Seattle-Tacoma.Intl.AP.727930_TMY3.epw')
-        DATA_IDF_FILEPATH = os.path.join(UPLOAD_DIRECTORY, os.path.basename(data_idf_filepath))
-        DATA_EPW_FILEPATH = os.path.join(UPLOAD_DIRECTORY, os.path.basename(data_epw_filepath))
-        shutil.copy(data_idf_filepath, DATA_IDF_FILEPATH)
-        shutil.copy(data_epw_filepath, DATA_EPW_FILEPATH)
-        BUILDING_INFORMATION = default_building_information
-        return True, True, 'Seattle_OfficeSmall', DATA_IDF_FILEPATH, DATA_EPW_FILEPATH
+        upload_idf_filepath = os.path.join(UPLOAD_DIRECTORY, os.path.basename(DEFAULT_IDF_FILEPATH))
+        upload_epw_filepath = os.path.join(UPLOAD_DIRECTORY, os.path.basename(DEFAULT_EPW_FILEPATH))
+        shutil.copy(DEFAULT_IDF_FILEPATH, upload_idf_filepath)
+        shutil.copy(DEFAULT_EPW_FILEPATH, upload_epw_filepath)
+        return True, True, 'Seattle_OfficeSmall', upload_idf_filepath, upload_epw_filepath
     else: return True, True, no_update, None, None
 
 # PNNL Prototypes Drop-Down Menu
@@ -332,10 +320,7 @@ def data_source_selection(selection):
     prevent_initial_call=True
 )
 def pnnl_prototypes_dropdown(building_type, level1, level2, level3, location):
-    global DATA_IDF_FILEPATH, DATA_EPW_FILEPATH, BUILDING_INFORMATION
     options1, options2, options3, location_options, idf_filepath, epw_filepath = EPGen.pnnl_prototypes_dropdown(building_type, level1, level2, level3, location, DATA_FOLDERPATH, UPLOAD_DIRECTORY)
-    DATA_IDF_FILEPATH = idf_filepath
-    DATA_EPW_FILEPATH = epw_filepath
     return options1, options2, options3, location_options, idf_filepath, epw_filepath
 
 # Upload IDF File Interaction
@@ -347,14 +332,11 @@ def pnnl_prototypes_dropdown(building_type, level1, level2, level3, location):
     prevent_initial_call=True
 )
 def upload_idf(filename, content):
-    global DATA_IDF_FILEPATH
-
     try:
         upload_filepath = os.path.join(UPLOAD_DIRECTORY, filename)
         data = content.encode("utf8").split(b";base64,")[1]
         with open(upload_filepath, "wb") as fp:
             fp.write(base64.decodebytes(data))
-        DATA_IDF_FILEPATH = upload_filepath
         short_name = filename[:20] + "..." if len(filename) > 10 else filename
         return f"Uploaded {short_name}", upload_filepath
     except Exception as e:
@@ -369,15 +351,12 @@ def upload_idf(filename, content):
     prevent_initial_call=True
 )
 def upload_idf(filename, content):
-    global DATA_EPW_FILEPATH
-
     try:
         upload_filepath = os.path.join(UPLOAD_DIRECTORY, filename)
         data = content.encode("utf8").split(b";base64,")[1]
         with open(upload_filepath, "wb") as fp:
             fp.write(base64.decodebytes(data))
         short_name = filename[:20] + "..." if len(filename) > 10 else filename
-        DATA_EPW_FILEPATH = upload_filepath
         return f"Uploaded {short_name}", upload_filepath
     except Exception as e:
         return "Upload Failed", None
@@ -413,6 +392,21 @@ def get_generation_epw_filepath(generation_default_epw_filepath, pnnl_prototype_
         return pnnl_prototype_epw_filepath
     elif get_callback_id() == 'gen_upload_epw_filepath' and valid_filepath(gen_upload_epw_filepath):
         return gen_upload_epw_filepath
+    else: return None
+
+# Get Building Information
+@app.callback(
+    Output('building_information', 'data'),
+    Input('generation_idf_filepath', 'data'),
+    prevent_initial_call=True
+)
+def get_building_information(idf_filepath):
+    if valid_filepath(idf_filepath):
+        try:
+            building_information = PSQL.get_building_information(idf_filepath)
+            return building_information
+        except Exception as e:
+            return None
     else: return None
 
 # Callback triggered by change in IDF and EPW filepath.
