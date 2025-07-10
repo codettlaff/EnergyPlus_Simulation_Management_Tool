@@ -402,7 +402,7 @@ def get_generation_idf_filepath(generation_default_idf_filepath, pnnl_prototype_
 @app.callback(
     Output('generation_epw_filepath', 'data'),
     Input('generation_default_epw_filepath', 'data'),
-    Input('pnnl_prototype_epw_filepath', 'data'),
+    Input('pnnl_prototype_weather_filepath', 'data'),
     Input('gen_upload_epw_filepath', 'data'),
     prevent_initial_call=True
 )
@@ -459,19 +459,13 @@ def update_simulation_details(simulation_name, timestep, start_date, end_date, r
 # Unhide Generate Variables
 @app.callback(
     Output('generate_variables', 'hidden'),
-    Input('simulation_name', 'value'),
     Input('generation_idf_filepath', 'data'),
     Input('generation_epw_filepath', 'data'),
     prevent_initial_call=True
 )
-def unhide_generate_data_button(val1, val2, val3, val4, val5, val6):
-    global DATA_IDF_FILEPATH
-    global DATA_EPW_FILEPATH
-    global SIMULATION_SETTINGS
-    if DATA_IDF_FILEPATH is not None and DATA_EPW_FILEPATH:
-        if os.path.exists(DATA_IDF_FILEPATH) and os.path.exists(DATA_EPW_FILEPATH):
-            return False
-    return True
+def unhide_generate_variables_button(idf_filepath, epw_filepath):
+    if valid_filepath(idf_filepath) and valid_filepath(epw_filepath): return False
+    else: return True
 
 # Generate Variables Button
 @app.callback(
