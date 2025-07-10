@@ -55,6 +55,9 @@ PRESELECTED_VARIABLES = EPGen.preselected_variables()
 INITIAL_RUN_EIO_FILEPATH = None
 INITIAL_RUN_RDD_FILEPATH = None
 
+DEFAULT_IDF_FILEPATH = os.path.join(DATA_FOLDERPATH, 'Commercial_Prototypes', 'ASHRAE', '90_1_2013', 'ASHRAE901_OfficeSmall_STD2013_Seattle.idf')
+DEFAULT_EPW_FILEPATH = os.path.join(DATA_FOLDERPATH, 'TMY3_WeatherFiles_Commercial', 'USA_WA_Seattle-Tacoma.Intl.AP.727930_TMY3.epw')
+
 SIMULATION_SETTINGS = {
     "name": None,
     "start_datetime": date(2020, 1, 1),
@@ -126,6 +129,11 @@ app = Dash(__name__, external_stylesheets=[dbc.themes.LITERA], suppress_callback
 
 # App Layout using Dash Bootstrap
 app.layout = dbc.Container([
+
+    dcc.Store(id='generation_default_idf_filepath', data=None),
+    dcc.Store(id='generation_default_epw_filepath', data=None),
+    dcc.Store(id='generation_idf_filepath', data=None),
+    dcc.Store(id='generation_epw_filepath', data=None),
 
     dbc.Row([
         html.H1(
@@ -280,6 +288,8 @@ def update_simulation_name(simulation_name):
     Output('building_details', 'hidden'),
     Output('upload_files', 'hidden'),
     Output('simulation_name', 'value'),
+    Output('generation_default_idf_filepath', 'data'),
+    Output('generation_default_epw_filepath', 'data'),
     Input('data_source_selection', 'value'),
     prevent_initial_call=True
 )
@@ -293,8 +303,8 @@ def data_source_selection(selection):
         'eio_pickle_filepath': None,
         'aggregated_pickle_filepath': None
     } # Refresh
-    if selection == 1: return False, True, no_update
-    elif selection == 2: return True, False, no_update
+    if selection == 1: return False, True, no_update, None, None
+    elif selection == 2: return True, False, no_update, None, None
     elif selection == 3:
         data_idf_filepath = os.path.join(DATA_FOLDERPATH, 'Commercial_Prototypes', 'ASHRAE', '90_1_2013', 'ASHRAE901_OfficeSmall_STD2013_Seattle.idf')
         data_epw_filepath = os.path.join(DATA_FOLDERPATH, 'TMY3_WeatherFiles_Commercial', 'USA_WA_Seattle-Tacoma.Intl.AP.727930_TMY3.epw')
@@ -303,8 +313,8 @@ def data_source_selection(selection):
         shutil.copy(data_idf_filepath, DATA_IDF_FILEPATH)
         shutil.copy(data_epw_filepath, DATA_EPW_FILEPATH)
         BUILDING_INFORMATION = default_building_information
-        return True, True, 'Seattle_OfficeSmall'
-    else: return True, True, no_update
+        return True, True, 'Seattle_OfficeSmall', DATA_IDF_FILEPATH, DATA_EPW_FILEPATH
+    else: return True, True, no_update, None, None
 
 # PNNL Prototypes Drop-Down Menu
 @app.callback(
@@ -372,6 +382,39 @@ def upload_idf(filename, content):
     except Exception as e:
         return "Upload Failed", None
 
+# Get Data Generation IDF and EPW File
+@app.callback(
+    Output('generation_idf_filepath', 'data'),
+    Input('generation_default_idf_filepath', 'data'),
+    Input('pnnl_prototype_idf_filepath', 'data'),
+    Input('gen_upload_idf_filepath', 'data'),
+    prevent_initial_call=True
+)
+def get_generation_idf_filepath(generation_default_idf_filepath, pnnl_prototype_idf_filepath, gen_upload_idf_filepath):
+    if get_callback_id() == 'generation_default_idf_filepath' and valid_filepath(generation_default_idf_filepath):
+        return generation_default_idf_filepath
+    elif get_callback_id() == 'pnnl_prototype_idf_filepath' and valid_filepath(pnnl_prototype_idf_filepath):
+        return pnnl_prototype_idf_filepath
+    elif get_callback_id() == 'gen_upload_idf_filepath' and valid_filepath(gen_upload_idf_filepath):
+        return gen_upload_idf_filepath
+    else: return None
+
+@app.callback(
+    Output('generation_epw_filepath', 'data'),
+    Input('generation_default_epw_filepath', 'data'),
+    Input('pnnl_prototype_epw_filepath', 'data'),
+    Input('gen_upload_epw_filepath', 'data'),
+    prevent_initial_call=True
+)
+def get_generation_epw_filepath(generation_default_epw_filepath, pnnl_prototype_epw_filepath, gen_upload_epw_filepath):
+    if get_callback_id() == 'generation_default_epw_filepath' and valid_filepath(generation_default_epw_filepath):
+        return generation_default_epw_filepath
+    elif get_callback_id() == 'pnnl_prototype_epw_filepath' and valid_filepath(pnnl_prototype_epw_filepath):
+        return pnnl_prototype_epw_filepath
+    elif get_callback_id() == 'gen_upload_epw_filepath' and valid_filepath(gen_upload_epw_filepath):
+        return gen_upload_epw_filepath
+    else: return None
+
 # Callback triggered by change in IDF and EPW filepath.
 @app.callback(
     Output('simulation_details', 'hidden'),
@@ -417,11 +460,8 @@ def update_simulation_details(simulation_name, timestep, start_date, end_date, r
 @app.callback(
     Output('generate_variables', 'hidden'),
     Input('simulation_name', 'value'),
-    Input('data_source_selection', 'value'),
-    Input('pnnl_prototype_idf_filepath', 'data'),
-    Input('pnnl_prototype_weather_filepath', 'data'),
-    Input('gen_upload_idf_filepath', 'data'),
-    Input('gen_upload_epw_filepath', 'data'),
+    Input('generation_idf_filepath', 'data'),
+    Input('generation_epw_filepath', 'data'),
     prevent_initial_call=True
 )
 def unhide_generate_data_button(val1, val2, val3, val4, val5, val6):
@@ -752,7 +792,7 @@ def agg_set_input_filepaths(results_filepaths, upload_variables, upload_eio, inp
     Output('agg_variables_menu', 'hidden'),
     Input('agg_input_variables_pickle_filepath', 'data'),
     Input('agg_input_eio_pickle_filepath', 'data'),
-    preevent_initial_call = True)
+    prevent_initial_call = True)
 def unhide_agg_variables_menu(upload_variables, upload_eio):
     if valid_filepath(upload_variables) and valid_filepath(upload_eio): return False
     else: return True
