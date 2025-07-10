@@ -418,24 +418,16 @@ def get_generation_epw_filepath(generation_default_epw_filepath, pnnl_prototype_
 # Callback triggered by change in IDF and EPW filepath.
 @app.callback(
     Output('simulation_details', 'hidden'),
-    Input('pnnl_prototype_idf_filepath', 'data'),
-    Input('pnnl_prototype_weather_filepath', 'data'),
-    Input('gen_upload_idf_filepath', 'data'),
-    Input('gen_upload_epw_filepath', 'data'),
-    Input('data_source_selection', 'value'), # Refresh
+    Input('generation_idf_filepath', 'data'),
+    Input('generation_epw_filepath', 'data'),
     prevent_initial_call=True
 )
-def unhide_simulation_details(val1, val2, val3, val4, val5):
-    global DATA_IDF_FILEPATH
-    global DATA_EPW_FILEPATH
-    # if get_callback_id() == 'data_source_selection': return True # Refresh
-    if DATA_IDF_FILEPATH is not None and DATA_EPW_FILEPATH is not None:
-        if os.path.exists(DATA_IDF_FILEPATH) and os.path.exists(DATA_EPW_FILEPATH):
-            building_information = PSQL.get_building_information(DATA_IDF_FILEPATH)
-            BUILDING_INFORMATION = building_information
-            return False
+def unhide_simulation_details(idf_filepath, epw_filepath):
+    if valid_filepath(idf_filepath) and valid_filepath(epw_filepath):
+        building_information = PSQL.get_building_information(idf_filepath)
+        BUILDING_INFORMATION = building_information
+        return False
     else: return True
-
 
 # Simulation Details
 @app.callback(
