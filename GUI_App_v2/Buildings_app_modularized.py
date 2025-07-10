@@ -627,16 +627,13 @@ def update_schedule(n_clicks, schedule_name, schedule_input):
 # Needed for Generation: Valid IDF Path, Valid EPW Path, Valid Simulation Settings.
 @app.callback(
     Output('final_download', 'hidden'),
-    Input('gen_upload_idf_filepath', 'data'),
-    Input('gen_upload_epw_filepath', 'data'),
-    Input('pnnl_prototype_idf_filepath', 'data'),
-    Input('pnnl_prototype_weather_filepath', 'data'),
+    Input('generation_idf_filepath', 'data'),
+    Input('generation_epw_filepath', 'data'),
     Input('gen_simulation_settings', 'data'),
-    Input('data_source_selection', 'value'), # Refreshes Everything
     prevent_initial_call = True)
-def unhide_generate_data_button(trig1, trig2, trig3, trig4, trig5, data_source_selection):
-    if valid_filepath(DATA_IDF_FILEPATH) and valid_filepath(DATA_EPW_FILEPATH):
-        for key, value in SIMULATION_SETTINGS.items():
+def unhide_generate_data_button(idf_filepath, epw_filepath, simulation_settings):
+    if valid_filepath(idf_filepath) and valid_filepath(epw_filepath):
+        for key, value in simulation_settings.items():
             if key == 'ep_version' or (value is not None and value != '' and value != []):
                 pass
             else: return True
