@@ -417,10 +417,7 @@ def get_building_information(idf_filepath):
     prevent_initial_call=True
 )
 def unhide_simulation_details(idf_filepath, epw_filepath):
-    if valid_filepath(idf_filepath) and valid_filepath(epw_filepath):
-        building_information = PSQL.get_building_information(idf_filepath)
-        BUILDING_INFORMATION = building_information
-        return False
+    if valid_filepath(idf_filepath) and valid_filepath(epw_filepath): return False
     else: return True
 
 # Simulation Details
@@ -434,13 +431,14 @@ def unhide_simulation_details(idf_filepath, epw_filepath):
     prevent_initial_call=True
 )
 def update_simulation_details(simulation_name, timestep, start_date, end_date, report_freq_selection):
-    global SIMULATION_SETTINGS
-    SIMULATION_SETTINGS['name'] = simulation_name
-    SIMULATION_SETTINGS['timestep_minutes'] = timestep
-    SIMULATION_SETTINGS['start_datetime'] = format_datetime(start_date)
-    SIMULATION_SETTINGS['end_datetime'] = format_datetime(end_date)
-    SIMULATION_SETTINGS['reporting_frequency'] = report_freq_selection
-    return SIMULATION_SETTINGS
+    simulation_settings = {
+        'name': simulation_name,
+        'timestep_minutes': timestep,
+        'start_datetime': format_datetime(start_date),
+        'end_datetime': format_datetime(end_date),
+        'reporting_frequency': report_freq_selection
+    }
+    return simulation_settings
 
 # Unhide Generate Variables
 @app.callback(
@@ -460,21 +458,16 @@ def unhide_generate_variables_button(idf_filepath, epw_filepath):
     Output('generate_variables_initial_run_eio_filepath', 'data'),
     Output('generate_variables_initial_run_rdd_filepath', 'data'),
     Input('EPGen_Button_GenerateVariables', 'n_clicks'),
-    Input('pnnl_prototype_idf_filepath', 'data'),
-    Input('gen_upload_idf_filepath', 'data'),
+    State('generation_idf_filepath', 'data'),
+    State('generation_epw_filepath', 'data'),
     prevent_initial_call=True
 )
-def generate_variables(n_clicks, val1, val2):
-
-    if get_callback_id() == 'EPGen_Button_GenerateVariables':
-        try:
-            eio_filepath, rdd_filepath, variables_list = EPGen.generate_variables(DATA_IDF_FILEPATH, DATA_EPW_FILEPATH)
-            INITIAL_RUN_EIO_FILEPATH = eio_filepath
-            INITIAL_RUN_RDD_FILEPATH = rdd_filepath
-            return 'Variables Generated', variables_list, eio_filepath, rdd_filepath
-        except Exception as e:
-            return 'Failed to Generate', [], None, None
-    else: return 'Generate Variables', [], None, None
+def generate_variables(n_clicks, idf_filepath, epw_filepath):
+    try:
+        eio_filepath, rdd_filepath, variables_list = EPGen.generate_variables(idf_filepath, epw_filepath)
+        return 'Variables Generated', variables_list, eio_filepath, rdd_filepath
+    except Exception as e:
+        return 'Failed to Generate', [], None, None
 
 # Variable Selection
 @app.callback(
