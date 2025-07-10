@@ -575,12 +575,15 @@ def handle_schedule_selection(people_schedule_selection, equip_schedule_selectio
 @app.callback(
     Output('schedule_input', 'value'),
     Input('load_schedule_button', 'n_clicks'),
+    Input('generation_idf_filepath', 'data'),
     State('schedule_name', 'data'),
     prevent_initial_call=True
 )
-def load_schedule(n_clicks, schedule_name):
-    text = EPGen.schedule_compact_to_text(DATA_IDF_FILEPATH, schedule_name)
-    return text
+def load_schedule(n_clicks, idf_filepath, schedule_name):
+    if schedule_name is not None:
+        text = EPGen.schedule_compact_to_text(idf_filepath, schedule_name)
+        return text
+    else: return ''
 
 # Update Schedule Selection
 @app.callback(
