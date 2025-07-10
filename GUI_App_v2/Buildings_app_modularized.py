@@ -575,7 +575,7 @@ def handle_schedule_selection(people_schedule_selection, equip_schedule_selectio
 @app.callback(
     Output('schedule_input', 'value'),
     Input('load_schedule_button', 'n_clicks'),
-    Input('generation_idf_filepath', 'data'),
+    State('generation_idf_filepath', 'data'),
     State('schedule_name', 'data'),
     prevent_initial_call=True
 )
@@ -589,21 +589,19 @@ def load_schedule(n_clicks, idf_filepath, schedule_name):
 @app.callback(
     Output('update_schedule_button', 'children'),
     Input('update_schedule_button', 'n_clicks'),
-    Input('schedule_name', 'data'),
-    Input('schedule_input', 'value'),
+    State('schedule_name', 'data'),
+    State('schedule_input', 'value'),
+    State('generation_idf_filepath', 'data'),
     prevent_initial_call = True
 )
-def update_schedule(n_clicks, schedule_name, schedule_input):
+def update_schedule(n_clicks, schedule_name, schedule_input, idf_filepath):
 
-    if get_callback_id() == 'schedule_name' or get_callback_id() == 'schedule_input':
-        return 'Update Schedule'
-    else:
-        try:
-            EPGen.update_schedule(DATA_IDF_FILEPATH, schedule_name, schedule_input)
-            return "Schedule Updated Successfully"
-        except Exception as e:
-            print(e)
-            return 'Failed to Update'
+    try:
+        EPGen.update_schedule(idf_filepath, schedule_name, schedule_input)
+        return "Schedule Updated Successfully"
+    except Exception as e:
+        print(e)
+        return 'Failed to Update'
 
 # Unhide Generate Data Button
 # Needed for Generation: Valid IDF Path, Valid EPW Path, Valid Simulation Settings.
