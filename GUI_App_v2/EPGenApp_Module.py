@@ -812,13 +812,15 @@ def upload_to_db(simulation_name, simulation_settings, variable_list, building_i
     end_datetime = simulation_settings['end_datetime']
     end_datetime = end_datetime + timedelta(days=1)
 
+    simulation_settings['start_datetime'] = start_datetime
+    simulation_settings['end_datetime'] = end_datetime
+
     db_uploader.populate_datetimes_table(conn, base_time_resolution=1, start_datetime=start_datetime, end_datetime=end_datetime)
 
     building_id = db_uploader.get_building_id(conn, building_information)
 
     with open(all_zone_aggregation_pickle_filepath, "rb") as f: data_dict = pickle.load(f)
-    location = building_information['idf_location']
-    epw_climate_zone = db_uploader.get_climate_zone(location=simulation_settings['epw_climate_zone'])
+    epw_climate_zone = db_uploader.get_climate_zone(location=simulation_settings['epw_location'])
     time_resolution = simulation_settings["timestep_minutes"]
     zones_df = db_uploader.upload_time_series_data(conn, data_dict, simulation_name, simulation_settings, building_id, epw_climate_zone, time_resolution, aggregation_zones=None)
 
