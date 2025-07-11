@@ -229,8 +229,6 @@ def get_callback_id():
     prevent_initial_call=True
 )
 def database_selection(selection):
-    global USING_DATABASE
-    USING_DATABASE = selection
     return not selection
 
 # Create/Select Database
@@ -246,18 +244,18 @@ def create_select_database(selection, using_db):
     elif (selection == 2) and using_db: return True, False
     else: return True, True
 
-# Create Database Enter Information
+# Create Database Button
 @app.callback(
-    Output('db_settings', 'data'),
-    Input('PSQL_Textarea_Username', 'value'),
-    Input('PSQL_Textarea_Password', 'value'),
-    Input('PSQL_Textarea_PortNumber', 'value'),
-    Input('PSQL_Textarea_HostName', 'value'),
-    Input('PSQL_Textarea_DbName', 'value'),
+    Output('PSQL_Button_CreateDatabase', 'children'),
+    Input('PSQL_Button_CreateDatabase', 'n_clicks'),
+    State('PSQL_Textarea_Username', 'value'),
+    State('PSQL_Textarea_Password', 'value'),
+    State('PSQL_Textarea_PortNumber', 'value'),
+    State('PSQL_Textarea_HostName', 'value'),
+    State('PSQL_Textarea_DbName', 'value'),
     prevent_initial_call=True
 )
-def enter_database_information(username, password, port, host, dbname):
-    global DB_SETTINGS
+def create_database(n_clicks, username, password, port, host, dbname):
     db_settings = {
         "dbname": dbname,
         "user": username,
@@ -265,21 +263,7 @@ def enter_database_information(username, password, port, host, dbname):
         "host": host,
         "port": port
     }
-    DB_SETTINGS = db_settings
-
-# Create Database Button
-@app.callback(
-    Output('PSQL_Button_CreateDatabase', 'children'),
-    Input('PSQL_Button_CreateDatabase', 'n_clicks'),
-    Input('PSQL_Textarea_Username', 'value'),
-    Input('PSQL_Textarea_Password', 'value'),
-    Input('PSQL_Textarea_PortNumber', 'value'),
-    Input('PSQL_Textarea_HostName', 'value'),
-    Input('PSQL_Textarea_DbName', 'value'),
-    prevent_initial_call=True
-)
-def create_database(n_clicks, user, password, port, host, dbname):
-    if get_callback_id() == 'PSQL_Button_CreateDatabase': return PSQL.create_database(DB_SETTINGS)
+    if get_callback_id() == 'PSQL_Button_CreateDatabase': return PSQL.create_database(db_settings)
     else: return "Create Database"
 
 # Select Database Dropdown Options
@@ -294,13 +278,13 @@ def populate_select_db_dropdown(n_clicks):
 
 # Select Database Dropdown Selection
 @app.callback(
+    Output('db_settings', 'data'),
     Input('PSQL_Dropdown_ExistDbList', 'value'),
     prevent_initial_call=True
 )
 def select_database(dbname):
-    global DB_SETTINGS
-    DB_SETTINGS = PSQL.get_db_settings(dbname)
-    print(DB_SETTINGS)
+    db_settings = PSQL.get_db_settings(dbname)
+    return db_settings
 
 ########## Data Generation ##########
 
