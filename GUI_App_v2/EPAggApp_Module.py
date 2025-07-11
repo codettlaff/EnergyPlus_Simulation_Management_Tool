@@ -31,6 +31,9 @@ import Database_Creator as db_creator
 import Data_Uploader as db_uploader
 
 def upload_custom_building(db_settings): return db_uploader.upload_custom_building(db_settings)
+def get_building_id(conn, building_information): return db_uploader.get_building_id(conn, building_information)
+def get_building_id_old(conn, building_type, building_name): return db_uploader.get_building_id_old(conn, building_type, building_name)
+
 
 database_generation_dir = os.path.join(os.path.dirname(__file__), '..', 'Data_Generation')
 sys.path.append(database_generation_dir)

@@ -205,6 +205,16 @@ def valid_filepath(filepath):
             return True
     return False
 
+def is_valid_dict(d):
+    for key, value in d.items():
+        if value is None:
+            return False
+        if isinstance(value, str) and value.strip() == '':
+            return False
+        if isinstance(value, (list, dict)) and len(value) == 0:
+            return False
+    return True
+
 ########## PostgreSQL ##########
 
 def get_callback_id():
@@ -428,7 +438,7 @@ def get_building_information(idf_filepath):
             return building_information
         except Exception as e:
             return CUSTOM_BUILDING_INFORMATION
-    else: return None
+    else: return {}
 
 # Callback triggered by change in IDF and EPW filepath.
 @app.callback(
@@ -933,7 +943,7 @@ def get_aggregation_simulation_name(agg_input_selection, generation_simulation_n
 @app.callback(
     Output('aggregation_building_information', 'data'),
     Input('agg_input_selection', 'data'),
-    Input('building_information', 'data'),
+    State('building_information', 'data'),
     prevent_initial_call = True
 )
 def get_aggregation_building_information(agg_input_selection, building_information):
@@ -960,33 +970,39 @@ def get_aggregation_simulation_settings(agg_input_selection, variables_pickle_fi
                 "timestep_minutes": time_resolution,
             }
             return custom_simulation_settings
-        except Exception as e: return None
+        except Exception as e: return {}
     else: return None
 
 @app.callback(
     Output('aggregation_building_id', 'data'),
     Input('agg_input_selection', 'value'),
-    Input('db_settings', 'data'),
     Input('generation_building_id', 'data'),
+    Input('generation_idf_filepath', 'data'),
+    Input('building_information', 'data'),
     prevent_initial_call=True
 )
-def get_aggregation_building_id(agg_input_selection, db_settings, generation_building_id):
-    if agg_input_selection == 1: return generation_building_id
-    else:
+def get_aggregation_building_id(agg_input_selection, generation_building_id, generation_idf_filepath, building_information):
+    if agg_input_selection == 1:
+        if generation_building_id is not None: return generation_building_id
+        else:
+            building_type = building_information['building_type']
+            if building_type == 'Custom':
+                conn = PSQL.connect(DB_SETTINGS)
+                building_id = EPAgg.upload_custom_building(conn)
+                conn.close()
+                return building_id
+            else:
+                building_name = os.path.basename(generation_idf_filepath).replace('.idf', '')
+                conn = PSQL.connect(DB_SETTINGS)
+                building_id = EPAgg.get_building_id_old(conn, building_type, building_name)
+                conn.close()
+                return building_id
+    elif agg_input_selection == 2:
         conn = PSQL.connect(DB_SETTINGS)
         building_id = EPAgg.upload_custom_building(conn)
         conn.close()
         return building_id
-
-def is_valid_dict(d):
-    for key, value in d.items():
-        if value is None:
-            return False
-        if isinstance(value, str) and value.strip() == '':
-            return False
-        if isinstance(value, (list, dict)) and len(value) == 0:
-            return False
-    return True
+    else: return None
 
 @app.callback(
     Output('agg_upload_to_db_button', 'hidden'),
