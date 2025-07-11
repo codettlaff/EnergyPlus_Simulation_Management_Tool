@@ -401,7 +401,7 @@ def get_generation_idf_filepath(generation_default_idf_filepath, pnnl_prototype_
 def get_generation_epw_filepath(generation_default_epw_filepath, pnnl_prototype_epw_filepath, gen_upload_epw_filepath):
     if get_callback_id() == 'generation_default_epw_filepath' and valid_filepath(generation_default_epw_filepath):
         return generation_default_epw_filepath
-    elif get_callback_id() == 'pnnl_prototype_epw_filepath' and valid_filepath(pnnl_prototype_epw_filepath):
+    elif get_callback_id() == 'pnnl_prototype_weather_filepath' and valid_filepath(pnnl_prototype_epw_filepath):
         return pnnl_prototype_epw_filepath
     elif get_callback_id() == 'gen_upload_epw_filepath' and valid_filepath(gen_upload_epw_filepath):
         return gen_upload_epw_filepath
