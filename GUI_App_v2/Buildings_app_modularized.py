@@ -363,7 +363,7 @@ def upload_idf(filename, content):
     Input('upload_epw', 'contents'),
     prevent_initial_call=True
 )
-def upload_idf(filename, content):
+def upload_epw(filename, content):
     try:
         upload_filepath = os.path.join(UPLOAD_DIRECTORY, filename)
         data = content.encode("utf8").split(b";base64,")[1]
