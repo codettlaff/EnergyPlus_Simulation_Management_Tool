@@ -132,6 +132,7 @@ app = Dash(__name__, external_stylesheets=[dbc.themes.LITERA], suppress_callback
 app.layout = dbc.Container([
 
     #PSQL
+    dcc.Store(id='db_settings', data=None),
     dcc.Store(id='generation_zones_df', data=None),
     dcc.Store(id='generation_building_id', data=None),
 
@@ -148,8 +149,10 @@ app.layout = dbc.Container([
     dcc.Store(id='generation_eio_pickle_filepath', data=None),
 
     # Data Aggregation
+    dcc.Store(id='aggregation_simulation_name', data=None),
     dcc.Store(id='aggregation_building_information', data=None),
     dcc.Store(id='aggregation_simulation_information', data=None),
+    dcc.Store(id='aggregation_building_id', data=None),
 
     dbc.Row([
         html.H1(
@@ -235,6 +238,7 @@ def create_select_database(selection, using_db):
 
 # Create Database Enter Information
 @app.callback(
+    Output('db_settings', 'data'),
     Input('PSQL_Textarea_Username', 'value'),
     Input('PSQL_Textarea_Password', 'value'),
     Input('PSQL_Textarea_PortNumber', 'value'),
@@ -916,15 +920,15 @@ def agg_download_pickle(n_clicks, aggregation_pickle_filepath):
         return 'Pickle File Downloaded', dcc.send_file(aggregation_pickle_filepath)
     else: return 'Download Failed', no_update
 
-# Unhide Simulation Informaiton Box
 @app.callback(
-    Output('simulation_info_box', 'hidden'),
+    Output('aggregation_simulation_name', 'data'),
     Input('agg_input_selection', 'data'),
-    Input('aggregation_pickle_filepath', 'data'),
+    Input('generation_simulation_name', 'data'),
+    prevent_initial_call = True
 )
-def unhide_simulation_info_box(agg_input_selection, aggregation_pickle_filepath):
-    if agg_input_selection == 2 and valid_filepath(aggregation_pickle_filepath): return False
-    else: return True
+def get_aggregation_simulation_name(agg_input_selection, generation_simulation_name):
+    if agg_input_selection == 1: return generation_simulation_name
+    else: return 'Unnamed Simulation'
 
 @app.callback(
     Output('aggregation_building_information', 'data'),
@@ -960,27 +964,52 @@ def get_aggregation_simulation_settings(agg_input_selection, variables_pickle_fi
     else: return None
 
 @app.callback(
+    Output('aggregation_building_id', 'data'),
+    Input('agg_input_selection', 'value'),
+    Input('db_settings', 'data'),
+    Input('generation_building_id', 'data'),
+    prevent_initial_call=True
+)
+def get_aggregation_building_id(agg_input_selection, db_settings, generation_building_id):
+    if agg_input_selection == 1: return generation_building_id
+    else:
+        conn = PSQL.connect(DB_SETTINGS)
+        building_id = EPAgg.upload_custom_building(conn)
+        conn.close()
+        return building_id
+
+def is_valid_dict(d):
+    for key, value in d.items():
+        if value is None:
+            return False
+        if isinstance(value, str) and value.strip() == '':
+            return False
+        if isinstance(value, (list, dict)) and len(value) == 0:
+            return False
+    return True
+
+@app.callback(
     Output('agg_upload_to_db_button', 'hidden'),
-    Input('agg_simulation_name', 'value'),
-    Input('agg_upload_to_db_custom_or_no', 'value'),
-    Input('building_id','value'),
+    Input('aggregation_simulation_name', 'data'),
+    Input('aggregation_building_information', 'data'),
+    Input('aggregation_simulation_information', 'data'),
+    Input('aggregation_building_id','data'),
     Input('aggregation_pickle_filepath', 'data'),
     prevent_initial_call = True)
-def unhide_upload_to_db_button(simulation_name, custom_or_no, building_id, pickle_filepath):
-    if len(simulation_name)>0 and (custom_or_no == 1 or building_id > 0) and valid_filepath(pickle_filepath):
-        return False
+def unhide_upload_to_db_button(simulation_name, building_information, simulation_settings, building_id, pickle_filepath):
+    if len(simulation_name) > 0 and is_valid_dict(building_information) and is_valid_dict(simulation_settings) and building_id > 0 and valid_filepath(pickle_filepath): return False
     else: return True
+
 
 # Upload to DB Button
 @app.callback(
     Output('agg_upload_to_db_button', 'children'),
     Input('agg_upload_to_db_button', 'n_clicks'),
-    State('agg_input_variables_pickle_filepath', 'data'),
-    State('agg_input_eio_pickle_filepath', 'data'),
     State('aggregation_pickle_filepath', 'data'),
-    State('aggregation_settings', 'data'),
     State('agg_simulation_name', 'value'),
-    State('agg_upload_to_db_custom_or_no', 'value'),
+    State('aggregation_building_information', 'data'),
+    State('aggregation_simulation_settings', 'data'),
+    State('aggregation_settings', 'data'),
     State('building_id', 'value'),
     prevent_initial_call = True
 )

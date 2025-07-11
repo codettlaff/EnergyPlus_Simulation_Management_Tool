@@ -30,6 +30,8 @@ sys.path.append(database_dir)
 import Database_Creator as db_creator
 import Data_Uploader as db_uploader
 
+def upload_custom_building(db_settings): return db_uploader.upload_custom_building(db_settings)
+
 database_generation_dir = os.path.join(os.path.dirname(__file__), '..', 'Data_Generation')
 sys.path.append(database_generation_dir)
 import EP_DataAggregation_v2_20250619 as EP_Agg
