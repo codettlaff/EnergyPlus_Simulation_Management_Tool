@@ -288,15 +288,6 @@ def select_database(dbname):
 
 ########## Data Generation ##########
 
-# Update Simulation Name
-@app.callback(
-    Input('simulation_name', 'value'),
-    prevent_initial_call=True
-)
-def update_simulation_name(simulation_name):
-    global SIMULATION_SETTINGS
-    SIMULATION_SETTINGS['name'] = simulation_name
-
 # Data Source Selection
 @app.callback(
     Output('building_details', 'hidden'),
@@ -691,6 +682,7 @@ def download_eio_pickle(n_clicks, eio_pickle_filepath):
     Output('generation_zones_df', 'data'),
     Output('generation_building_id', 'data'),
     Input('upload_to_db_button', 'n_clicks'),
+    Input('db_settings', 'data'),
     State('simulation_name', 'value'),
     State('gen_simulation_settings', 'data'),
     State('generation_variable_list', 'data'),
@@ -699,11 +691,11 @@ def download_eio_pickle(n_clicks, eio_pickle_filepath):
     State('generation_eio_pickle_filepath', 'data'),
     prevent_initial_call = True
 )
-def upload_to_db(n_clicks, simulation_name, simulation_settings, variable_list, building_information, variable_pickle_filepath, eio_pickle_filepath):
+def upload_to_db(n_clicks, db_settings, simulation_name, simulation_settings, variable_list, building_information, variable_pickle_filepath, eio_pickle_filepath):
     try:
         simulation_settings['start_datetime'] = format_datetime(simulation_settings['start_datetime'])
         simulation_settings['end_datetime'] = format_datetime(simulation_settings['end_datetime'])
-        building_id, zones_df = EPGen.upload_to_db(simulation_name, simulation_settings, variable_list, building_information, DB_SETTINGS, RESULTS_FILEPATHS, variable_pickle_filepath, eio_pickle_filepath)
+        building_id, zones_df = EPGen.upload_to_db(simulation_name, simulation_settings, variable_list, building_information, db_settings, RESULTS_FILEPATHS, variable_pickle_filepath, eio_pickle_filepath)
         return 'Uploaded to Database', zones_df.to_dict('records'), building_id
     except Exception as e:
         return "Upload Failed", None, None
@@ -959,30 +951,31 @@ def get_aggregation_simulation_settings(agg_input_selection, variables_pickle_fi
 
 @app.callback(
     Output('aggregation_building_id', 'data'),
+    Input('db_settings', 'data'),
     Input('agg_input_selection', 'value'),
     Input('generation_building_id', 'data'),
     Input('generation_idf_filepath', 'data'),
     Input('building_information', 'data'),
     prevent_initial_call=True
 )
-def get_aggregation_building_id(agg_input_selection, generation_building_id, generation_idf_filepath, building_information):
+def get_aggregation_building_id(db_settings, agg_input_selection, generation_building_id, generation_idf_filepath, building_information):
     if agg_input_selection == 1:
         if generation_building_id is not None: return generation_building_id
         else:
             building_type = building_information['building_type']
             if building_type == 'Custom':
-                conn = PSQL.connect(DB_SETTINGS)
+                conn = PSQL.connect(db_settings)
                 building_id = EPAgg.upload_custom_building(conn)
                 conn.close()
                 return building_id
             else:
                 building_name = os.path.basename(generation_idf_filepath).replace('.idf', '')
-                conn = PSQL.connect(DB_SETTINGS)
+                conn = PSQL.connect(db_settings)
                 building_id = EPAgg.get_building_id_old(conn, building_type, building_name)
                 conn.close()
                 return building_id
     elif agg_input_selection == 2:
-        conn = PSQL.connect(DB_SETTINGS)
+        conn = PSQL.connect(db_settings)
         building_id = EPAgg.upload_custom_building(conn)
         conn.close()
         return building_id
@@ -1005,6 +998,7 @@ def unhide_upload_to_db_button(simulation_name, building_information, simulation
 @app.callback(
     Output('agg_upload_to_db_button', 'children'),
     Input('agg_upload_to_db_button', 'n_clicks'),
+    Input('db_settings', 'data'),
     State('aggregation_pickle_filepath', 'data'),
     State('agg_simulation_name', 'value'),
     State('aggregation_building_information', 'data'),
@@ -1013,9 +1007,9 @@ def unhide_upload_to_db_button(simulation_name, building_information, simulation
     State('building_id', 'value'),
     prevent_initial_call = True
 )
-def upload_to_db(n_clicks, variables_pickle_filepath, eio_pickle_filepath, aggregation_pickle_filepath, aggregation_settings, sim_name, custom_or_no, building_id):
+def upload_to_db(n_clicks, db_settings, variables_pickle_filepath, eio_pickle_filepath, aggregation_pickle_filepath, aggregation_settings, sim_name, custom_or_no, building_id):
     try:
-        zones_df = EPAgg.upload_to_db(variables_pickle_filepath, eio_pickle_filepath, DB_SETTINGS, ZONES_DF, aggregation_pickle_filepath, aggregation_settings, sim_name, custom_or_no, building_id)
+        zones_df = EPAgg.upload_to_db(variables_pickle_filepath, eio_pickle_filepath, db_settings, ZONES_DF, aggregation_pickle_filepath, aggregation_settings, sim_name, custom_or_no, building_id)
         return 'Uploaded to Database'
     except Exception as e:
         return 'Upload Failed'
