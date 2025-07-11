@@ -149,7 +149,7 @@ app.layout = dbc.Container([
 
     # Data Aggregation
     dcc.Store(id='aggregation_building_information', data=None),
-
+    dcc.Store(id='aggregation_simulation_information', data=None),
 
     dbc.Row([
         html.H1(
@@ -916,7 +916,6 @@ def agg_download_pickle(n_clicks, aggregation_pickle_filepath):
         return 'Pickle File Downloaded', dcc.send_file(aggregation_pickle_filepath)
     else: return 'Download Failed', no_update
 
-
 # Unhide Simulation Informaiton Box
 @app.callback(
     Output('simulation_info_box', 'hidden'),
@@ -936,6 +935,29 @@ def unhide_simulation_info_box(agg_input_selection, aggregation_pickle_filepath)
 def get_aggregation_building_information(agg_input_selection, building_information):
     if agg_input_selection == 1: return building_information
     else: return CUSTOM_BUILDING_INFORMATION
+
+@app.callback(
+    Output('aggregation_simulation_information', 'data'),
+    Input('agg_input_selection', 'value'),
+    Input('agg_input_variables_pickle_filepath', 'data'),
+    State('gen_simulation_settings', 'data'),
+    prevent_initial_call=True
+)
+def get_aggregation_simulation_settings(agg_input_selection, variables_pickle_filepath, simulation_information):
+    if agg_input_selection == 1: return simulation_information
+    elif valid_filepath(variables_pickle_filepath):
+        try:
+            with open(variables_pickle_filepath, 'rb') as f: data_dict = pickle.load(f)
+            start_datetime, end_datetime, time_resolution = EPAgg.get_time_res(data_dict)
+            custom_simulation_settings = {
+                "start_datetime": start_datetime,
+                "end_datetime": end_datetime,
+                "reporting_frequency": 'timestep',
+                "timestep_minutes": time_resolution,
+            }
+            return custom_simulation_settings
+        except Exception as e: return None
+    else: return None
 
 @app.callback(
     Output('agg_upload_to_db_button', 'hidden'),
