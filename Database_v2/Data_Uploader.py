@@ -75,6 +75,8 @@ def get_building_information(idf_filename):
         energy_code += year
         prototype, idf_location = parts[1], parts[3]
         idf_climate_zone = get_climate_zone(idf_location)
+        heating_type = 'NA'
+        foundation_type = 'NA'
 
     elif building_type == 'Manufactured':
         parts = idf_filename.split('_')
@@ -90,6 +92,7 @@ def get_building_information(idf_filename):
         idf_location, idf_climate_zone = parts[1], parts[2]
         energy_code = code_map.get(parts[3], parts[3])
         heating_type = heat_map.get(parts[4], parts[4])
+        foundation_type = 'NA'
 
     elif building_type == 'Residential':
         parts = idf_filename.split('+')

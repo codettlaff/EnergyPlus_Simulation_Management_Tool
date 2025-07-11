@@ -942,7 +942,7 @@ def get_aggregation_simulation_name(agg_input_selection, generation_simulation_n
 
 @app.callback(
     Output('aggregation_building_information', 'data'),
-    Input('agg_input_selection', 'data'),
+    Input('agg_input_selection', 'value'),
     State('building_information', 'data'),
     prevent_initial_call = True
 )
