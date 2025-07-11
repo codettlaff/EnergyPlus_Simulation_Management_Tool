@@ -730,14 +730,12 @@ def unhide_upload_files(value):
     Input('agg_upload_variables_pickle', 'contents'),
     prevent_initial_call = True)
 def agg_upload_variables_pickle(filename, contents):
-    global RESULTS_FILEPATHS
 
     try:
-        upload_filepath = os.path.join(RESULTS_FOLDERPATH, filename)
+        upload_filepath = os.path.join(UPLOAD_DIRECTORY, filename)
         data = contents.encode("utf8").split(b";base64,")[1]
         with open(upload_filepath, "wb") as fp:
             fp.write(base64.decodebytes(data))
-        RESULTS_FILEPATHS['variables_pickle_filepath'] = upload_filepath
         short_name = filename[:20] + "..." if len(filename) > 10 else filename
         return f"Uploaded {short_name}", upload_filepath
     except Exception as e:
@@ -751,14 +749,12 @@ def agg_upload_variables_pickle(filename, contents):
     Input('agg_upload_eio_pickle', 'contents'),
     prevent_initial_call = True)
 def agg_upload_eio_pickle(filename, contents):
-    global RESULTS_FILEPATHS
 
     try:
-        upload_filepath = os.path.join(RESULTS_FOLDERPATH, filename)
+        upload_filepath = os.path.join(UPLOAD_DIRECTORY, filename)
         data = contents.encode("utf8").split(b";base64,")[1]
         with open(upload_filepath, "wb") as fp:
             fp.write(base64.decodebytes(data))
-        RESULTS_FILEPATHS['eio_pickle_filepath'] = upload_filepath
         short_name = filename[:20] + "..." if len(filename) > 10 else filename
         return f"Uploaded {short_name}", upload_filepath
     except Exception as e:
@@ -768,15 +764,16 @@ def agg_upload_eio_pickle(filename, contents):
 @app.callback(
     Output('agg_input_variables_pickle_filepath', 'data'),
     Output('agg_input_eio_pickle_filepath', 'data'),
-    Input('results_filepaths', 'data'),
+    Input('generation_variables_pickle_filepath', 'data'),
+    Input('generation_eio_pickle_filepath', 'data'),
     Input('upload_variable_pickle_filepath', 'data'),
     Input('upload_eio_pickle_filepath', 'data'),
     State('agg_input_selection', 'value'),
     prevent_initial_call = True
 )
-def agg_set_input_filepaths(results_filepaths, upload_variables, upload_eio, input_selection):
-    if input_selection == 1 and valid_filepath(results_filepaths['variables_pickle_filepath']) and valid_filepath(results_filepaths['eio_pickle_filepath']):
-        return results_filepaths['variables_pickle_filepath'], results_filepaths['eio_pickle_filepath']
+def agg_set_input_filepaths(generation_variables_pickle_filepath, generation_eio_pickle_filepath, upload_variables, upload_eio, input_selection):
+    if input_selection == 1 and valid_filepath(generation_variables_pickle_filepath) and valid_filepath(generation_eio_pickle_filepath):
+        return generation_variables_pickle_filepath, generation_eio_pickle_filepath
     elif input_selection == 2 and valid_filepath(upload_variables) and valid_filepath(upload_eio):
         return upload_variables, upload_eio
     else: return None, None
