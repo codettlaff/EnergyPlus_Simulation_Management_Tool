@@ -817,7 +817,9 @@ def upload_to_db(simulation_name, simulation_settings, variable_list, building_i
 
     db_uploader.populate_datetimes_table(conn, base_time_resolution=1, start_datetime=start_datetime, end_datetime=end_datetime)
 
-    building_id = db_uploader.get_building_id(conn, building_information)
+    if building_information['building_type'] == 'Custom':
+        building_id = db_uploader.upload_custom_building(conn)
+    else: building_id = db_uploader.get_building_id(conn, building_information)
 
     with open(all_zone_aggregation_pickle_filepath, "rb") as f: data_dict = pickle.load(f)
     epw_climate_zone = db_uploader.get_climate_zone(location=simulation_settings['epw_location'])

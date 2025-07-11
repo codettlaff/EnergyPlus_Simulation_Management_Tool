@@ -445,13 +445,17 @@ def unhide_simulation_details(idf_filepath, epw_filepath):
     prevent_initial_call=True
 )
 def update_simulation_details(simulation_name, timestep, start_date, end_date, report_freq_selection, epw_filepath):
+    try:
+        epw_location = EPGen.get_location_from_epw(epw_filepath)
+    except Exception as e:
+        epw_location = 'Unknown'
     simulation_settings = {
         'name': simulation_name,
         'timestep_minutes': timestep,
         'start_datetime': start_date, # Only a string, not a datetime, can be stored in dcc.Store
         'end_datetime': end_date,
         'reporting_frequency': report_freq_selection,
-        'epw_location': EPGen.get_location_from_epw(epw_filepath),
+        'epw_location': epw_location,
     }
     return simulation_settings
 
