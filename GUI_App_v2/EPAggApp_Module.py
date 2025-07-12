@@ -357,36 +357,25 @@ def get_time_res(data_dict):
     time_resolution = int((data_dict['DateTime_List'][1] - start_datetime).total_seconds() / 60)
     return start_datetime, end_datetime, time_resolution
 
-def upload_to_db(variables_pickle_filepath, eio_pickle_filepath, db_settings, zones_df, aggregation_pickle_filepath, aggregation_settings, sim_name, custom_or_no, building_id):
+def upload_to_db(db_settings, sim_name, aggregation_pickle_filepath, building_information, simulation_settings, aggregation_settings, building_id, variables_pickle_filepath, eio_pickle_filepath):
 
     conn = psql.connect(db_settings)
     with open(aggregation_pickle_filepath, "rb") as f: data_dict = pickle.load(f)
 
-    # get start time, end time, time resolution from aggregation_pickle_file
-    start_datetime, end_datetime, time_resolution = get_time_res(data_dict)
-    simulation_settings = {
-    "name": sim_name,
-    "start_datetime": start_datetime,
-    "end_datetime": end_datetime,
-    "reporting_frequency": 'timestep',
-    "timestep_minutes": time_resolution,
-    "variables": aggregation_settings['aggregation_variable_list'],
-    "ep_version": None
-    }
-
     epw_climate_zone = 'NA'
 
+    start_datetime = simulation_settings['start_datetime']
+    end_datetime = simulation_settings['end_datetime']
+    time_resolution = simulation_settings['timestep_minutes']
     db_uploader.populate_datetimes_table(conn, base_time_resolution=1, start_datetime=start_datetime,
                                              end_datetime=end_datetime)
 
-    if custom_or_no == 1: building_id = db_uploader.upload_custom_building(conn)
 
     # Not continuing from session
     # First, do all-zones aggregation on variables.pickle and eio.pickle - got this working, all_zones_df looks good
-    if zones_df == None:
-        all_zone_aggregation_pickle_filepath = EP_Agg.aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_settings['variables'])
-        with open(all_zone_aggregation_pickle_filepath, "rb") as f: all_zone_data_dict = pickle.load(f)
-        all_zones_df = db_uploader.upload_time_series_data(conn, all_zone_data_dict, sim_name, simulation_settings, building_id, epw_climate_zone, time_resolution)
+    all_zone_aggregation_pickle_filepath = EP_Agg.aggregate_data(variables_pickle_filepath, eio_pickle_filepath, aggregation_settings['aggregation_variable_list'])
+    with open(all_zone_aggregation_pickle_filepath, "rb") as f: all_zone_data_dict = pickle.load(f)
+    all_zones_df = db_uploader.upload_time_series_data(conn, all_zone_data_dict, sim_name, simulation_settings, building_id, epw_climate_zone, time_resolution)
 
     # make aggregation zone dict out of aggregation zone list - also needs zone ids
     aggregation_zone_dict = {}

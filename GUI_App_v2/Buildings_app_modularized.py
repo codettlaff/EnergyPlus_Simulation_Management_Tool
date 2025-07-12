@@ -998,18 +998,20 @@ def unhide_upload_to_db_button(simulation_name, building_information, simulation
 @app.callback(
     Output('agg_upload_to_db_button', 'children'),
     Input('agg_upload_to_db_button', 'n_clicks'),
-    Input('db_settings', 'data'),
+    State('db_settings', 'data'),
+    State('aggregation_simulation_name', 'data'),
     State('aggregation_pickle_filepath', 'data'),
-    State('agg_simulation_name', 'value'),
     State('aggregation_building_information', 'data'),
-    State('aggregation_simulation_settings', 'data'),
+    State('aggregation_simulation_information', 'data'),
     State('aggregation_settings', 'data'),
-    State('building_id', 'value'),
+    State('aggregation_building_id', 'value'),
+    State('generation_variables_pickle_filepath', 'data'),
+    State('generation_eio_pickle_filepath', 'data'),
     prevent_initial_call = True
 )
-def upload_to_db(n_clicks, db_settings, variables_pickle_filepath, eio_pickle_filepath, aggregation_pickle_filepath, aggregation_settings, sim_name, custom_or_no, building_id):
+def upload_to_db(n_clicks, db_settings, sim_name, aggregation_pickle_filepath, building_information, simulation_settings, aggregation_settings, building_id, variables_pickle_filepath, eio_pickle_filepath):
     try:
-        zones_df = EPAgg.upload_to_db(variables_pickle_filepath, eio_pickle_filepath, db_settings, ZONES_DF, aggregation_pickle_filepath, aggregation_settings, sim_name, custom_or_no, building_id)
+        zones_df = EPAgg.upload_to_db(db_settings, sim_name, aggregation_pickle_filepath, building_information, simulation_settings, aggregation_settings, building_id, variables_pickle_filepath, eio_pickle_filepath)
         return 'Uploaded to Database'
     except Exception as e:
         return 'Upload Failed'
