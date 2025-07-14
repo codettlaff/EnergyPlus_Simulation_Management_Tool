@@ -102,8 +102,8 @@ tab_layout = [
                 html.Div([
                     html.Label("Generated Data", className='section-label'),
                     dcc.Upload(
-                        id='EPVis_Upload_GeneratedData',
-                        children=html.Div("📁 Drag and Drop or Select Files for Generated Data"),
+                        id='visualization_upload_generated_data_box',
+                        children=html.Div("Drag and Drop or Select Files for Generated Data"),
                         className='upload-box'
                     )
                 ]),
@@ -116,7 +116,7 @@ tab_layout = [
                     html.Label("Aggregated Data", className='section-label'),
                     dcc.Upload(
                         id='EPVis_Upload_AggregatedData',
-                        children=html.Div("📁 Drag and Drop or Select Files for Aggregated Data"),
+                        children=html.Div("Drag and Drop or Select Files for Aggregated Data"),
                         className="upload-box"
                     )
                 ])
@@ -590,15 +590,6 @@ tab_layout = [
 ]
 
 '''
-
-def EPVis_RadioButton_DataSource_Interaction_Function(data_source):
-    options = {
-        1: (False, True, True),   # Continue session
-        2: (False, False, True),    # Upload data
-        3: (False, True, False)    # DB details
-    }
-    return options.get(data_source, (True, True, True))
-
 
 def EPVis_Upload_GeneratedData_Interaction_Function(filename, content):
     if filename is not None and content is not None:

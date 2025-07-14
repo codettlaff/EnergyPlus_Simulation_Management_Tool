@@ -104,6 +104,9 @@ app.layout = dbc.Container([
     dcc.Store(id='aggregation_simulation_information', data=None),
     dcc.Store(id='aggregation_building_id', data=None),
 
+    # Visualization Data Sources
+    dcc.Store(id='visualization_upload_variables_pickle_filepath', data=None),
+
     dbc.Row([
         html.H1(
             "EnergyPlus Simulation Management Tool",
@@ -183,6 +186,17 @@ def is_valid_string(s):
 
 def is_valid_int(n):
     return isinstance(n, int) and n > 0
+
+def upload_file(filename, content):
+    try:
+        upload_filepath = os.path.join(UPLOAD_DIRECTORY, filename)
+        data = content.encode("utf8").split(b";base64,")[1]
+        with open(upload_filepath, "wb") as fp:
+            fp.write(base64.decodebytes(data))
+        short_name = filename[:20] + "..." if len(filename) > 10 else filename
+        return f"Uploaded {short_name}", upload_filepath
+    except Exception as e:
+        return "Upload Failed", None
 
 ########## PostgreSQL ##########
 
@@ -1016,6 +1030,16 @@ def unhide_visualization_upload_data_menu(tab, visualization_data_source):
 def unhide_visualization_select_from_database_menu(tab, visualization_data_source):
     if tab == 'tab-visualization' and visualization_data_source == 3: return False
     else: return True
+
+@app.callback(
+    Output('visualization_upload_generated_data_box', 'children'),
+    Output('visualization_upload_variables_pickle_filepath', 'data'),
+    Input('visualization_upload_generated_data_box', 'filename'),
+    Input('visualization_upload_generated_data_box', 'contents'),
+    prevent_initial_call=True
+)
+def upload_variables_pickle(filename, content):
+    return upload_file(filename, content)
 
 """
 
