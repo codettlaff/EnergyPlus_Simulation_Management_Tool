@@ -758,8 +758,8 @@ def get_variables(conn, zone_id):
 
 def upload_time_series_data(conn, data_dict, simulation_name, simulation_settings, building_id, epw_climate_zone=None, time_resolution=5, aggregation_zones=None):
 
-    start_datetime = simulation_settings['start_datetime'] + timedelta(minutes=5)
-    end_datetime = simulation_settings['end_datetime'] + timedelta(days=1)
+    start_datetime = simulation_settings['start_datetime']
+    end_datetime = simulation_settings['end_datetime']
 
     # Create new entry in the simulations table, returning simulation_id
     simulation_id = populate_simulations_table(conn, building_id, simulation_name, epw_climate_zone)
