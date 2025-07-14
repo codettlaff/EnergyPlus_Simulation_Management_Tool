@@ -49,78 +49,14 @@ if os.path.exists(TEMPORARY_FOLDERPATH): shutil.rmtree(TEMPORARY_FOLDERPATH)
 
 ########## System Variables ##########
 
-DATA_IDF_FILEPATH = None
-DATA_EPW_FILEPATH = None
 PRESELECTED_VARIABLES = EPGen.preselected_variables()
-INITIAL_RUN_EIO_FILEPATH = None
-INITIAL_RUN_RDD_FILEPATH = None
 
 DEFAULT_IDF_FILEPATH = os.path.join(DATA_FOLDERPATH, 'Commercial_Prototypes', 'ASHRAE', '90_1_2013', 'ASHRAE901_OfficeSmall_STD2013_Seattle.idf')
 DEFAULT_EPW_FILEPATH = os.path.join(DATA_FOLDERPATH, 'TMY3_WeatherFiles_Commercial', 'USA_WA_Seattle-Tacoma.Intl.AP.727930_TMY3.epw')
 
-SIMULATION_SETTINGS = {
-    "name": None,
-    "start_datetime": date(2020, 1, 1),
-    "end_datetime": date(2020, 1, 2),
-    "reporting_frequency": 'timestep',
-    "timestep_minutes": 5,
-    "variables": PRESELECTED_VARIABLES,
-    "ep_version": None
-}
-
-BUILDING_INFORMATION = {
-    "building_type": None,
-    "prototype": None,
-    "energy_code": None,
-    "idf_climate_zone": None,
-    "idf_location": None,
-    "heating_type": None,
-    "foundation_type": None,
-}
-default_building_information = {
-    "building_type": "Commercial",
-    "prototype": "OfficeSmall",
-    "energy_code": "ASHRAE2013",
-    "idf_climate_zone": "4C",
-    "idf_location": "Seattle",
-    "heating_type": None,
-    "foundation_type": None,
-}
 CUSTOM_BUILDING_INFORMATION = {
     "building_type": "Custom"
 }
-
-RESULTS_FILEPATHS = {
-    'variables_pickle_filepath': None,
-    'eio_pickle_filepath': None,
-    'aggregated_pickle_filepath': None
-}
-
-########## Data Aggregation ##########
-
-RESULTS_AGGREGATED_PICKLE_FILEPATH = None
-
-AGGREGATION_SETTINGS = {}
-example_aggregation_settings = {
-    "aggregation_type": "average",
-    "zone_list": [],
-    "variable_list": None
-}
-
-########## Database ##########
-
-USING_DATABASE = False
-DB_SETTINGS = None
-example_db_settings = {
-    "dbanme": "New Database",
-    "user": "Casey",
-    "password": "OfficeLarge",
-    "host": "localhost",
-    "port": 5432
-}
-
-ZONES_DF = None # Contains zone_name, zone_id
-
 
 # Instantiate our App and incorporate BOOTSTRAP theme Stylesheet
 # Themes - https://dash-bootstrap-components.opensource.faculty.ai/docs/themes/#available-themes
