@@ -161,9 +161,13 @@ app.layout = dbc.Container([
         )
     ]),
 
-    dcc.Tabs([
+    dcc.Tabs(
+        id='main_tabs',
+        value='tab-postgresql', # Default Tab
+        children=[
         # postgreSQL Tab
         dcc.Tab(
+            value = 'tab-postgresql',
             label='PostgreSQL',
             className='text-center text-primary mb-4',
             children=PSQL.tab_layout
@@ -171,6 +175,7 @@ app.layout = dbc.Container([
 
         # EP Generation Tab
         dcc.Tab(
+            value = 'tab-generation',
             label='EP Generation',
             className = 'text-center text-primary mb-4',
             children=EPGen.tab_layout
@@ -178,6 +183,7 @@ app.layout = dbc.Container([
 
         # EP Aggregation Tab
         dcc.Tab(
+            value = 'tab-aggregation',
             label = 'Aggregation',
             className = 'text-center text-primary mb-4',
             children = EPAgg.tab_layout
@@ -185,6 +191,7 @@ app.layout = dbc.Container([
 
         # EP Visualization Tab
         dcc.Tab(
+            value = 'tab-visualization',
             label = 'Visualization & Analysis',
             className = 'text-center text-primary mb-4',
             children = EPVis.tab_layout
@@ -916,7 +923,7 @@ def agg_download_pickle(n_clicks, aggregation_pickle_filepath):
     Output('aggregation_simulation_name', 'data'),
     Input('agg_input_selection', 'data'),
     Input('generation_simulation_name', 'data'),
-    prevent_initial_call = True
+    prevent_initial_call = False
 )
 def get_aggregation_simulation_name(agg_input_selection, generation_simulation_name):
     if agg_input_selection == 1: return generation_simulation_name
@@ -925,7 +932,7 @@ def get_aggregation_simulation_name(agg_input_selection, generation_simulation_n
 @app.callback(
     Output('aggregation_building_information', 'data'),
     Input('agg_input_selection', 'value'),
-    State('building_information', 'data'),
+    Input('building_information', 'data'),
     prevent_initial_call = True
 )
 def get_aggregation_building_information(agg_input_selection, building_information):
