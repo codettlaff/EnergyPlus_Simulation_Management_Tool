@@ -1065,6 +1065,16 @@ def populate_db_settings(main_tabs, using_db, db_settings):
         return simulations_df['simulation_name'].tolist()
     else: return []
 
+@app.callback(
+    Output('visualization_generated_or_aggregated_data_selection', 'hidden'),
+    Input('main_tabs', 'value'),
+    Input('visualization_data_source', 'value'),
+    prevent_initial_call = True
+)
+def unhide_generated_or_aggregated_data_selection(main_tabs, visualization_data_source):
+    if main_tabs == 'tab-visualization' and visualization_data_source != 3: return False
+    else: return True
+
 
 """
 

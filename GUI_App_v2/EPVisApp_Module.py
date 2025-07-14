@@ -88,7 +88,7 @@ tab_layout = [
                         {'label': " Upload Files", 'value': 2},
                         {'label': " Database", 'value': 3}
                         ],
-                    value='',
+                    value = 1,
                     className='radiobutton-box',
                 ),
             ],className='div-box'
@@ -164,11 +164,11 @@ tab_layout = [
                 {'label' : " Aggregated Data", 'value' : 2},
                 {'label' : " Both", 'value' : 3}
                 ]  ,
-            value = '',
+            value = 1,
             className = 'radiobutton-box',
         ),
         ],
-        id = 'EPVis_Div_Datatobeselected',
+        id = 'visualization_generated_or_aggregated_data_selection',
         hidden = True,
         className='div-box'
         ),
