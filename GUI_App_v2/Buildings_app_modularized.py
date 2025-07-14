@@ -1134,7 +1134,7 @@ def populate_min_max_date_allowed(tab, data_source, upload_variables_pickle, upl
     if generated_pickle and aggregated_pickle:
         min_datetime = max(generated_data_min_datetime, aggregated_data_min_datetime)
         max_datetime = min(generated_data_max_datetime, aggregated_data_max_datetime)
-        # If min_datetime > max_datetime throw an error.
+        if min_datetime > max_datetime: return None, None # Error
     elif generated_pickle:
         min_datetime = generated_data_min_datetime
         max_datetime = aggregated_data_max_datetime
@@ -1142,9 +1142,9 @@ def populate_min_max_date_allowed(tab, data_source, upload_variables_pickle, upl
         min_datetime = aggregated_data_min_datetime
         max_datetime = aggregated_data_max_datetime
     else: # Using Database
-        print(simulation_id)
+        min_datetime, start_datetime_id, max_datetime, end_datetime_id = PSQL.get_simulation_start_end_datetimes(db_settings, simulation_id)
 
-    print('test')
+    return min_datetime, max_datetime
 
 
 

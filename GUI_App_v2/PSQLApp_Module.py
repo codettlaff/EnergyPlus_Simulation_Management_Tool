@@ -378,6 +378,60 @@ def get_simulations(db_settings):
     conn.close()
     return df
 
+def get_datetime_id(db_settings, datetime):
+    conn = connect(db_settings)
+    cursor = conn.cursor()
+    query = f"SELECT id FROM simulations WHERE datetime = '{datetime}';"
+    cursor.execute(query)
+    datetime = cursor.fetchone()[0]
+    conn.close()
+    return datetime
+
+def get_simulation_start_end_datetimes(db_settings, simulation_id):
+    conn = connect(db_settings)
+    cursor = conn.cursor()
+
+    # Get zone IDs for the simulation
+    query = "SELECT id FROM zones WHERE simulation_id = %s;"
+    cursor.execute(query, (simulation_id,))
+    zone_ids = [row[0] for row in cursor.fetchall()]
+
+    if not zone_ids:
+        conn.close()
+        return None, None, None, None
+
+    # Get variable IDs for those zones
+    query = f"SELECT id FROM variables WHERE zone_id IN %s;"
+    cursor.execute(query, (tuple(zone_ids),))
+    variable_ids = [row[0] for row in cursor.fetchall()]
+
+    if not variable_ids:
+        conn.close()
+        return None, None, None, None
+
+    # Get datetime IDs from timeseriesdata
+    query = f"SELECT datetime_id FROM timeseriesdata WHERE variable_id IN %s ORDER BY datetime_id ASC;"
+    cursor.execute(query, (tuple(variable_ids),))
+    datetime_ids = [row[0] for row in cursor.fetchall()]
+
+    if not datetime_ids:
+        conn.close()
+        return None, None, None, None
+
+    start_datetime_id = datetime_ids[0]
+    end_datetime_id = datetime_ids[-1]
+
+    # Get actual datetime values
+    query = "SELECT datetime FROM datetimes WHERE id = %s;"
+    cursor.execute(query, (start_datetime_id,))
+    start_datetime = cursor.fetchone()[0]
+
+    cursor.execute(query, (end_datetime_id,))
+    end_datetime = cursor.fetchone()[0]
+
+    conn.close()
+
+    return start_datetime, start_datetime_id, end_datetime, end_datetime_id
 
 ########## Temporary Functions for Testing ##########
 
