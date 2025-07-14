@@ -206,6 +206,12 @@ def valid_filepath(filepath):
     return False
 
 def is_valid_dict(d):
+    if d is None:
+        return False
+    if not isinstance(d, dict):
+        return False
+    if len(d) == 0:
+        return False
     for key, value in d.items():
         if value is None:
             return False
