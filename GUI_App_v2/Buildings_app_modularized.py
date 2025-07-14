@@ -965,14 +965,18 @@ def get_aggregation_simulation_settings(agg_input_selection, variables_pickle_fi
 
 @app.callback(
     Output('aggregation_building_id', 'data'),
-    Input('db_settings', 'data'),
+    Input('main_tabs', 'value'),
     Input('agg_input_selection', 'value'),
-    Input('generation_building_id', 'data'),
-    Input('generation_idf_filepath', 'data'),
-    Input('building_information', 'data'),
+    State('db_settings', 'data'),
+    State('generation_building_id', 'data'),
+    State('generation_idf_filepath', 'data'),
+    State('building_information', 'data'),
     prevent_initial_call=True
 )
-def get_aggregation_building_id(db_settings, agg_input_selection, generation_building_id, generation_idf_filepath, building_information):
+def get_aggregation_building_id(tab_selection, agg_input_selection, db_settings, generation_building_id, generation_idf_filepath, building_information):
+
+    if tab_selection != 'tab-aggregation': return no_update
+
     if agg_input_selection == 1:
         if generation_building_id is not None: return generation_building_id
         else:
@@ -1018,7 +1022,7 @@ def unhide_upload_to_db_button(simulation_name, building_information, simulation
     State('aggregation_building_information', 'data'),
     State('aggregation_simulation_information', 'data'),
     State('aggregation_settings', 'data'),
-    State('aggregation_building_id', 'value'),
+    State('aggregation_building_id', 'data'),
     State('generation_variables_pickle_filepath', 'data'),
     State('generation_eio_pickle_filepath', 'data'),
     prevent_initial_call = True
