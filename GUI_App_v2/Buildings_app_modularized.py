@@ -159,6 +159,10 @@ app.layout = dbc.Container([
     dcc.Store(id='generation_eio_pickle_filepath', data=None),
 
     # Data Aggregation
+    dcc.Store(id='agg_input_variables_pickle_filepath'),
+    dcc.Store(id='agg_input_eio_pickle_filepath'),
+    dcc.Store(id='upload_variable_pickle_filepath', data=None),
+    dcc.Store(id='upload_eio_pickle_filepath', data=None),
     dcc.Store(id='aggregation_simulation_name', data=None),
     dcc.Store(id='aggregation_building_information', data=None),
     dcc.Store(id='aggregation_simulation_information', data=None),
