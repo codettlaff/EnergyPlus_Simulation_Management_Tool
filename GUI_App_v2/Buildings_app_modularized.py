@@ -990,150 +990,33 @@ def upload_to_db(n_clicks, db_settings, sim_name, aggregation_pickle_filepath, b
         return 'Uploaded to Database'
     except Exception as e:
         return 'Upload Failed'
-"""
-
-
-@app.callback(
-    Output(component_id = 'EPAgg_Div_UploadFiles', component_property = 'hidden'),
-    Output(component_id = 'EPAgg_Div_AggregationVariables', component_property = 'hidden'),
-    Input(component_id = 'EPAgg_RadioButton_InputSelection', component_property = 'value'), # 1: Continue Session, 2: Upload Files
-    prevent_initial_call = True)
-def EPAgg_RadioButton_InputSelection_Interaction(value):
-
-    global BUILDING_ID
-    global SIMULATION_VARIABLE_LIST
-
-    upload_div, variable_div = EPAgg.EPAgg_RadioButton_InputSelection_Interaction_Function(value)
-    if USING_DATABASE:
-        if (BUILDING_ID == None) and (value == 1):
-            conn = PSQL.connect_to_database(DB_SETTINGS)
-            BUILDING_ID = DB_Uploader.get_building_id(conn, BUILDING_TYPE, os.path.basename(DATA_IDF_FILEPATH))
-        if (BUILDING_ID == None) or (value == 2):
-            conn = PSQL.connect_to_database(DB_SETTINGS)
-            BUILDING_ID = DB_Uploader.upload_custom_building(conn)
-
-    return upload_div, variable_div
-
-@app.callback(
-    Output(component_id = 'EPAgg_Upload_Pickle', component_property = 'children'),
-    State(component_id = 'EPAgg_Upload_Pickle', component_property = 'filename'),
-    Input(component_id = 'EPAgg_Upload_Pickle', component_property = 'contents'),
-    prevent_initial_call = True)
-def EPAgg_Upload_Pickle_Interaction(filename, content):
-    global VARIABLES_PICKLE_FILEPATH, BUILDING_TYPE, SIMULATION_RESULTS_FOLDERPATH
-    message, variables_pickle_filepath = EPAgg.EPAgg_Upload_Pickle_Interaction_Function(filename, content)
-    VARIABLES_PICKLE_FILEPATH = variables_pickle_filepath
-    BUILDING_TYPE = 'Custom'
-
-    simulation_results_folderpath = os.path.join(RESULTS_FOLDERPATH, SIMULATION_FOLDERNAME)
-    if not os.path.exists(simulation_results_folderpath): mkdir(simulation_results_folderpath)
-    SIMULATION_RESULTS_FOLDERPATH = simulation_results_folderpath
-
-    # Get list of all possible variables
-    global VARIABLES_PICKLE_VARIABLE_LIST
-    VARIABLES_PICKLE_VARIABLE_LIST = EPAgg.get_variable_list(VARIABLES_PICKLE_FILEPATH)
-
-    return message
-
-@app.callback(
-    Output(component_id = 'EPAgg_Upload_EIO', component_property = 'children'),
-    Input(component_id = 'EPAgg_Upload_EIO', component_property = 'filename'),
-    State(component_id = 'EPAgg_Upload_EIO', component_property = 'contents'),
-    prevent_initial_call = True)
-def EPAgg_Upload_EIO_Interaction(filename, content):
-    global EIO_PICKLE_FILEPATH
-    message, eio_pickle_filepath = EPAgg.EPAgg_Upload_EIO_Interaction_Function(filename, content)
-    EIO_PICKLE_FILEPATH = eio_pickle_filepath
-    return message
-
-# Unhide Aggregation Details Window, populate Zone List dropdown.
-@app.callback(
-    Output(component_id = 'EPAgg_Div_AggregationDetails', component_property = 'hidden'),
-    Output(component_id = 'EPAgg_DropDown_ZoneList', component_property = 'options'),
-    Input(component_id = 'EPAgg_RadioButton_AggregationVariables', component_property = 'value'),
-    Input(component_id = 'EPAgg_DropDown_PreselectedVariables', component_property = 'value'),
-    prevent_initial_call = True)
-def EPAgg_DropDown_AggregationVariables_Interaction(selection, value):
-    div = EPAgg.EPAgg_DropDown_AggregationVariables_Interaction_Function(selection, value)
-    zone_list = EPAgg.get_zone_list(EIO_PICKLE_FILEPATH)
-    return div, zone_list
-
-# Populate Variable Selection DropDown
-@app.callback(
-    Output(component_id = 'EPAgg_DropDown_PreselectedVariables', component_property = 'options'),
-    # Output(component_id = 'EPAgg_DropDown_ZoneList', component_property = 'options'),
-    # Input(component_id = 'EPAgg_RadioButton_InputSelection', component_property = 'value'), # 1: Continue Session 2: Upload Files
-    Input(component_id = 'EPAgg_RadioButton_AggregationVariables', component_property = 'value'), # 1: All Variables 2: Select Variables
-    Input(component_id = 'EPAgg_DropDown_PreselectedVariables', component_property = 'value'), # Variable Selection DropDown
-    prevent_initial_call = True)
-def EPAgg_RadioButton_AggregationVariables_Interaction(VariableSelection, Variable_DropDown_Selection):
-    # pre_list, custom_list, zone_list = EPAgg.EPAgg_RadioButton_AggregationVariables_Interaction_Function(InputSelection, VariableSelection)
-    global AGGREGATION_VARIABLE_SELECTION, VARIABLES_PICKLE_VARIABLE_LIST
-    if VARIABLES_PICKLE_VARIABLE_LIST == None:
-        VARIABLES_PICKLE_VARIABLE_LIST = EPAgg.get_variable_list(VARIABLES_PICKLE_FILEPATH)
-    if VariableSelection == 1: aggregation_variable_selection = VARIABLES_PICKLE_VARIABLE_LIST # All Variables
-    elif VariableSelection == 2: aggregation_variable_selection = Variable_DropDown_Selection # Selected Variables
-    AGGREGATION_VARIABLE_SELECTION = aggregation_variable_selection
-    return VARIABLES_PICKLE_VARIABLE_LIST
-
-@app.callback(
-    Output(component_id = 'EPAgg_Div_FinalDownload', component_property = 'hidden'),
-    Input(component_id = 'EPAgg_DropDown_TypeOfAggregation', component_property = 'value'),
-    prevent_initial_call = True)
-def EPAgg_DropDown_TypeOfAggregation_Interaction(value):
-    div = EPAgg.EPAgg_DropDown_TypeOfAggregation_Interaction_Function(value)
-    return div
-
-# Update Variable Selection
-@app.callback(
-    Input(component_id = 'EPAgg_RadioButton_AggregationVariables', component_property = 'value'),
-    Input(component_id = 'EPAgg_DropDown_PreselectedVariables', component_property = 'value'),
-    Input(component_id = 'EPAgg_DropDown_CustomVariables', component_property = 'value'),
-    prevent_initial_call = True
-)
-def update_variables_list(button_value, preselected_variables, custom_variables):
-    global SIMULATION_VARIABLE_LIST
-    if button_value == 1: SIMULATION_VARIABLE_LIST = preselected_variables
-    elif button_value == 2: SIMULATION_VARIABLE_LIST = custom_variables
-
-# Update Aggregation Zone List
-@app.callback(
-    Input(component_id = 'EPAgg_RadioButton_AggregateTo', component_property = 'value'), # Aggregate to One or Custom Aggregation
-    Input(component_id = 'EPAgg_DropDown_CustomAggregationZoneList', component_property = 'value'), # User Input List using commas and semicolon
-)
-def update_aggregation_zone_list(button_value, zone_list):
-    global AGGREGATION_ZONE_LIST
-    if button_value == 1: AGGREGATION_ZONE_LIST = 'one_zone'
-    elif button_value == 2: AGGREGATION_ZONE_LIST = zone_list
-
-@app.callback(
-    Output(component_id = 'EPAgg_Button_Aggregate', component_property = 'children'),
-    #State(component_id = 'EPAgg_RadioButton_AggregationVariables', component_property = 'value'),
-    #State(component_id = 'EPAgg_DropDown_CustomVariables', component_property = 'value'),
-    #State(component_id = 'EPAgg_RadioButton_AggregateTo', component_property = 'value'),
-    #State(component_id = 'EPAgg_DropDown_CustomAggregationZoneList', component_property = 'value'),
-    State(component_id = 'EPAgg_DropDown_TypeOfAggregation', component_property = 'value'),
-    Input(component_id = 'EPAgg_Button_Aggregate', component_property = 'n_clicks'),
-    prevent_initial_call = True)
-def EPAgg_Button_Aggregate_Interaction(aggregation_type, n_clicks):
-    global AGGREGATION_PICKLE_FILEPATH
-    # message = EPAgg.EPAgg_Button_Aggregate_Interaction_Function(SIMULATION_VARIABLE_LIST, aggregate_to, custom_zone_list, Type_Aggregation, n_clicks)
-    AGGREGATION_PICKLE_FILEPATH = EPAgg.aggregate_data(VARIABLES_PICKLE_FILEPATH, EIO_PICKLE_FILEPATH, SIMULATION_RESULTS_FOLDERPATH, AGGREGATION_VARIABLE_SELECTION, aggregation_type, AGGREGATION_ZONE_LIST)
-    return "Aggregation Completed"
-
-@app.callback(
-    Output(component_id = 'EPAgg_Download_DownloadFiles', component_property = 'data'),
-    Input(component_id = 'EPAgg_Button_Download', component_property = 'n_clicks'),
-    prevent_initial_call = True)
-def EPAgg_Button_Download_Interaction(n_clicks):
-    download_path = EPAgg.EPAgg_Button_Download_Interaction_Function(AGGREGATION_PICKLE_FILEPATH)
-    return download_path
 
 ##########################################################################################################
 
 #################### Visualization #######################################################################
 
 ##########################################################################################################
+
+@app.callback(
+    Output('visualization_upload_data_menu', 'hidden'),
+    Input('main_tabs', 'value'),
+    Input('visualization_data_source', 'value'),
+    prevent_initial_call = True
+)
+def unhide_visualization_upload_data_menu(tab, visualization_data_source):
+    if tab == 'tab-visualization' and visualization_data_source == 2: return False
+    else: return True
+
+@app.callback(
+    Output('visualization_select_from_database_menu', 'hidden'),
+    Input('main_tabs', 'value'),
+    Input('visualization_data_source', 'value'),
+    prevent_initial_call = True
+)
+def unhide_visualization_select_from_database_menu(tab, visualization_data_source):
+    if tab == 'tab-visualization' and visualization_data_source == 2: return False
+
+"""
 
 @app.callback(
     Output(component_id = 'EPVis_Div_Datatobeselected', component_property = 'hidden', allow_duplicate = True),
