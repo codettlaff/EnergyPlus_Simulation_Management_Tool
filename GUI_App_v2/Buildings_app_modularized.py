@@ -1097,6 +1097,8 @@ def unhide_generated_or_aggregated_data_selection(main_tabs, visualization_data_
 @app.callback(
     Output('visualization_date_picker', 'min_date_allowed'),
     Output('visualization_date_picker', 'max_date_allowed'),
+    Output('visualization_date_picker', 'start_date'),
+    Output('visualization_date_picker', 'end_date'),
     Input('main_tabs', 'value'),
     Input('visualization_data_source', 'value'),
     Input('visualization_upload_variables_pickle_filepath', 'data'),
@@ -1109,7 +1111,7 @@ def unhide_generated_or_aggregated_data_selection(main_tabs, visualization_data_
 )
 def populate_min_max_date_allowed(tab, data_source, upload_variables_pickle, upload_aggregated_pickle, simulation_id, generation_variables_pickle, aggregation_pickle, db_settings):
 
-    if tab != 'tab-visualization': return no_update
+    if tab != 'tab-visualization': return None, None, None, None
 
     if data_source == 1:
         generated_pickle = generation_variables_pickle
@@ -1134,7 +1136,7 @@ def populate_min_max_date_allowed(tab, data_source, upload_variables_pickle, upl
     if generated_pickle and aggregated_pickle:
         min_datetime = max(generated_data_min_datetime, aggregated_data_min_datetime)
         max_datetime = min(generated_data_max_datetime, aggregated_data_max_datetime)
-        if min_datetime > max_datetime: return None, None # Error
+        if min_datetime > max_datetime: return None, None, None, None # Error
     elif generated_pickle:
         min_datetime = generated_data_min_datetime
         max_datetime = aggregated_data_max_datetime
@@ -1144,8 +1146,12 @@ def populate_min_max_date_allowed(tab, data_source, upload_variables_pickle, upl
     else: # Using Database
         min_datetime, start_datetime_id, max_datetime, end_datetime_id = PSQL.get_simulation_start_end_datetimes(db_settings, simulation_id)
 
-    return min_datetime, max_datetime
-
+    return (
+        min_datetime.date().isoformat(),
+        max_datetime.date().isoformat(),
+        min_datetime.date().isoformat(),
+        max_datetime.date().isoformat()
+    )
 
 
 @app.callback(
