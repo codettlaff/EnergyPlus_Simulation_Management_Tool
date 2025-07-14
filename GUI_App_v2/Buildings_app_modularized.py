@@ -1014,7 +1014,8 @@ def unhide_visualization_upload_data_menu(tab, visualization_data_source):
     prevent_initial_call = True
 )
 def unhide_visualization_select_from_database_menu(tab, visualization_data_source):
-    if tab == 'tab-visualization' and visualization_data_source == 2: return False
+    if tab == 'tab-visualization' and visualization_data_source == 3: return False
+    else: return True
 
 """
 

@@ -12,7 +12,7 @@ import datetime
 import pickle
 import copy
 from datetime import date
-from dash import Dash, dcc, html, Input, Output, State, dash_table
+from dash import Dash, dcc, html, Input, Output, State, dash_table, ctx
 import pandas as pd
 import numpy as np
 import opyplus as op
@@ -71,120 +71,130 @@ OUR_VARIABLE_LIST = ['Schedule_Value_',
 
 tab_layout = [
     
-    # Row 1
+    # Row 1, data source, data to be selected
     dbc.Row([
 
         dbc.Col([
 
             html.Div([
 
-                html.H5("Data Source",
-                    className = 'text-left text-secondary mb-1 ms-3 mt-2'),
+                html.H5("Data Source", className = 'section-title'),
 
                 dcc.RadioItems(
-                    id = 'EPVis_RadioButton_DataSource',
+                    id = 'visualization_data_source',
                     labelStyle = {'display': 'block'},
                     options = [
-                        {'label' : " Continue Session", 'value' : 1},
-                        {'label' : " Upload Files", 'value' : 2},
+                        {'label': " Continue Session", 'value': 1},
+                        {'label': " Upload Files", 'value': 2},
+                        {'label': " Database", 'value': 3}
                         ],
-                    value = '',
-                    className = 'ps-4 p-2',
+                    value='',
+                    className='radiobutton-box',
                 ),
-            ],
-            style = {
-                'width': '100%',
-                'borderWidth': '1px',
-                'borderStyle': 'solid',
-                'borderRadius': '5px',
-                }
+            ],className='div-box'
+            
             ),], xs = 12, sm = 12, md = 6, lg = 6, xl = 6), # width = 12
 
         dbc.Col([
-
+            # Upload Section Container
             html.Div([
+                # Upload Generated Data
+                html.Div([
+                    html.Label("Generated Data", className='section-label'),
+                    dcc.Upload(
+                        id='EPVis_Upload_GeneratedData',
+                        children=html.Div("📁 Drag and Drop or Select Files for Generated Data"),
+                        className='upload-box'
+                    )
+                ]),
 
-                html.H5("Data to be selected",
-                        className = 'text-left text-secondary mb-1 ms-3 mt-2'),
+                # Spacer
+                html.Br(),
 
-                dcc.RadioItems(
-                    id = 'EPVis_RadioButton_DataToBeSelected',
-                    labelStyle = {'display': 'block'},
-                    options = [
-                        {'label' : " Generated Data", 'value' : 1},
-                        {'label' : " Aggregated Data", 'value' : 2},
-                        {'label' : " Both", 'value' : 3}
-                        ]  ,
-                    value = '',
-                    className = 'ps-4 p-2',
-                ),
+                # Upload Aggregated Data
+                html.Div([
+                    html.Label("Aggregated Data", className='section-label'),
+                    dcc.Upload(
+                        id='EPVis_Upload_AggregatedData',
+                        children=html.Div("📁 Drag and Drop or Select Files for Aggregated Data"),
+                        className="upload-box"
+                    )
+                ])
             ],
-            id = 'EPVis_Div_Datatobeselected',
-            hidden = True,
-            style = {
-                'width': '100%',
-                'borderWidth': '1px',
-                'borderStyle': 'solid',
-                'borderRadius': '5px',
-                }
-            ),], xs = 12, sm = 12, md = 6, lg = 6, xl = 6), # width = 12
+            id='visualization_upload_data_menu',
+            hidden=True,
+            className='div-box'
+            ),
+
+            # Placeholder for Database Data (currently just a break)
+            html.Div([
+                html.Label("Select Database", className='section-label'),
+                dcc.Dropdown(
+                    options=['Db1', 'Db2', 'Db3'],
+                    value=None,
+                    id='EPVis_DropDown_SelectDatabase',
+                    className='dropdown-box'
+                ),
+
+                html.Label("Select Simulation", className='section-label'),
+                dcc.Dropdown(
+                    options=['sim1', 'sim2', 'sim3'],
+                    value=None,
+                    id='EPVis_DropDown_SelectSimulation',
+                    className='dropdown-box'
+                ),
+
+            ],
+            id='visualization_select_from_database_menu',
+            hidden=True,
+            className='div-box'
+            )
+
+
+        ], xs=12, sm=12, md=6, lg=6, xl=6)
 
         ], justify = "center", align = "center"),
 
     # Break Row
     dbc.Row([dbc.Col([html.Br()], width = 12),]),
 
-    # Row 2, upload files
+    # Row 2, Data to be selected
     html.Div([
 
-            # Upload Generated data
-            dcc.Upload(
-                id='EPVis_Upload_GeneratedData',
-                children='Drag and Drop or Select Files for Generated Data',
-                style={
-                    'width': '98.5%',
-                    'height': '60px',
-                    'lineHeight': '60px',
-                    'borderWidth': '1px',
-                    'borderStyle': 'dashed',
-                    'borderRadius': '5px',
-                    'textAlign': 'center',
-                    'margin': '10px'
-                },
-            ),
+        html.H5("Data to be selected", className = 'section-title'),
 
-            # Break Row
-            dbc.Row([dbc.Col([html.Br()], width = 12),]),
+        dcc.RadioItems(
+            id = 'EPVis_RadioButton_DataToBeSelected',
+            labelStyle = {'display': 'block'},
+            options = [
+                {'label' : " Generated Data", 'value' : 1},
+                {'label' : " Aggregated Data", 'value' : 2},
+                {'label' : " Both", 'value' : 3}
+                ]  ,
+            value = '',
+            className = 'radiobutton-box',
+        ),
+        ],
+        id = 'EPVis_Div_Datatobeselected',
+        hidden = True,
+        className='div-box'
+        ),
 
-            # Upload Aggregated data
-            dcc.Upload(
-                id='EPVis_Upload_AggregatedData',
-                children='Drag and Drop or Select Files for Aggregated Data',
-                style={
-                    'width': '98.5%',
-                    'height': '60px',
-                    'lineHeight': '60px',
-                    'borderWidth': '1px',
-                    'borderStyle': 'dashed',
-                    'borderRadius': '5px',
-                    'textAlign': 'center',
-                    'margin': '10px'
-                },
-            ),
-
-            ],id = 'EPVis_Div_UploadData',
-            hidden = True,
-            style = {
-                'borderWidth': '1px',
-                'borderStyle': 'solid',
-                'borderRadius': '5px',
-                #'display':'none'
-                }),
+    # Row 3, proceed button
+    dbc.Row([
+        dbc.Col([
+            html.Br(),
+            html.Button('Proceed',
+            id = 'EPVis_Button_Proceed',
+            className = "btn btn-primary btn-lg col-12",
+            hidden=True
+            ),], width = 12),
+        ]),
 
     # Break Row
     dbc.Row([dbc.Col([html.Br()], width = 12),]),
 
-    # Row 3
+    # Row 3, available date range
     dbc.Row([
 
         dbc.Col([
@@ -215,7 +225,7 @@ tab_layout = [
     # Break Row
     dbc.Row([dbc.Col([html.Br()], width = 12),]),
 
-    # Row 4
+    # Row 4, select date range
     dbc.Row([
 
         dbc.Col([
@@ -243,11 +253,9 @@ tab_layout = [
 
     # Break Row
     dbc.Row([dbc.Col([html.Br()], width = 12),]),
-
-    # Break Row
     dbc.Row([dbc.Col([html.Br()], width = 12),]),
 
-    # Row 5
+    # Row 5, select variable title
     dbc.Row([
 
         dbc.Col([
@@ -259,7 +267,7 @@ tab_layout = [
 
         ], justify = "left", align = "center"),
 
-    # Row 6
+    # Row 6, select variable dropdowns
     dbc.Row([
 
         dbc.Col([
@@ -339,7 +347,7 @@ tab_layout = [
     # Break Row
     dbc.Row([dbc.Col([html.Br()], width = 12),]),
 
-    # Row 7
+    # Row 7, distribution plot title
     dbc.Row(
         dbc.Col(
             html.H3("Distribution Plot:", className = 'text-left text-secondary mb-2'),
@@ -352,7 +360,7 @@ tab_layout = [
     # Break Row
     dbc.Row([dbc.Col([html.Br()], width = 12),]),
 
-    # Row 8
+    # Row 8, distribution plot buttons
     dbc.Row([
 
         dbc.Col([
@@ -390,11 +398,9 @@ tab_layout = [
 
     # Break Row
     dbc.Row([dbc.Col([html.Br()], width = 12),]),
-
-    # Break Row
     dbc.Row([dbc.Col([html.Br()], width = 12),]),
 
-    # Row 9
+    # Row 9, distribution plot
     dbc.Row([
 
         dbc.Col([
@@ -408,51 +414,31 @@ tab_layout = [
     # Break Row
     dbc.Row([dbc.Col([html.Br()], width = 12),]),
 
-    # Row 10
-    html.Div([
-                dbc.Row([
-                    dash_table.DataTable(
-                        id='EPVis_Table_GeneratedData',
-                        columns=['Variable', 'Mean', 'Variance', 'Standard Deviation', 'Range'],
-                        data=None
-                    ),
-                ]),
-                dbc.Row([
-                    dbc.Col([html.H4('Generated Data')], width = 2),
-                    dbc.Col([html.H4('Mean:')], width = 2),
-                    dbc.Col([html.H4('Variance:')], width = 2),
-                    dbc.Col([html.H4('Standard Deviation:')], width = 3),
-                    dbc.Col([html.H4('Range:')], width = 3),
-                ]),
-                ],id = 'EPVis_Row_GeneratedDataDetails',
-                hidden = True,
-                style = {
-                    'borderWidth': '1px',
-                    'borderStyle': 'solid',
-                    'borderRadius': '5px',
-                    },),
-
-            # Break Row
-
-    # Break Row
-    dbc.Row([dbc.Col([html.Br()], width = 12),]),
-
-    # Row 11
+    # Row 10, generated distribution details
     html.Div([
         dbc.Row([
-            dbc.Col([html.H4('Aggregated Data')], width = 2),
-            dbc.Col([html.H4('Mean:')], width = 2),
-            dbc.Col([html.H4('Variance:')], width = 2),
-            dbc.Col([html.H4('Standard Deviation:')], width = 3),
-            dbc.Col([html.H4('Range:')], width = 3),
+            dash_table.DataTable(
+                id='EPVis_Table_GeneratedData',
+                columns=[
+                    {"name": "Variable", "id": "Variable"},
+                    {"name": "Mean", "id": "Mean"},
+                    {"name": "Variance", "id": "Variance"},
+                    {"name": "Standard Deviation", "id": "Standard_Deviation"},
+                    {"name": "Range", "id": "Range"},
+                ],
+                data=[],
+                style_table={'margin': '0 auto'},  # center the table
+                style_cell={'textAlign': 'center'},  # center text in cells
+                style_header={'fontWeight': 'bold', 'textAlign': 'center'},  # bold headers
+            ),
         ]),
-        ],id = 'EPVis_Row_AggregatedDataDetails',
-        hidden = True,
+        ],id = 'EPVis_Div_Statistics',
         style = {
             'borderWidth': '1px',
             'borderStyle': 'solid',
             'borderRadius': '5px',
-            },),
+            },
+    ),
 
     # Break Row
     dbc.Row([dbc.Col([html.Br()], width = 12),]),
@@ -460,7 +446,7 @@ tab_layout = [
     # Break Row
     dbc.Row([dbc.Col([html.Br()], width = 12),]),
 
-    # Row 12
+    # Row 12, scatter plot title
     dbc.Row([
 
         dbc.Col([
@@ -475,7 +461,7 @@ tab_layout = [
     # Break Row
     dbc.Row([dbc.Col([html.Br()], width = 12),]),
 
-    # Row 13
+    # Row 13, scatter plot warning
     dbc.Row([
 
         dbc.Col([
@@ -490,7 +476,7 @@ tab_layout = [
 
         ], justify = "left", align = "center"),
 
-    # Row 14
+    # Row 14, scatter plot button
     dbc.Row([
 
         dbc.Col([
@@ -508,7 +494,7 @@ tab_layout = [
     # Break Row
     dbc.Row([dbc.Col([html.Br()], width = 12),]),
 
-    # Row 15
+    # Row 15, scatter plot
     dbc.Row([
 
         dbc.Col([
@@ -525,7 +511,7 @@ tab_layout = [
     # Break Row
     dbc.Row([dbc.Col([html.Br()], width = 12),]),
 
-    # Row 16
+    # Row 16, time series plot title
     dbc.Row([
 
         dbc.Col([
@@ -540,7 +526,7 @@ tab_layout = [
     # Break Row
     dbc.Row([dbc.Col([html.Br()], width = 12),]),
 
-    # Row 17
+    # Row 17, time series buttons
     dbc.Row([
 
         dbc.Col([
@@ -575,7 +561,7 @@ tab_layout = [
     # Break Row
     dbc.Row([dbc.Col([html.Br()], width = 12),]),
 
-    # Row 18
+    # Row 18, time series graph
     dbc.Row([
 
         dbc.Col([
@@ -586,7 +572,7 @@ tab_layout = [
 
         ], justify = "center", align = "center"),
 
-    # Row 19
+    # Row 19, end session
     dbc.Row([
 
         dbc.Col([
@@ -603,24 +589,15 @@ tab_layout = [
 
 ]
 
+'''
+
 def EPVis_RadioButton_DataSource_Interaction_Function(data_source):
-    """
-    Determines the behavior of data selection and upload controls 
-    based on the selected data source radio button.
-
-    Args:
-        data_source (int): 1 for upload, 2 for selection, others for both.
-
-    Returns:
-        tuple: (data_selection, upload_data)
-    """
     options = {
-        1: (False, True),   # Only upload
-        2: (True, False)    # Only select
+        1: (False, True, True),   # Continue session
+        2: (False, False, True),    # Upload data
+        3: (False, True, False)    # DB details
     }
-
-    # Default to (True, True) if data_source is not 1 or 2
-    return options.get(data_source, (True, True))
+    return options.get(data_source, (True, True, True))
 
 
 def EPVis_Upload_GeneratedData_Interaction_Function(filename, content):
@@ -628,7 +605,7 @@ def EPVis_Upload_GeneratedData_Interaction_Function(filename, content):
         AppFuncs.save_file('Generated.pickle', content, UPLOAD_DIRECTORY_VIS)
         message = filename + ' uploaded successfully'
     else:
-        message = 'Drag and Drop or Select Files for Generated Data'
+        message = '📁 Drag and Drop or Select Files for Generated Data'
     return message
 
 def EPVis_Upload_AggregatedData_Interaction_Function(filename, content):
@@ -637,12 +614,18 @@ def EPVis_Upload_AggregatedData_Interaction_Function(filename, content):
         message = filename + ' uploaded successfully'
         data_selection = False
     else:
-        message = 'Drag and Drop or Select Files for Aggregated Data'
+        message = '📁 Drag and Drop or Select Files for Aggregated Data'
         data_selection = True
 
     return message, data_selection
 
-def EPVis_Radio_DataToBeSelected_Interaction_Function(InputSelection, selection):
+def EPVis_RadioButton_DataToBeSelected_Interaction_Function(value):
+    if value is not None:
+        return False
+    else:
+        return True
+
+def EPVis_Button_Proceed_Interaction_Function(InputSelection, selection, n_clicks):
     if selection == 1: # Generate Data
         date_range1 = False
         date_range2 = False
@@ -651,11 +634,6 @@ def EPVis_Radio_DataToBeSelected_Interaction_Function(InputSelection, selection)
         button_dist_gen = False
         button_dist_agg = True
         button_dist_both = True
-        mean_gen = False
-        mean_agg = True
-        button_scat_gen = False
-        button_scat_agg = True
-        button_scat_both = True
         button_time_gen = False
         button_time_agg = True
         button_time_both = True
@@ -667,11 +645,6 @@ def EPVis_Radio_DataToBeSelected_Interaction_Function(InputSelection, selection)
         button_dist_gen = True
         button_dist_agg = False
         button_dist_both = True
-        mean_gen = True
-        mean_agg = False
-        button_scat_gen = True
-        button_scat_agg = False
-        button_scat_both = True
         button_time_gen = True
         button_time_agg = False
         button_time_both = True
@@ -683,11 +656,6 @@ def EPVis_Radio_DataToBeSelected_Interaction_Function(InputSelection, selection)
         button_dist_gen = False
         button_dist_agg = False
         button_dist_both = False
-        mean_gen = False
-        mean_agg = False
-        button_scat_gen = False
-        button_scat_agg = False
-        button_scat_both = False
         button_time_gen = False
         button_time_agg = False
         button_time_both = False
@@ -699,11 +667,6 @@ def EPVis_Radio_DataToBeSelected_Interaction_Function(InputSelection, selection)
         button_dist_gen = True
         button_dist_agg = True
         button_dist_both = True
-        mean_gen = True
-        mean_agg = True
-        button_scat_gen = True
-        button_scat_agg = True
-        button_scat_both = True
         button_time_gen = True
         button_time_agg = True
         button_time_both = True
@@ -739,6 +702,11 @@ def EPVis_Radio_DataToBeSelected_Interaction_Function(InputSelection, selection)
 
         for item in os.listdir(UPLOAD_DIRECTORY_VIS):
             shutil.copy(os.path.join(UPLOAD_DIRECTORY_VIS,item), Visualization_FolderPath)
+
+    # Database -> select files from database
+    elif InputSelection ==3:
+        z=1
+
 
     if selection == 1:
         # Finding min and max dates from generated data
@@ -795,7 +763,7 @@ def EPVis_Radio_DataToBeSelected_Interaction_Function(InputSelection, selection)
     min_date_upload = min_date_upload.replace(hour = 0, minute = 0)
     max_date_upload = max_date_upload.replace(hour = 0, minute = 0)
 
-    return date_range1, date_range2, var_gendata, var_aggrdata, button_dist_gen, button_dist_agg, button_dist_both, mean_gen, mean_agg, button_scat_both, button_time_gen, button_time_agg, button_time_both, min_date_upload, max_date_upload, min_date_upload, max_date_upload, min_date_upload, max_date_upload, Generated_Variables, Aggregated_Variables
+    return date_range1, date_range2, var_gendata, var_aggrdata, button_dist_gen, button_dist_agg, button_dist_both, button_time_gen, button_time_agg, button_time_both, min_date_upload, max_date_upload, min_date_upload, max_date_upload, min_date_upload, max_date_upload, Generated_Variables, Aggregated_Variables
 
 def EPVis_DropDown_GeneratedDataTables_Interaction_Function(variable):
     columns = []
@@ -814,74 +782,196 @@ def EPVis_DropDown_AggregatedDataTables_Interaction_Function(variable):
         columns = [x for x in Aggregated_OutputVariable_Dict if (x.find('Aggregation_Zone_')>=0) and not (x.find('Aggregation_Zone_Equipment_')>=0)]
     return columns
 
-def EPVis_Button_DistGeneratedData_Interaction_Function(table, column, n_clicks):
-    Generated_Dict_file = open(os.path.join(WORKSPACE_DIRECTORY,'Visualization','Generated.pickle'),"rb")
-    Generated_OutputVariable_Dict = pickle.load(Generated_Dict_file)
-    
-    # Creating DF for plotting
+def EPVis_Button_DistGeneratedData_Interaction_Function(table, column, start_date, end_date, n_clicks):
+    # === Load Generated Data ===
+    with open(os.path.join(WORKSPACE_DIRECTORY, 'Visualization', 'Generated.pickle'), "rb") as f:
+        Generated_OutputVariable_Dict = pickle.load(f)
+
+    # === Prepare date filter ===
+    start, end = pd.to_datetime(start_date), pd.to_datetime(end_date)
+
+    # === Get and process the DataFrame ===
+    df_gen = Generated_OutputVariable_Dict[table].copy()
+
+    # --- Handle 'Date/Time' column with 24:00:00 fix ---
+    split_dt = df_gen['Date/Time'].str.strip().str.split(" ", expand=True)
+    df_gen['MM/DD'] = split_dt[0]
+    df_gen['HH:MM:SS'] = split_dt[1]
+
+    mask_24 = df_gen['HH:MM:SS'] == '24:00:00'
+    df_gen.loc[mask_24, 'HH:MM:SS'] = '00:00:00'
+    df_gen['MM/DD'] = pd.to_datetime('2020 ' + df_gen['MM/DD'], format='%Y %m/%d')
+    df_gen.loc[mask_24, 'MM/DD'] += pd.Timedelta(days=1)
+
+    df_gen['DateTime'] = pd.to_datetime(df_gen['MM/DD'].astype(str) + ' ' + df_gen['HH:MM:SS'])
+    df_gen.drop(columns=['MM/DD', 'HH:MM:SS'], inplace=True)
+
+    # === Filter by date range ===
+    df_gen = df_gen[(df_gen['DateTime'] >= start) & (df_gen['DateTime'] <= end)]
+
+    # === Build final plotting DataFrame ===
     Data_DF = pd.DataFrame()
     for item in column:
-        Current_DF = Generated_OutputVariable_Dict[table][item].to_frame()
+        if item not in df_gen.columns:
+            print(f"[Warning] '{item}' not found in Generated_OutputVariable_Dict['{table}'].")
+            continue
+
+        Current_DF = df_gen[['DateTime', item]].copy()
         Current_DF = Current_DF.rename(columns={item: 'ColName'})
         Current_DF['dataset'] = item
         Data_DF = pd.concat([Data_DF, Current_DF])
 
-    # Plotting the combined DF
+    # === Plotting ===
     figure = px.histogram(Data_DF, x='ColName', color='dataset', histnorm='probability')
-    figure.update_layout(xaxis_title='Support')
-    figure.update_layout(yaxis_title='Probability')
+    figure.update_layout(xaxis_title='Frequency', yaxis_title='Value')
 
-    data = []
+    # === Get statistics ===
+    data = EPVis_DF2stat(Data_DF)
 
-    return figure,data
+    return figure, data
 
-def EPVis_Button_DistAggregatedData_Interaction_Function(table, column, n_clicks):
-    Aggregated_Dict_file = open(os.path.join(WORKSPACE_DIRECTORY,'Visualization','Aggregated.pickle'),"rb")
-    Aggregated_OutputVariable_Dict = pickle.load(Aggregated_Dict_file)
+def EPVis_DF2stat(Data_DF):
+    summary_df = Data_DF.groupby('dataset')['ColName'].agg(
+        Mean='mean',
+        Variance='var',
+        Standard_Deviation='std',
+        Min='min',
+        Max='max'
+    ).reset_index()
+
+    summary_df['Mean'] = summary_df['Mean'].round(2)
+    summary_df['Variance'] = summary_df['Variance'].round(2)
+    summary_df['Standard_Deviation'] = summary_df['Standard_Deviation'].round(2)
+
+    # Format range as "min to max"
+    summary_df['Range'] = summary_df['Min'].round(2).astype(str) + ' to ' + summary_df['Max'].round(2).astype(str)
+
+    summary_df = summary_df.rename(columns={'dataset': 'Variable'})
+
+    # Drop Min and Max columns if not needed for table display
+    summary_df = summary_df[['Variable', 'Mean', 'Variance', 'Standard_Deviation', 'Range']]
     
-    # Creating DF for plotting
+    return summary_df.to_dict('records')
+
+def EPVis_Button_DistAggregatedData_Interaction_Function(table, column, start_date, end_date, n_clicks):
+    # === Load Aggregated Data ===
+    with open(os.path.join(WORKSPACE_DIRECTORY, 'Visualization', 'Aggregated.pickle'), "rb") as f:
+        Aggregated_OutputVariable_Dict = pickle.load(f)
+
+    # === Prepare datetime and filter range ===
+    datetime_series = pd.to_datetime(Aggregated_OutputVariable_Dict['DateTime_List'])
+    start, end = pd.to_datetime(start_date), pd.to_datetime(end_date)
+
+    # === Build DataFrame for plotting ===
     Data_DF = pd.DataFrame()
+
     for item in column:
-        Current_DF = Aggregated_OutputVariable_Dict[item][table].to_frame()
-        Current_DF = Current_DF.rename(columns={table: 'ColName'})
+        if item not in Aggregated_OutputVariable_Dict:
+            print(f"[Warning] '{item}' not found in Aggregated_OutputVariable_Dict.")
+            continue
+
+        df = Aggregated_OutputVariable_Dict[item]
+        
+        if table not in df.columns:
+            print(f"[Warning] '{table}' not found in Aggregated_OutputVariable_Dict['{item}'].")
+            continue
+
+        df = df.copy()
+        df['DateTime'] = datetime_series
+
+        # Filter by date
+        df = df[(df['DateTime'] >= start) & (df['DateTime'] <= end)]
+
+        # Prepare formatted DataFrame
+        Current_DF = df[['DateTime', table]].rename(columns={table: 'ColName'})
         Current_DF['dataset'] = item
+
+        # Append to main DF
         Data_DF = pd.concat([Data_DF, Current_DF])
 
-    # Plotting the combined DF
+    # === Plotting ===
     figure = px.histogram(Data_DF, x='ColName', color='dataset', histnorm='probability')
-    figure.update_layout(xaxis_title='Support')
-    figure.update_layout(yaxis_title='Probability')
-    return figure
+    figure.update_layout(xaxis_title='Frequency', yaxis_title='Value')
 
-def EPVis_Button_DistBothData_Interaction_Function(table_gen, column_gen, table_agg, column_agg, n_clicks):
-    # Generated Data 
-    Generated_Dict_file = open(os.path.join(WORKSPACE_DIRECTORY,'Visualization','Generated.pickle'),"rb")
-    Generated_OutputVariable_Dict = pickle.load(Generated_Dict_file)
-    
-    # Creating DF for plotting
+    # === Get statistics ===
+    data = EPVis_DF2stat(Data_DF)
+
+
+    return figure, data
+
+def EPVis_Button_DistBothData_Interaction_Function(table_gen, column_gen, table_agg, column_agg, start_date, end_date, n_clicks):
+    # === Load Data ===
+    with open(os.path.join(WORKSPACE_DIRECTORY, 'Visualization', 'Generated.pickle'), "rb") as f:
+        Generated_OutputVariable_Dict = pickle.load(f)
+
+    with open(os.path.join(WORKSPACE_DIRECTORY, 'Visualization', 'Aggregated.pickle'), "rb") as f:
+        Aggregated_OutputVariable_Dict = pickle.load(f)
+
+    # === Prepare Date Filter ===
+    start, end = pd.to_datetime(start_date), pd.to_datetime(end_date)
     Data_DF = pd.DataFrame()
+
+    # === Process Generated Data ===
+    df_gen = Generated_OutputVariable_Dict[table_gen].copy()
+
+    # Clean and combine date and time
+    split_dt = df_gen['Date/Time'].str.strip().str.split(" ", expand=True)
+    df_gen['MM/DD'] = split_dt[0]
+    df_gen['HH:MM:SS'] = split_dt[1]
+
+    # Handle 24:00:00 by advancing date
+    mask_24 = df_gen['HH:MM:SS'] == '24:00:00'
+    df_gen.loc[mask_24, 'HH:MM:SS'] = '00:00:00'
+    df_gen['MM/DD'] = pd.to_datetime('2020 ' + df_gen['MM/DD'], format='%Y %m/%d')
+    df_gen.loc[mask_24, 'MM/DD'] += pd.Timedelta(days=1)
+
+    df_gen['DateTime'] = pd.to_datetime(df_gen['MM/DD'].astype(str) + ' ' + df_gen['HH:MM:SS'])
+    df_gen.drop(columns=['MM/DD', 'HH:MM:SS'], inplace=True)
+
+    # Filter and append selected variables
+    df_gen = df_gen[(df_gen['DateTime'] >= start) & (df_gen['DateTime'] <= end)]
     for item in column_gen:
-        Current_DF = Generated_OutputVariable_Dict[table_gen][item].to_frame()
-        Current_DF = Current_DF.rename(columns={item: 'ColName'})
-        Current_DF['dataset'] = item
-        Data_DF = pd.concat([Data_DF, Current_DF])
+        if item in df_gen.columns:
+            Data_DF = pd.concat([Data_DF, pd.DataFrame({
+                'DateTime': df_gen['DateTime'],
+                'ColName': df_gen[item],
+                'dataset': item
+            })])
 
-    # Aggregated Data
-    Aggregated_Dict_file = open(os.path.join(WORKSPACE_DIRECTORY,'Visualization','Aggregated.pickle'),"rb")
-    Aggregated_OutputVariable_Dict = pickle.load(Aggregated_Dict_file)
-    
-    # Creating DF for plotting
-    for item in column_agg:
-        Current_DF = Aggregated_OutputVariable_Dict[item][table_agg].to_frame()
-        Current_DF = Current_DF.rename(columns={table_agg: 'ColName'})
-        Current_DF['dataset'] = item
-        Data_DF = pd.concat([Data_DF, Current_DF])
+    # === Process Aggregated Data ===
+    datetime_series = pd.to_datetime(Aggregated_OutputVariable_Dict['DateTime_List'])
+    df_agg_all = Aggregated_OutputVariable_Dict[column_agg[0]].copy()
 
-    # Plotting the combined DF
+    if table_agg in df_agg_all.columns:
+        df_agg_all['DateTime'] = datetime_series
+        df_agg_all = df_agg_all[(df_agg_all['DateTime'] >= start) & (df_agg_all['DateTime'] <= end)]
+        Data_DF = pd.concat([Data_DF, pd.DataFrame({
+            'DateTime': df_agg_all['DateTime'],
+            'ColName': df_agg_all[table_agg],
+            'dataset': table_agg
+        })])
+    else:
+        print(f"[Warning] Variable '{table_agg}' not found in Aggregated_OutputVariable_Dict['{column_agg[0]}'].")
+
+    # === Plotting ===
     figure = px.histogram(Data_DF, x='ColName', color='dataset', histnorm='probability')
-    figure.update_layout(xaxis_title='Support')
-    figure.update_layout(yaxis_title='Probability')
-    return figure
+    figure.update_layout(xaxis_title='Frequency', yaxis_title='Value')
+
+    # === Generate statistics ===
+    data = EPVis_DF2stat(Data_DF)
+
+    return figure, data
+
+def EPVis_Button_DistValues_Interaction_Function(n_clicks):
+    
+    data = np.random.normal(0, 1, 100)
+
+    mean = round(np.mean(data), 2)
+    var = round(np.var(data), 2)
+    std = round(np.std(data), 2)
+    rng = f"{round(np.min(data), 2)} to {round(np.max(data), 2)}"
+    return mean, var, std, rng
+
 
 def EPVis_H5_ScatterPlotComment_Interaction_Function(gen_column, agg_column):
     if gen_column is None:
@@ -896,81 +986,198 @@ def EPVis_H5_ScatterPlotComment_Interaction_Function(gen_column, agg_column):
         comment = False
     return comment
 
-def EPVis_Button_ScatGeneratedData_Interaction_Function(table_gen, column_gen, table_agg, column_agg, n_clicks):
-    # Generated Data
-    Generated_Dict_file = open(os.path.join(WORKSPACE_DIRECTORY,'Visualization','Generated.pickle'),"rb")
-    Generated_OutputVariable_Dict = pickle.load(Generated_Dict_file)
+def EPVis_Button_ScatGeneratedData_Interaction_Function(table_gen, column_gen, table_agg, column_agg, start_date, end_date, n_clicks):
+    # === Load Data ===
+    with open(os.path.join(WORKSPACE_DIRECTORY, 'Visualization', 'Generated.pickle'), "rb") as f:
+        Generated_OutputVariable_Dict = pickle.load(f)
+    with open(os.path.join(WORKSPACE_DIRECTORY, 'Visualization', 'Aggregated.pickle'), "rb") as f:
+        Aggregated_OutputVariable_Dict = pickle.load(f)
 
-    # Aggregated Data
-    Aggregated_Dict_file = open(os.path.join(WORKSPACE_DIRECTORY,'Visualization','Aggregated.pickle'),"rb")
-    Aggregated_OutputVariable_Dict = pickle.load(Aggregated_Dict_file)
+    # === Convert date range ===
+    start = pd.to_datetime(start_date)
+    end = pd.to_datetime(end_date)
 
-    # Creating DF for plotting
+    # === Get DateTime lists ===
+    datetime_gen = pd.to_datetime(Generated_OutputVariable_Dict['DateTime_List'])
+    datetime_agg = pd.to_datetime(Aggregated_OutputVariable_Dict['DateTime_List'])
+
+    # === Prepare df based on source ===
+    df = pd.DataFrame()
+
+    # Case 1: both from generated
     if len(column_gen) == 2:
+        df_gen = Generated_OutputVariable_Dict[table_gen][column_gen].copy()
+        df_gen['Date'] = datetime_gen
+        df_gen = df_gen[(df_gen['Date'] >= start) & (df_gen['Date'] <= end)]
+        df = df_gen[[column_gen[0], column_gen[1]]].copy()
+
+    # Case 2: both from aggregated
+    elif len(column_agg) == 2:
+        df_agg = pd.DataFrame()
+        for item in column_agg:
+            if table_agg not in Aggregated_OutputVariable_Dict[item].columns:
+                continue
+            df_agg[item] = Aggregated_OutputVariable_Dict[item][table_agg]
+        df_agg['Date'] = datetime_agg
+        df_agg = df_agg[(df_agg['Date'] >= start) & (df_agg['Date'] <= end)]
+        df = df_agg[[column_agg[0], column_agg[1]]].copy()
+
+    # Case 3: one from each
+    elif len(column_gen) == 1 and len(column_agg) == 1:
+        gen_series = Generated_OutputVariable_Dict[table_gen][column_gen[0]]
+        agg_series = Aggregated_OutputVariable_Dict[column_agg[0]][table_agg]
+
         df = pd.DataFrame({
-            column_gen[0]:Generated_OutputVariable_Dict[table_gen][column_gen[0]],
-            column_gen[1]:Generated_OutputVariable_Dict[table_gen][column_gen[1]]
+            column_gen[0]: gen_series,
+            column_agg[0]: agg_series,
+            'Date_gen': datetime_gen,
+            'Date_agg': datetime_agg
         })
 
-    elif len(column_agg) == 2:
-        df = pd.DataFrame({
-            column_agg[0]:Aggregated_OutputVariable_Dict[column_agg[0]][table_agg],
-            column_agg[1]:Aggregated_OutputVariable_Dict[column_agg[1]][table_agg]
-        })
+        # Align both series by matching datetime (inner join style)
+        df = df[(df['Date_gen'] >= start) & (df['Date_gen'] <= end)]
+        df = df[(df['Date_agg'] >= start) & (df['Date_agg'] <= end)]
+        df = df[[column_gen[0], column_agg[0]]]
 
     else:
-        df = pd.DataFrame({
-            column_gen[0]:Generated_OutputVariable_Dict[table_gen][column_gen[0]],
-            column_agg[0]:Aggregated_OutputVariable_Dict[column_agg[0]][table_agg]
-        })
+        print("[Error] Unable to form a valid scatter plot — please select 2 variables.")
 
-    # Plotting the combined DF
-    figure = px.scatter(df, x = df[df.columns[0]], y = df[df.columns[1]],
-                        labels = {'x': df[df.columns[0]], 'y': df[df.columns[1]]})
+    # === Plotting the scatter plot ===
+    if not df.empty:
+        figure = px.scatter(
+            df,
+            x=df.columns[0],
+            y=df.columns[1],
+            labels={'x': df.columns[0], 'y': df.columns[1]}
+        )
+    else:
+        figure = px.scatter(title='No data to plot (empty DataFrame)')
+
 
     return figure
 
-def EPVis_Button_TimeGeneratedData_Interaction_Function(table_gen, column_gen, table_agg, column_agg, n_clicks):
-    # Generated Data
-    Generated_Dict_file = open(os.path.join(WORKSPACE_DIRECTORY,'Visualization','Generated.pickle'),"rb")
-    Generated_OutputVariable_Dict = pickle.load(Generated_Dict_file)
+def EPVis_Button_TimeGeneratedData_Interaction_Function(table_gen, column_gen, table_agg, column_agg, start_date, end_date, n_clicks_gen, n_clicks_agg, n_clicks_both):
+    triggered_id = ctx.triggered_id
 
-    # Aggregated Data
-    Aggregated_Dict_file = open(os.path.join(WORKSPACE_DIRECTORY,'Visualization','Aggregated.pickle'),"rb")
-    Aggregated_OutputVariable_Dict = pickle.load(Aggregated_Dict_file)
+    # Convert date strings to datetime
+    start = pd.to_datetime(start_date)
+    end = pd.to_datetime(end_date)
 
-    if table_gen is not None and column_gen is not None:
-        Data_DF = Generated_OutputVariable_Dict[table_gen][column_gen]
-    else:
+    # === Generated Data Button ===
+    if triggered_id == 'EPVis_Button_TimeGeneratedData':
+
+        with open(os.path.join(WORKSPACE_DIRECTORY, 'Visualization', 'Generated.pickle'), "rb") as f:
+            Generated_OutputVariable_Dict = pickle.load(f)
+
         Data_DF = pd.DataFrame()
 
-    # Creating DF for plotting
-    column_agg_new = []
-    for item in column_agg:
-        Current_DF = Aggregated_OutputVariable_Dict[item][table_agg].to_frame()
-        column_name = "".join([item, table_agg])
-        column_agg_new.append(column_name)
-        Current_DF = Current_DF.rename(columns={table_agg: column_name})
-        Data_DF = pd.concat([Data_DF, Current_DF], axis=1)
+        if table_gen is not None and column_gen is not None:
+            df_gen = Generated_OutputVariable_Dict[table_gen].copy()
+            datetime_series = pd.to_datetime(Generated_OutputVariable_Dict['DateTime_List'])
 
-    if column_gen is not None:
-        time_list = pd.DataFrame(Generated_OutputVariable_Dict['DateTime_List'], columns=['Date'])
-    elif column_agg is not None:
-        time_list = pd.DataFrame(Aggregated_OutputVariable_Dict['DateTime_List'], columns=['Date'])
+            # Attach Date column
+            df_gen['Date'] = datetime_series
 
-    # Merging the dataframes
-    merged_df = pd.concat([time_list, Data_DF], axis=1)
+            # Filter by date
+            df_gen = df_gen[(df_gen['Date'] >= start) & (df_gen['Date'] <= end)]
 
-    # Melting the dataframe for Plotly Express
-    if column_gen is not None:
-        variable_list = column_gen+column_agg_new
-    else:
-        variable_list = column_agg_new
-    melted_df = merged_df.melt(id_vars='Date', value_vars=variable_list, var_name='Variable', value_name='Value')
+            # Melt for plotting
+            melted_df = df_gen.melt(id_vars='Date', value_vars=column_gen,
+                                    var_name='Variable', value_name='Value')
 
-    # Plotting the time series using Plotly Express
-    figure = px.line(melted_df, x='Date', y='Value', color='Variable', labels={'Date': 'Date', 'Value': 'Variable', 'Variable': 'Data Series'})
+            # Plot
+            figure = px.line(melted_df, x='Date', y='Value', color='Variable',
+                            labels={'Date': 'Date', 'Value': 'Value', 'Variable': 'Data Series'})
+
+    # === Aggregated Data Button ===
+    elif triggered_id == 'EPVis_Button_TimeAggregatedData':
+
+        with open(os.path.join(WORKSPACE_DIRECTORY, 'Visualization', 'Aggregated.pickle'), "rb") as f:
+            Aggregated_OutputVariable_Dict = pickle.load(f)
+
+        datetime_series = pd.to_datetime(Aggregated_OutputVariable_Dict['DateTime_List'])
+        df_agg_base = Aggregated_OutputVariable_Dict[column_agg[0]].copy()
+        df_agg_base['Date'] = datetime_series
+        df_agg_base = df_agg_base[(df_agg_base['Date'] >= start) & (df_agg_base['Date'] <= end)]
+
+        Data_DF = pd.DataFrame()
+        column_agg_new = []
+
+        for item in column_agg:
+            if table_agg not in Aggregated_OutputVariable_Dict[item].columns:
+                continue
+            col_df = Aggregated_OutputVariable_Dict[item][table_agg].to_frame().copy()
+            col_df.columns = [f"{item}:{table_agg}"]
+            column_agg_new.append(f"{item}:{table_agg}")
+            Data_DF = pd.concat([Data_DF, col_df], axis=1)
+
+        Data_DF['Date'] = datetime_series
+        Data_DF = Data_DF[(Data_DF['Date'] >= start) & (Data_DF['Date'] <= end)]
+
+        melted_df = Data_DF.melt(id_vars='Date', value_vars=column_agg_new,
+                                var_name='Variable', value_name='Value')
+
+        figure = px.line(melted_df, x='Date', y='Value', color='Variable',
+                        labels={'Date': 'Date', 'Value': 'Value', 'Variable': 'Data Series'})
+
+    # === Both Data Button ===
+    elif triggered_id == 'EPVis_Button_TimeBothData':
+
+        # Load data
+        with open(os.path.join(WORKSPACE_DIRECTORY, 'Visualization', 'Generated.pickle'), "rb") as f:
+            Generated_OutputVariable_Dict = pickle.load(f)
+        with open(os.path.join(WORKSPACE_DIRECTORY, 'Visualization', 'Aggregated.pickle'), "rb") as f:
+            Aggregated_OutputVariable_Dict = pickle.load(f)
+
+        # Get datetime series
+        datetime_gen = pd.to_datetime(Generated_OutputVariable_Dict['DateTime_List'])
+        datetime_agg = pd.to_datetime(Aggregated_OutputVariable_Dict['DateTime_List'])
+
+        # === Prepare generated data
+        df_gen = pd.DataFrame()
+        if table_gen is not None and column_gen:
+            df_gen = Generated_OutputVariable_Dict[table_gen][column_gen].copy()
+            df_gen['Date'] = datetime_gen
+            df_gen = df_gen[(df_gen['Date'] >= start) & (df_gen['Date'] <= end)]
+
+        # === Prepare aggregated data
+        df_agg_combined = pd.DataFrame()
+        column_agg_new = []
+
+        for item in column_agg:
+            if table_agg not in Aggregated_OutputVariable_Dict[item].columns:
+                continue
+            col_name = f"{item}:{table_agg}"
+            column_agg_new.append(col_name)
+
+            series = Aggregated_OutputVariable_Dict[item][table_agg].copy()
+            df_temp = pd.DataFrame({col_name: series})
+            df_agg_combined = pd.concat([df_agg_combined, df_temp], axis=1)
+
+        if not df_agg_combined.empty:
+            df_agg_combined['Date'] = datetime_agg
+            df_agg_combined = df_agg_combined[(df_agg_combined['Date'] >= start) & (df_agg_combined['Date'] <= end)]
+
+        # === Merge safely
+        merged_df = pd.DataFrame()
+        if not df_gen.empty and not df_agg_combined.empty:
+            merged_df = pd.merge(df_gen, df_agg_combined, on='Date', how='outer')
+            variable_list = column_gen + column_agg_new
+        elif not df_gen.empty:
+            merged_df = df_gen
+            variable_list = column_gen
+        elif not df_agg_combined.empty:
+            merged_df = df_agg_combined
+            variable_list = column_agg_new
+
+        # === Melt and plot
+        melted_df = merged_df.melt(id_vars='Date', value_vars=variable_list,
+                                var_name='Variable', value_name='Value')
+
+        figure = px.line(melted_df, x='Date', y='Value', color='Variable',
+                        labels={'Date': 'Date', 'Value': 'Value', 'Variable': 'Data Series'})
+
 
     return figure
 
-
+'''
