@@ -846,10 +846,8 @@ def unhide_aggregate_data_button(aggregation_settings):
     prevent_initial_call = True
 )
 def aggregate_data(n_clicks, aggregation_settings, variables_pickle_filepath, eio_pickle_filepath):
-    global RESULTS_FILEPATHS
     try:
         aggregated_pickle_filepath = EPAgg.aggregate_data(aggregation_settings, variables_pickle_filepath, eio_pickle_filepath)
-        RESULTS_FILEPATHS[aggregated_pickle_filepath] = aggregated_pickle_filepath
         return 'Data Aggregated', aggregated_pickle_filepath
     except Exception as e:
         return 'Aggregation Failed', no_update
