@@ -1029,6 +1029,8 @@ def unhide_upload_to_db_button(simulation_name, building_information, simulation
 )
 def upload_to_db(n_clicks, db_settings, sim_name, aggregation_pickle_filepath, building_information, simulation_settings, aggregation_settings, building_id, variables_pickle_filepath, eio_pickle_filepath):
     try:
+        simulation_settings['start_datetime'] = format_datetime(simulation_settings['start_datetime'])
+        simulation_settings['end_datetime'] = format_datetime(simulation_settings['end_datetime'])
         zones_df = EPAgg.upload_to_db(db_settings, sim_name, aggregation_pickle_filepath, building_information, simulation_settings, aggregation_settings, building_id, variables_pickle_filepath, eio_pickle_filepath)
         return 'Uploaded to Database'
     except Exception as e:
