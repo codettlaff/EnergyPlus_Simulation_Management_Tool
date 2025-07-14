@@ -136,12 +136,23 @@ app.layout = dbc.Container([
     dcc.Store(id='generation_zones_df', data=None),
     dcc.Store(id='generation_building_id', data=None),
 
+    # Generation Data Source Filepaths
+    dcc.Store(id='gen_upload_idf_filepath', data=None),
+    dcc.Store(id='gen_upload_epw_filepath', data=None),
+    dcc.Store(id='pnnl_prototype_idf_filepath', data=None),
+    dcc.Store(id='pnnl_prototype_weather_filepath', data=None),
     dcc.Store(id='generation_default_idf_filepath', data=None),
     dcc.Store(id='generation_default_epw_filepath', data=None),
     dcc.Store(id='generation_idf_filepath', data=None),
     dcc.Store(id='generation_epw_filepath', data=None),
+
+    # Generation Simulation Parameters
+    dcc.Store(id='gen_simulation_settings', data=None),
     dcc.Store(id='building_information', data=None),
     dcc.Store(id='generation_variable_list', data=[]),
+    dcc.Store(id='generate_variables_initial_run_eio_filepath', data=None),
+    dcc.Store(id='generate_variables_initial_run_rdd_filepath', data=None),
+    dcc.Store('schedule_name', data=None),
 
     # Generation Results
     dcc.Store(id='generation_variables_pickle_filepath', data=None),
@@ -226,6 +237,12 @@ def is_valid_dict(d):
         if isinstance(value, (list, dict)) and len(value) == 0:
             return False
     return True
+
+def is_valid_string(s):
+    return isinstance(s, str) and s.strip() != ''
+
+def is_valid_int(n):
+    return isinstance(n, int) and n > 0
 
 ########## PostgreSQL ##########
 
@@ -694,7 +711,7 @@ def download_eio_pickle(n_clicks, eio_pickle_filepath):
     Output('generation_zones_df', 'data'),
     Output('generation_building_id', 'data'),
     Input('upload_to_db_button', 'n_clicks'),
-    Input('db_settings', 'data'),
+    State('db_settings', 'data'),
     State('generation_simulation_name', 'value'),
     State('gen_simulation_settings', 'data'),
     State('generation_variable_list', 'data'),
@@ -1008,7 +1025,7 @@ def get_aggregation_building_id(tab_selection, agg_input_selection, db_settings,
     Input('aggregation_pickle_filepath', 'data'),
     prevent_initial_call = True)
 def unhide_upload_to_db_button(simulation_name, building_information, simulation_settings, building_id, pickle_filepath):
-    if len(simulation_name) > 0 and is_valid_dict(building_information) and is_valid_dict(simulation_settings) and building_id > 0 and valid_filepath(pickle_filepath): return False
+    if is_valid_string(simulation_name) and is_valid_dict(building_information) and is_valid_dict(simulation_settings) and is_valid_int(building_id) and valid_filepath(pickle_filepath): return False
     else: return True
 
 

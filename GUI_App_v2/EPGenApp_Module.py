@@ -99,8 +99,6 @@ tab_layout=[
 
                     # Box 2 C1
                     html.Div([
-                        dcc.Store(id='gen_upload_idf_filepath', data=None),
-                        dcc.Store(id='gen_upload_epw_filepath', data=None),
 
                         # Upload IDF file
                         dcc.Upload(['Upload IDF file'],
@@ -145,7 +143,6 @@ tab_layout=[
 
                     # Box 3 C1
                     html.Div([
-                        dcc.Store(id='gen_simulation_settings', data=None),
 
                         # Time-step selection
                         dbc.Stack([
@@ -213,8 +210,7 @@ tab_layout=[
 
                     # Box 2 C2
                     html.Div([
-                        dcc.Store(id='generate_variables_initial_run_eio_filepath', data=None),
-                        dcc.Store(id='generate_variables_initial_run_rdd_filepath', data=None),
+
                         html.Button('Generate Variables',
                             id = 'EPGen_Button_GenerateVariables',
                             className = "btn btn-secondary btn-lg col-12",
@@ -294,7 +290,7 @@ tab_layout=[
 
                     # Box 1 C2
                     html.Div([
-                        dcc.Store('schedule_name', data=None),
+
                         html.H3("Edit Schedules",
                             className = 'text-center mt-1'),
                         html.H6("People",
@@ -432,8 +428,6 @@ tab_layout=[
 
                     # Box 1 C3
                     html.Div([
-                        dcc.Store(id='pnnl_prototype_idf_filepath', data=None),
-                        dcc.Store(id='pnnl_prototype_weather_filepath', data=None),
 
                         # Building type selection
                         html.Label("Building Type",
@@ -502,11 +496,7 @@ tab_layout=[
 
                     # Box 2 C3
                     html.Div([
-                        dcc.Store(id='results_filepaths', data={
-                            'variables_pickle_filepath': None,
-                            'eio_pickle_filepath': None,
-                            'aggregated_pickle_filepath': None
-                        }),
+
                         html.Button('Generate Data',
                             id = 'EPGen_Button_GenerateData',
                             className = "btn btn-secondary btn-lg col-12",
