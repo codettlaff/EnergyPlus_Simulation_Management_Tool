@@ -53,7 +53,7 @@ tab_layout=[
                     # Box 11 C1
                     html.Div([
                         dcc.Input(
-                            id='simulation_name',
+                            id='generation_simulation_name',
                             type='text',
                             value='',
                             placeholder='Enter simulation name',

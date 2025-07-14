@@ -136,7 +136,6 @@ app.layout = dbc.Container([
     dcc.Store(id='generation_zones_df', data=None),
     dcc.Store(id='generation_building_id', data=None),
 
-    dcc.Store(id='generation_simulation_name', data=None),
     dcc.Store(id='generation_default_idf_filepath', data=None),
     dcc.Store(id='generation_default_epw_filepath', data=None),
     dcc.Store(id='generation_idf_filepath', data=None),
@@ -305,7 +304,7 @@ def select_database(dbname):
 @app.callback(
     Output('building_details', 'hidden'),
     Output('upload_files', 'hidden'),
-    Output('simulation_name', 'value'),
+    Output('generation_simulation_name', 'value'),
     Output('generation_default_idf_filepath', 'data'),
     Output('generation_default_epw_filepath', 'data'),
     Input('data_source_selection', 'value'),
@@ -442,7 +441,7 @@ def unhide_simulation_details(idf_filepath, epw_filepath):
 # Simulation Details
 @app.callback(
     Output('gen_simulation_settings', 'data'),
-    Input('simulation_name', 'value'),
+    Input('generation_simulation_name', 'value'),
     Input('sim_TimeStep', 'value'),
     Input('sim_run_period', 'start_date'),
     Input('sim_run_period', 'end_date'),
@@ -696,7 +695,7 @@ def download_eio_pickle(n_clicks, eio_pickle_filepath):
     Output('generation_building_id', 'data'),
     Input('upload_to_db_button', 'n_clicks'),
     Input('db_settings', 'data'),
-    State('simulation_name', 'value'),
+    State('generation_simulation_name', 'value'),
     State('gen_simulation_settings', 'data'),
     State('generation_variable_list', 'data'),
     State('building_information', 'data'),
@@ -921,13 +920,15 @@ def agg_download_pickle(n_clicks, aggregation_pickle_filepath):
 
 @app.callback(
     Output('aggregation_simulation_name', 'data'),
-    Input('agg_input_selection', 'data'),
-    Input('generation_simulation_name', 'data'),
-    prevent_initial_call = False
+    Input('main_tabs', 'value'),
+    Input('agg_input_selection', 'value'),
+    State('generation_simulation_name', 'value'),
+    prevent_initial_call = True
 )
-def get_aggregation_simulation_name(agg_input_selection, generation_simulation_name):
-    if agg_input_selection == 1: return generation_simulation_name
-    else: return 'Unnamed Simulation'
+def get_aggregation_simulation_name(selected_tab, agg_input_selection, generation_simulation_name):
+    if selected_tab == 'tab-aggregation' and agg_input_selection == 1: return generation_simulation_name
+    elif selected_tab == 'tab-aggregation' and agg_input_selection == 2: return 'Unnamed Simulation'
+    else: return no_update
 
 @app.callback(
     Output('aggregation_building_information', 'data'),
