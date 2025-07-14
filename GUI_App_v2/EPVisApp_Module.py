@@ -198,7 +198,7 @@ tab_layout = [
                     className = 'text-left text-secondary mb-2'),
 
                 dcc.DatePickerRange(
-                    id='EPVis_DatePickerRange_UploadedFile',
+                    id='visualization_date_picker_calendar',
                     min_date_allowed=date(2000, 1, 1),
                     max_date_allowed=date(2021, 12, 31),
                     initial_visible_month=date(2020, 1, 1),

@@ -1095,10 +1095,10 @@ def unhide_generated_or_aggregated_data_selection(main_tabs, visualization_data_
     else: return True
 
 @app.callback(
-    Output('visualization_date_picker', 'min_date_allowed'),
-    Output('visualization_date_picker', 'max_date_allowed'),
-    Output('visualization_date_picker', 'start_date'),
-    Output('visualization_date_picker', 'end_date'),
+    Output('visualization_date_picker_calendar', 'min_date_allowed'),
+    Output('visualization_date_picker_calendar', 'max_date_allowed'),
+    Output('visualization_date_picker_calendar', 'start_date'),
+    Output('visualization_date_picker_calendar', 'end_date'),
     Input('main_tabs', 'value'),
     Input('visualization_data_source', 'value'),
     Input('visualization_upload_variables_pickle_filepath', 'data'),
