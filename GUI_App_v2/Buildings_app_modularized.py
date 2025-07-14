@@ -106,6 +106,7 @@ app.layout = dbc.Container([
 
     # Visualization Data Sources
     dcc.Store(id='visualization_upload_variables_pickle_filepath', data=None),
+    dcc.Store(id='visualization_upload_aggregated_pickle_filepath', data=None),
 
     dbc.Row([
         html.H1(
@@ -1040,6 +1041,18 @@ def unhide_visualization_select_from_database_menu(tab, visualization_data_sourc
 )
 def upload_variables_pickle(filename, content):
     return upload_file(filename, content)
+
+@app.callback(
+    Output('visualization_upload_aggregated_data_box', 'children'),
+    Output('visualization_upload_aggregated_pickle_filepath', 'data'),
+    Input('visualization_upload_aggregated_data_box', 'filename'),
+    Input('visualization_upload_aggregated_data_box', 'contents'),
+    prevent_initial_call=True
+)
+def upload_aggregated_pickle(filename, content):
+    return upload_file(filename, content)
+
+
 
 """
 

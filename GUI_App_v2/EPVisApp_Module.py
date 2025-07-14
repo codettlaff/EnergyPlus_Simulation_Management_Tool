@@ -115,7 +115,7 @@ tab_layout = [
                 html.Div([
                     html.Label("Aggregated Data", className='section-label'),
                     dcc.Upload(
-                        id='EPVis_Upload_AggregatedData',
+                        id='visualization_upload_aggregated_data_box',
                         children=html.Div("Drag and Drop or Select Files for Aggregated Data"),
                         className="upload-box"
                     )
