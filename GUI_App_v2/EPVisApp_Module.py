@@ -207,7 +207,7 @@ tab_layout = [
                 ),
 
             ],
-            id = 'EPVis_Div_DateRangeUploadedFile',
+            id = 'visualization_date_picker',
             hidden = True
             ),
 

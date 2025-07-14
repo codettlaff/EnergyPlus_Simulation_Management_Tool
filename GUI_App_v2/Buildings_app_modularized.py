@@ -103,10 +103,15 @@ app.layout = dbc.Container([
     dcc.Store(id='aggregation_building_information', data=None),
     dcc.Store(id='aggregation_simulation_information', data=None),
     dcc.Store(id='aggregation_building_id', data=None),
+    dcc.Store(id='aggregated_pickle_filepath', data=None),
 
     # Visualization Data Sources
     dcc.Store(id='visualization_upload_variables_pickle_filepath', data=None),
     dcc.Store(id='visualization_upload_aggregated_pickle_filepath', data=None),
+    dcc.Store(id='visualization_simulation_id', data=None),
+
+    # Visualization Parameters
+    dcc.Store(id='visualization_simulations_df', data=None),
 
     dbc.Row([
         html.H1(
@@ -853,7 +858,7 @@ def unhide_aggregate_data_button(aggregation_settings):
 
 @app.callback(
     Output('aggregate_data_button', 'children'),
-    Output('aggregation_pickle_filepath', 'data'),
+    Output('aggregated_pickle_filepath', 'data'),
     Input('aggregate_data_button', 'n_clicks'),
     State('aggregation_settings', 'data'),
     State('agg_input_variables_pickle_filepath', 'data'),
@@ -1054,6 +1059,7 @@ def upload_aggregated_pickle(filename, content):
 
 @app.callback(
     Output('visualization_database_simulation_dropdown', 'options'),
+    Output('visualization_simulations_df', 'data'),
     Input('main_tabs', 'value'),
     Input('PSQL_RadioButton_UsingDatabase', 'value'),
     State('db_settings', 'data'),
@@ -1062,8 +1068,21 @@ def upload_aggregated_pickle(filename, content):
 def populate_db_settings(main_tabs, using_db, db_settings):
     if main_tabs == 'tab-visualization' and using_db == True:
         simulations_df = PSQL.get_simulations(db_settings)
-        return simulations_df['simulation_name'].tolist()
+        return simulations_df['simulation_name'].tolist(), simulations_df.to_dict('records')
     else: return []
+
+@app.callback(
+    Output('visualization_simulation_id', 'data'),
+    Input('visualization_database_simulation_dropdown', 'value'),
+    Input('visualization_simulations_df', 'data'),
+    prevent_initial_call = True
+)
+def get_simulation_id(simulation_name, simulations_df):
+    if simulations_df and simulation_name:
+        simulations_df = pd.DataFrame.from_dict(simulations_df)
+        simulation_id = simulations_df.loc[simulations_df['simulation_name'] == simulation_name, 'id'].iloc[0]
+        return simulation_id
+    else: return None
 
 @app.callback(
     Output('visualization_generated_or_aggregated_data_selection', 'hidden'),
@@ -1075,6 +1094,68 @@ def unhide_generated_or_aggregated_data_selection(main_tabs, visualization_data_
     if main_tabs == 'tab-visualization' and visualization_data_source != 3: return False
     else: return True
 
+@app.callback(
+    Output('visualization_date_picker', 'min_date_allowed'),
+    Output('visualization_date_picker', 'max_date_allowed'),
+    Input('main_tabs', 'value'),
+    Input('visualization_data_source', 'value'),
+    Input('visualization_upload_variables_pickle_filepath', 'data'),
+    Input('visualization_upload_aggregated_pickle_filepath', 'data'),
+    Input('visualization_simulation_id', 'data'),
+    State('generation_variables_pickle_filepath', 'data'),
+    State('aggregated_pickle_filepath', 'data'),
+    State('db_settings', 'data'),
+    prevent_initial_call = True
+)
+def populate_min_max_date_allowed(tab, data_source, upload_variables_pickle, upload_aggregated_pickle, simulation_id, generation_variables_pickle, aggregation_pickle, db_settings):
+
+    if tab != 'tab-visualization': return no_update
+
+    if data_source == 1:
+        generated_pickle = generation_variables_pickle
+        aggregated_pickle = aggregation_pickle
+    elif data_source == 2:
+        generated_pickle = upload_variables_pickle
+        aggregated_pickle = upload_aggregated_pickle
+    else:
+        generated_pickle = None
+        aggregated_pickle = None
+
+    if generated_pickle:
+        with open(generated_pickle, 'rb') as f: generated_data = pickle.load(f)
+        generated_data_min_datetime = generated_data['DateTime_List'][0]
+        generated_data_max_datetime = generated_data['DateTime_List'][-1]
+
+    if aggregated_pickle:
+        with open(aggregation_pickle, 'rb') as f: aggregated_data = pickle.load(f)
+        aggregated_data_min_datetime = aggregated_data['DateTime_List'][0]
+        aggregated_data_max_datetime = aggregated_data['DateTime_List'][-1]
+
+    if generated_pickle and aggregated_pickle:
+        min_datetime = max(generated_data_min_datetime, aggregated_data_min_datetime)
+        max_datetime = min(generated_data_max_datetime, aggregated_data_max_datetime)
+        # If min_datetime > max_datetime throw an error.
+    elif generated_pickle:
+        min_datetime = generated_data_min_datetime
+        max_datetime = aggregated_data_max_datetime
+    elif aggregated_pickle:
+        min_datetime = aggregated_data_min_datetime
+        max_datetime = aggregated_data_max_datetime
+    else: # Using Database
+        print(simulation_id)
+
+    print('test')
+
+
+
+@app.callback(
+    Output('visualization_date_picker', 'hidden'),
+    Input('main_tabs', 'value'),
+    prevent_initial_call = True
+)
+def unhide_date_picker(tab):
+    if tab == "tab-visualization": return False
+    else: return True
 
 """
 
