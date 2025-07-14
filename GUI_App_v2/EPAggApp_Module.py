@@ -364,12 +364,14 @@ def upload_to_db(db_settings, sim_name, aggregation_pickle_filepath, building_in
 
     epw_climate_zone = 'NA'
 
-    start_datetime = simulation_settings['start_datetime']
-    end_datetime = simulation_settings['end_datetime']
     time_resolution = simulation_settings['timestep_minutes']
+    start_datetime = simulation_settings['start_datetime'] + timedelta(minutes=time_resolution)
+    end_datetime = simulation_settings['end_datetime'] + timedelta(days=1)
     db_uploader.populate_datetimes_table(conn, base_time_resolution=1, start_datetime=start_datetime,
                                              end_datetime=end_datetime)
 
+    simulation_settings['start_datetime'] = start_datetime
+    simulation_settings['end_datetime'] = end_datetime
 
     # Not continuing from session
     # First, do all-zones aggregation on variables.pickle and eio.pickle - got this working, all_zones_df looks good
