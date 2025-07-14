@@ -679,7 +679,7 @@ def upload_to_db(n_clicks, db_settings, simulation_name, simulation_settings, va
     try:
         simulation_settings['start_datetime'] = format_datetime(simulation_settings['start_datetime'])
         simulation_settings['end_datetime'] = format_datetime(simulation_settings['end_datetime'])
-        building_id, zones_df = EPGen.upload_to_db(simulation_name, simulation_settings, variable_list, building_information, db_settings, RESULTS_FILEPATHS, variable_pickle_filepath, eio_pickle_filepath)
+        building_id, zones_df = EPGen.upload_to_db(simulation_name, simulation_settings, variable_list, building_information, db_settings, variable_pickle_filepath, eio_pickle_filepath)
         return 'Uploaded to Database', zones_df.to_dict('records'), building_id
     except Exception as e:
         return "Upload Failed", None, None

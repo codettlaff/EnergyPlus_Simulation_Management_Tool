@@ -791,7 +791,7 @@ def get_location_from_epw(epw_filepath):
     return location
 
 
-def upload_to_db(simulation_name, simulation_settings, variable_list, building_information, db_settings, results_filepaths, variable_pickle_filepath, eio_pickle_filepath):
+def upload_to_db(simulation_name, simulation_settings, variable_list, building_information, db_settings, variable_pickle_filepath, eio_pickle_filepath):
 
     all_zone_aggregation_pickle_filepath = data_aggregator.aggregate_data(variable_pickle_filepath, eio_pickle_filepath, variable_list)
 
