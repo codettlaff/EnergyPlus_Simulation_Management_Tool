@@ -270,6 +270,8 @@ def populate_buildings_table(conn):
     
     # Convert to DataFrame
     buildings_df = pd.DataFrame(all_building_data, columns=buildings_df.columns)
+    # Replace any remaining None values with 'NA'
+    buildings_df.fillna('NA', inplace=True)
 
     try:
         with conn.cursor() as cursor:
