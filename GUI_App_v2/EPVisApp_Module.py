@@ -128,13 +128,6 @@ tab_layout = [
 
             # Placeholder for Database Data (currently just a break)
             html.Div([
-                html.Label("Select Database", className='section-label'),
-                dcc.Dropdown(
-                    options=['Db1', 'Db2', 'Db3'],
-                    value=None,
-                    id='EPVis_DropDown_SelectDatabase',
-                    className='dropdown-box'
-                ),
 
                 html.Label("Select Simulation", className='section-label'),
                 dcc.Dropdown(
