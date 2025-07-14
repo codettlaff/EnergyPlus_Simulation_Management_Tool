@@ -131,9 +131,9 @@ tab_layout = [
 
                 html.Label("Select Simulation", className='section-label'),
                 dcc.Dropdown(
-                    options=['sim1', 'sim2', 'sim3'],
+                    options=[],
                     value=None,
-                    id='EPVis_DropDown_SelectSimulation',
+                    id='visualization_database_simulation_dropdown',
                     className='dropdown-box'
                 ),
 

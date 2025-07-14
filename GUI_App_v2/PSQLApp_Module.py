@@ -370,6 +370,15 @@ def get_db_settings(dbname):
     record_dict = record.to_dict()
     return record_dict
 
+def get_simulations(db_settings):
+
+    conn = connect(db_settings)
+    query = f"SELECT * FROM simulations;"
+    df = pd.read_sql_query(query, conn)
+    conn.close()
+    return df
+
+
 ########## Temporary Functions for Testing ##########
 
 def delete_all_databases():

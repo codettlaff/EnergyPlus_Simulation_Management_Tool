@@ -1052,6 +1052,18 @@ def upload_variables_pickle(filename, content):
 def upload_aggregated_pickle(filename, content):
     return upload_file(filename, content)
 
+@app.callback(
+    Output('visualization_database_simulation_dropdown', 'options'),
+    Input('main_tabs', 'value'),
+    Input('PSQL_RadioButton_UsingDatabase', 'value'),
+    State('db_settings', 'data'),
+    prevent_initial_call = True
+)
+def populate_db_settings(main_tabs, using_db, db_settings):
+    if main_tabs == 'tab-visualization' and using_db == True:
+        simulations_df = PSQL.get_simulations(db_settings)
+        return simulations_df['simulation_name'].tolist()
+    else: return []
 
 
 """
