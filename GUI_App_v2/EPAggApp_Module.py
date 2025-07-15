@@ -351,7 +351,7 @@ def aggregate_data(aggregation_settings, variables_pickle_filepath, eio_pickle_f
 
 def get_time_res(data_dict):
     start_datetime = data_dict['DateTime_List'][0]
-    end_datetime = data_dict['DateTime_List'][-1]
+    end_datetime = data_dict['DateTime_List'][-1] - timedelta(days=1)
     time_resolution = int((data_dict['DateTime_List'][1] - start_datetime).total_seconds() / 60)
     return start_datetime, end_datetime, time_resolution
 
