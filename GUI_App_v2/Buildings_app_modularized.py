@@ -1283,24 +1283,6 @@ def populate_generated_data_variable_column_dropdowns(variable_selection, genera
         return variable_columns
     else: return []
 
-@app.callback(
-    Output('visualization_time_series_data_name', 'data'),
-    Output('visualization_time_series_data_list', 'data'),
-    Input('visualization_generated_data_variable_dropdown', 'value'),
-    Input('visualization_generated_data_variable_column_dropdown', 'value'),
-    Input('visualization_generated_data_custom_label_input', 'n_blur'),
-    State('visualization_variables_pickle_filepath', 'data'),
-    State('visualization_generated_data_custom_label_input', 'value'),
-    prevent_initial_call = True
-)
-def generated_data_get_time_series_data(variable, column, n_blur, pickle_filepath, custom_label):
-    if variable and column and valid_filepath(pickle_filepath):
-        with open(pickle_filepath, 'rb') as f: data = pickle.load(f)
-        data_list = data[variable][column].tolist()
-        data_name = custom_label
-        return data_name, data_list
-    else: return None, None
-
 """
 
 @app.callback(

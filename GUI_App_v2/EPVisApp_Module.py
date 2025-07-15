@@ -319,6 +319,20 @@ tab_layout = [
                             'margin-bottom': '2.5%'
                         }),
 
+                    html.Label("Enter Custom Label:",
+                            style={'margin-left': '2.5%', 'font-weight': 'bold'}),
+
+                        dcc.Input(
+                            id='visualization_aggregated_data_custom_label_input',
+                            type='text',
+                            placeholder='Enter label...',
+                            style={
+                                'width': '95%',
+                                'margin-left': '2.5%',
+                                'margin-bottom': '2.5%'
+                            }
+                        )
+
             ],
             id = 'visualization_aggregated_data_zone_selection_menu',
             hidden = True,
