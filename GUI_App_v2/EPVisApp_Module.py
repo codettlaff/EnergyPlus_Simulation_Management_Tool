@@ -248,18 +248,24 @@ tab_layout = [
 
                 dcc.Dropdown([], '',
                     id='visualization_generated_data_variable_column_dropdown',
-                    multi = True,
                     style = {
                         'width': '95%',
                         'margin-left': '2.5%', 
                         'margin-bottom': '2.5%'  
                         }),
 
-                html.Button(
-                'Add Data',
-                id = 'visualization_generated_data_add_data_button',
-                className = "btn btn-primary btn-lg col-12"
-            ),
+                html.Label("Enter Custom Label:",
+                        style={'margin-left': '2.5%', 'font-weight': 'bold'}),
+
+                    dcc.Input(
+                        id='visualization_generated_data_custom_label_input',
+                        type='text',
+                        placeholder='Enter label...',
+                        style={
+                            'width': '95%',
+                            'margin-left': '2.5%',
+                            'margin-bottom': '2.5%',
+                        })
 
             ],
             id = 'visualization_generated_data_variable_selection_menu',

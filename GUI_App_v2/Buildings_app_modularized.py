@@ -114,6 +114,8 @@ app.layout = dbc.Container([
 
     # Visualization Parameters
     dcc.Store(id='visualization_simulations_df', data=None),
+    dcc.Store(id='visualization_time_series_data_name', data=None),
+    dcc.Store(id='visualization_time_series_data_list', data=None),
 
     dbc.Row([
         html.H1(
@@ -1246,6 +1248,24 @@ def populate_generated_data_variable_column_dropdowns(variable_selection, genera
         variable_columns = generated_data[variable_selection].columns.tolist()
         return variable_columns
     else: return []
+
+@app.callback(
+    Output('visualization_time_series_data_name', 'data'),
+    Output('visualization_time_series_data_list', 'data'),
+    Input('visualization_generated_data_variable_dropdown', 'value'),
+    Input('visualization_generated_data_variable_column_dropdown', 'value'),
+    Input('visualization_generated_data_custom_label_input', 'n_blur'),
+    State('visualization_variables_pickle_filepath', 'data'),
+    State('visualization_generated_data_custom_label_input', 'value'),
+    prevent_initial_call = True
+)
+def generated_data_get_time_series_data(variable, column, n_blur, pickle_filepath, custom_label):
+    if variable and column and valid_filepath(pickle_filepath):
+        with open(pickle_filepath, 'rb') as f: data = pickle.load(f)
+        data_list = data[variable][column].tolist()
+        data_name = custom_label
+        return data_name, data_list
+    else: return None, None
 
 """
 
