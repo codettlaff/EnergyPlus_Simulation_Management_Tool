@@ -1215,8 +1215,8 @@ def populate_zones_dropdowns(data_source, generated_or_aggregated, generated_pic
         aggregated_data_max_datetime = aggregated_data['DateTime_List'][-1]
 
     if data_source == 3:
-        generation_zones, aggregation_zones = PSQL.get_generation_aggregation_zones(db_settings, simulation_id)
-
+        generation_zones_df, aggregation_zones_df = PSQL.get_generation_aggregation_zones(db_settings, simulation_id)
+        return generation_zones_df['zone_name'].tolist(), aggregation_zones_df['zone_name'].tolist()
 
 """
 
