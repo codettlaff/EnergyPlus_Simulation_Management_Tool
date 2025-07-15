@@ -360,7 +360,7 @@ def upload_to_db(db_settings, sim_name, aggregation_pickle_filepath, building_in
     conn = psql.connect(db_settings)
     with open(aggregation_pickle_filepath, "rb") as f: data_dict = pickle.load(f)
 
-    epw_climate_zone = 'NA'
+    epw_climate_zone = db_uploader.get_climate_zone(location=simulation_settings['epw_location'])
 
     time_resolution = simulation_settings['timestep_minutes']
     start_datetime = simulation_settings['start_datetime'] + timedelta(minutes=time_resolution)
