@@ -108,6 +108,8 @@ app.layout = dbc.Container([
     # Visualization Data Sources
     dcc.Store(id='visualization_upload_variables_pickle_filepath', data=None),
     dcc.Store(id='visualization_upload_aggregated_pickle_filepath', data=None),
+    dcc.Store(id='visualization_variables_pickle_filepath', data=None),
+    dcc.Store(id='visualization_aggregated_pickle_filepath', data=None),
     dcc.Store(id='visualization_simulation_id', data=None),
 
     # Visualization Parameters
@@ -1104,33 +1106,42 @@ def unhide_date_picker(tab):
     else: return True
 
 @app.callback(
+    Output('visualization_variables_pickle_filepath', 'data'),
+    Output('visualization_aggregated_pickle_filepath', 'data'),
+    Input('main_tabs', 'value'),
+    Input('visualization_data_source', 'value'),
+    Input('visualization_upload_variables_pickle_filepath', 'data'),
+    Input('visualization_upload_aggregated_pickle_filepath', 'data'),
+    State('generation_variables_pickle_filepath', 'data'),
+    State('aggregated_pickle_filepath', 'data'),
+    prevent_initial_call = True
+)
+def set_visualization_pickle_filepaths(tab, data_source, upload_variables_pickle, upload_aggregated_pickle, generation_variables_pickle, aggregation_pickle):
+
+    if tab != 'tab-visualization': return None, None
+
+    if data_source == 1:
+        return generation_variables_pickle, aggregation_pickle
+    elif data_source == 2:
+        return upload_variables_pickle, upload_aggregated_pickle
+    else:
+        return None, None
+
+@app.callback(
     Output('visualization_date_picker_calendar', 'min_date_allowed'),
     Output('visualization_date_picker_calendar', 'max_date_allowed'),
     Output('visualization_date_picker_calendar', 'start_date'),
     Output('visualization_date_picker_calendar', 'end_date'),
     Input('main_tabs', 'value'),
-    Input('visualization_data_source', 'value'),
-    Input('visualization_upload_variables_pickle_filepath', 'data'),
-    Input('visualization_upload_aggregated_pickle_filepath', 'data'),
+    Input('visualization_variables_pickle_filepath', 'data'),
+    Input('visualization_aggregated_pickle_filepath', 'data'),
     Input('visualization_simulation_id', 'data'),
-    State('generation_variables_pickle_filepath', 'data'),
-    State('aggregated_pickle_filepath', 'data'),
     State('db_settings', 'data'),
     prevent_initial_call = True
 )
-def populate_min_max_date_allowed(tab, data_source, upload_variables_pickle, upload_aggregated_pickle, simulation_id, generation_variables_pickle, aggregation_pickle, db_settings):
+def populate_min_max_date_allowed(tab, generated_pickle, aggregated_pickle, simulation_id, db_settings):
 
     if tab != 'tab-visualization': return None, None, None, None
-
-    if data_source == 1:
-        generated_pickle = generation_variables_pickle
-        aggregated_pickle = aggregation_pickle
-    elif data_source == 2:
-        generated_pickle = upload_variables_pickle
-        aggregated_pickle = upload_aggregated_pickle
-    else:
-        generated_pickle = None
-        aggregated_pickle = None
 
     if generated_pickle:
         with open(generated_pickle, 'rb') as f: generated_data = pickle.load(f)
@@ -1138,7 +1149,7 @@ def populate_min_max_date_allowed(tab, data_source, upload_variables_pickle, upl
         generated_data_max_datetime = generated_data['DateTime_List'][-1]
 
     if aggregated_pickle:
-        with open(aggregation_pickle, 'rb') as f: aggregated_data = pickle.load(f)
+        with open(aggregated_pickle, 'rb') as f: aggregated_data = pickle.load(f)
         aggregated_data_min_datetime = aggregated_data['DateTime_List'][0]
         aggregated_data_max_datetime = aggregated_data['DateTime_List'][-1]
 
@@ -1162,6 +1173,8 @@ def populate_min_max_date_allowed(tab, data_source, upload_variables_pickle, upl
         max_datetime.date().isoformat()
     )
 
+"""
+
 @app.callback(
     Output('visualization_variable_selection_menu', 'hidden'),
     Input('visualization_date_picker_calendar', 'start_date'),
@@ -1171,8 +1184,15 @@ def populate_min_max_date_allowed(tab, data_source, upload_variables_pickle, upl
 def unhide_visualization_select_variable(start_date, end_date):
     if start_date is not None and end_date is not None: return False
     else: return True
+    
 
-"""
+
+@app.callback(
+    Output('visualization_generation_zones_dropdown', 'options'),
+    Output('visualization_aggregations_zones_dropdown', 'options'),
+)
+def populate_zones_dropdowns(data_source, upload_variables_pickle, upload_aggregated_pickle, simulation_id, generation_variables_pickle, aggregation_pickle, db_settings):
+    pass
 
 @app.callback(
     Output(component_id = 'EPVis_Div_Datatobeselected', component_property = 'hidden', allow_duplicate = True),
