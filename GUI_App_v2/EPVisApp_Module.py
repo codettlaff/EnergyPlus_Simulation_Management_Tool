@@ -199,11 +199,10 @@ tab_layout = [
 
                 dcc.DatePickerRange(
                     id='visualization_date_picker_calendar',
-                    min_date_allowed=date(2000, 1, 1),
-                    max_date_allowed=date(2021, 12, 31),
-                    initial_visible_month=date(2020, 1, 1),
-                    start_date=date(2020, 1, 1),
-                    end_date=date(2020, 12, 31)
+                    min_date_allowed=None,
+                    max_date_allowed=None,
+                    start_date=None,
+                    end_date=None
                 ),
 
             ],
@@ -324,7 +323,7 @@ tab_layout = [
                         }),
 
             ],
-            id = 'EPVis_Div_SelectVariableAggregateData',
+            id = 'visualization_select_variable',
             hidden = True,
             style = {
                         'width': '100%',

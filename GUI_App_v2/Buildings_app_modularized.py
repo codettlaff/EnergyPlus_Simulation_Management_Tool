@@ -1095,6 +1095,15 @@ def unhide_generated_or_aggregated_data_selection(main_tabs, visualization_data_
     else: return True
 
 @app.callback(
+    Output('visualization_date_picker', 'hidden'),
+    Input('main_tabs', 'value'),
+    prevent_initial_call = True
+)
+def unhide_date_picker(tab):
+    if tab == "tab-visualization": return False
+    else: return True
+
+@app.callback(
     Output('visualization_date_picker_calendar', 'min_date_allowed'),
     Output('visualization_date_picker_calendar', 'max_date_allowed'),
     Output('visualization_date_picker_calendar', 'start_date'),
@@ -1153,15 +1162,17 @@ def populate_min_max_date_allowed(tab, data_source, upload_variables_pickle, upl
         max_datetime.date().isoformat()
     )
 
-
 @app.callback(
-    Output('visualization_date_picker', 'hidden'),
-    Input('main_tabs', 'value'),
+    Output('visualization_select_variable', 'hidden'),
+    Input('visualization_date_picker_calendar', 'start_date'),
+    Input('visualization_date_picker_calendar', 'end_date'),
     prevent_initial_call = True
 )
-def unhide_date_picker(tab):
-    if tab == "tab-visualization": return False
+def unhide_visualization_select_variable(start_date, end_date):
+    if start_date is not None and end_date is not None: return False
     else: return True
+
+
 
 """
 
