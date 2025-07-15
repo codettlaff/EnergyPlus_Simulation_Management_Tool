@@ -1182,12 +1182,13 @@ def populate_min_max_date_allowed(tab, generated_pickle, aggregated_pickle, simu
 
 @app.callback(
     Output('visualization_aggregated_data_zone_selection_menu', 'hidden'),
+    Input('visualization_data_source', 'value'),
     Input('visualization_generated_or_aggregated_data_selection', 'value'),
     Input('visualization_aggregated_pickle_filepath', 'data'),
     prevent_initial_call = True
 )
-def unhide_visualization_select_variable(generated_or_aggregated, aggregated_pickle):
-    if (generated_or_aggregated == 2 or generated_or_aggregated == 3) and valid_filepath(aggregated_pickle): return False
+def unhide_visualization_select_variable(data_source, generated_or_aggregated, aggregated_pickle):
+    if ((generated_or_aggregated == 2 or generated_or_aggregated == 3) and valid_filepath(aggregated_pickle)) or data_source == 3: return False
     else: return True
 
 @app.callback(
