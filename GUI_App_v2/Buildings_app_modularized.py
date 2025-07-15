@@ -1166,7 +1166,7 @@ def populate_min_max_date_allowed(tab, generated_pickle, aggregated_pickle, simu
         if min_datetime > max_datetime: return None, None, None, None # Error
     elif generated_pickle:
         min_datetime = generated_data_min_datetime
-        max_datetime = aggregated_data_max_datetime
+        max_datetime = generated_data_max_datetime
     elif aggregated_pickle:
         min_datetime = aggregated_data_min_datetime
         max_datetime = aggregated_data_max_datetime
