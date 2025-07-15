@@ -232,16 +232,22 @@ tab_layout = [
                 html.H5("Generated Data",
                     className = 'text-left text-secondary mb-2 ms-4 mt-2'),
 
+                html.Label("Select Variable:",
+                style={'margin-left': '2.5%', 'font-weight': 'bold'}),
+
                 dcc.Dropdown([], '',
-                    id='EPVis_DropDown_GeneratedDataTables',
+                    id='visualization_generated_data_variable_dropdown',
                     style = {
                         'width': '95%',
                         'margin-left': '2.5%', 
                         'margin-bottom': '2.5%'  
                         }),
 
+                html.Label("Select Variable Column:",
+                style={'margin-left': '2.5%', 'font-weight': 'bold'}),
+
                 dcc.Dropdown([], '',
-                    id='EPVis_DropDown_GeneratedDataColumns',
+                    id='visualization_generated_data_variable_column_dropdown',
                     multi = True,
                     style = {
                         'width': '95%',
@@ -250,7 +256,7 @@ tab_layout = [
                         }),
 
             ],
-            id = 'EPVis_Div_SelectVariableGenerateData',
+            id = 'visualization_generated_data_variable_selection_menu',
             hidden = True,
             style = {
                         'width': '100%',

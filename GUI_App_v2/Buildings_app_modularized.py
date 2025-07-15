@@ -1213,6 +1213,16 @@ def populate_zones_dropdowns(data_source, generated_or_aggregated, generated_pic
         generation_zones_df, aggregation_zones_df = PSQL.get_generation_aggregation_zones(db_settings, simulation_id)
         return generation_zones_df['zone_name'].tolist(), aggregation_zones_df['zone_name'].tolist()
 
+@app.callback(
+    Output('visualization_generated_data_variable_selection_menu', 'hidden'),
+    Input('visualization_generated_or_aggregated_data_selection', 'value'),
+    Input('visualization_variables_pickle_filepath', 'data'),
+    prevent_initial_call = True
+)
+def unhide_generated_data_variable_selection_menu(generated_or_aggregated, generated_pickle):
+    if (generated_or_aggregated == 1 or generated_or_aggregated == 3) and valid_filepath(generated_pickle): return False
+    else: return True
+
 """
 
 @app.callback(
