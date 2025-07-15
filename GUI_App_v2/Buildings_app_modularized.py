@@ -1163,7 +1163,7 @@ def populate_min_max_date_allowed(tab, data_source, upload_variables_pickle, upl
     )
 
 @app.callback(
-    Output('visualization_select_variable', 'hidden'),
+    Output('visualization_aggregated_data_select_variable', 'hidden'),
     Input('visualization_date_picker_calendar', 'start_date'),
     Input('visualization_date_picker_calendar', 'end_date'),
     prevent_initial_call = True
@@ -1171,8 +1171,6 @@ def populate_min_max_date_allowed(tab, data_source, upload_variables_pickle, upl
 def unhide_visualization_select_variable(start_date, end_date):
     if start_date is not None and end_date is not None: return False
     else: return True
-
-
 
 """
 

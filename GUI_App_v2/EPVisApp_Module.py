@@ -306,7 +306,7 @@ tab_layout = [
                     className = 'text-left text-secondary mb-2 ms-4 mt-2'),
 
                 dcc.Dropdown([], '',
-                    id='EPVis_DropDown_AggregatedDataTables',
+                    id='visualization_aggregated_data_tables',
                     style = {
                         'width': '95%',
                         'margin-left': '2.5%', 
@@ -314,7 +314,7 @@ tab_layout = [
                         }),
 
                 dcc.Dropdown([], '',
-                    id='EPVis_DropDown_AggregatedDataColumns',
+                    id='visualization_aggregated_data_columns',
                     multi = True,
                     style = {
                         'width': '95%',
@@ -323,7 +323,7 @@ tab_layout = [
                         }),
 
             ],
-            id = 'visualization_select_variable',
+            id = 'visualization_aggregated_data_select_variable',
             hidden = True,
             style = {
                         'width': '100%',
