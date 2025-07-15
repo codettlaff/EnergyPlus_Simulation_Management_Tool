@@ -164,6 +164,7 @@ app.layout = dbc.Container([
 
 def format_datetime(date_string):
     year, month, day = date_string.split('-')
+    day = day.split('T')[0]
     formatted_datetime = datetime(int(year), int(month), int(day))
     return formatted_datetime
 
@@ -995,13 +996,13 @@ def unhide_upload_to_db_button(simulation_name, building_information, simulation
     Input('agg_upload_to_db_button', 'n_clicks'),
     State('db_settings', 'data'),
     State('aggregation_simulation_name', 'data'),
-    State('aggregation_pickle_filepath', 'data'),
+    State('aggregated_pickle_filepath', 'data'),
     State('aggregation_building_information', 'data'),
     State('aggregation_simulation_information', 'data'),
     State('aggregation_settings', 'data'),
     State('aggregation_building_id', 'data'),
-    State('generation_variables_pickle_filepath', 'data'),
-    State('generation_eio_pickle_filepath', 'data'),
+    State('agg_input_variables_pickle_filepath', 'data'),
+    State('agg_input_eio_pickle_filepath', 'data'),
     prevent_initial_call = True
 )
 def upload_to_db(n_clicks, db_settings, sim_name, aggregation_pickle_filepath, building_information, simulation_settings, aggregation_settings, building_id, variables_pickle_filepath, eio_pickle_filepath):
