@@ -442,6 +442,65 @@ def get_variables(db_settings, zone_selection):
     variable_name_list = [row[0] for row in cursor.fetchall()]
     return variable_name_list
 
+def get_time_series_data_column(db_settings, zone_selection, variable_selection):
+    conn = connect(db_settings)
+    cursor = conn.cursor()
+
+    try:
+        # Get zone_id from zone name
+        cursor.execute("SELECT id FROM zones WHERE zone_name = %s;", (zone_selection,))
+        zone_result = cursor.fetchone()
+        if zone_result is None:
+            return pd.DataFrame()
+        zone_id = zone_result[0]
+
+        # Get variable_id
+        cursor.execute(
+            "SELECT id FROM variables WHERE zone_id = %s AND variable_name = %s;",
+            (zone_id, variable_selection)
+        )
+        variable_result = cursor.fetchone()
+        if variable_result is None:
+            return pd.DataFrame()
+        variable_id = variable_result[0]
+
+        # Get datetime_id and value
+        cursor.execute(
+            "SELECT datetime_id, value FROM timeseriesdata WHERE variable_id = %s ORDER BY datetime_id;",
+            (variable_id,)
+        )
+        ts_data = cursor.fetchall()
+        if not ts_data:
+            return pd.DataFrame()
+
+        datetime_ids, values = zip(*ts_data)  # unzip into two lists
+
+        # Get actual datetime values
+        cursor.execute(
+            "SELECT id, datetime FROM datetimes WHERE id = ANY(%s);",
+            (list(datetime_ids),)
+        )
+        datetime_map = dict(cursor.fetchall())  # id → datetime
+
+        # Build aligned datetime list
+        datetimes = [datetime_map[dt_id] for dt_id in datetime_ids]
+
+        # Build final DataFrame
+        df = pd.DataFrame({
+            "datetime": datetimes,
+            "value": values
+        })
+
+        return df
+
+    except Exception as e:
+        print(f"Error in get_time_series_data_column: {e}")
+        return pd.DataFrame()
+
+    finally:
+        cursor.close()
+        conn.close()
+
 def get_generation_aggregation_zones(db_settings, simulation_id):
 
     conn = connect(db_settings)

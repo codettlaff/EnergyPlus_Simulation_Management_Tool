@@ -114,8 +114,19 @@ app.layout = dbc.Container([
 
     # Visualization Parameters
     dcc.Store(id='visualization_simulations_df', data=None),
+    dcc.Store(id='visualization_generated_pickle_time_series_data_name', data=None),
+    dcc.Store(id='visualization_generated_pickle_time_series_data_list', data=None),
+    dcc.Store(id='visualization_generated_pickle_datetime_list', data=None),
+    dcc.Store(id='visualization_aggregated_pickle_time_series_data_name', data=None),
+    dcc.Store(id='visualization_aggregated_pickle_time_series_data_list', data=None),
+    dcc.Store(id='visualization_aggregated_pickle_datetime_list', data=None),
+    dcc.Store(id='visualization_database_time_series_data_name', data=None),
+    dcc.Store(id='visualization_database_time_series_data_list', data=None),
+    dcc.Store(id='visualization_database_datetime_list', data=None),
     dcc.Store(id='visualization_time_series_data_name', data=None),
     dcc.Store(id='visualization_time_series_data_list', data=None),
+    dcc.Store(id='visualization_datetime_list', data=None),
+
 
     dbc.Row([
         html.H1(
@@ -1282,6 +1293,30 @@ def populate_generated_data_variable_column_dropdowns(variable_selection, genera
         variable_columns = generated_data[variable_selection].columns.tolist()
         return variable_columns
     else: return []
+
+# Get Time Series Data From the Database
+@app.callback(
+    Output('visualization_database_time_series_data_name', 'data'),
+    Output('visualization_database_time_series_data_list', 'data'),
+    Output('visualization_datetime_list', 'data'),
+    Input('visualization_generation_zones_dropdown', 'value'),
+    Input('visualization_aggregated_zones_dropdown', 'value'),
+    Input('visualization_aggregated_data_variable_dropdown', 'value'),
+    Input('visualization_aggregated_data_custom_label_input', 'n_blur'),
+    State('db_settings', 'data'),
+    State('visualization_aggregated_data_custom_label_input', 'value'),
+    prevent_initial_call = True
+)
+def get_time_series_data_for_database(generation_zone_selection, aggregation_zone_selection, variable_selection, n_blue, db_settings, custom_label):
+    if generation_zone_selection and variable_selection and is_valid_string(custom_label): zone_selection = generation_zone_selection
+    elif aggregation_zone_selection and variable_selection and is_valid_string(custom_label): zone_selection = aggregation_zone_selection
+    else: zone_selection = None
+
+    if zone_selection:
+        time_series_data_df = PSQL.get_time_series_data_column(db_settings, zone_selection, variable_selection)
+        datetime_list = time_series_data_df['datetime'].tolist()
+        value_list = time_series_data_df['value'].tolist()
+        return custom_label, value_list, datetime_list
 
 """
 
