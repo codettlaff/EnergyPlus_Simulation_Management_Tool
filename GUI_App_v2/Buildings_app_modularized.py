@@ -1189,16 +1189,32 @@ def unhide_visualization_select_variable(start_date, end_date):
 
 @app.callback(
     Output('visualization_generation_zones_dropdown', 'options'),
-    Output('visualization_aggregations_zones_dropdown', 'options'),
+    Output('visualization_aggregated_zones_dropdown', 'options'),
     Input('visualization_data_source', 'value'),
     Input('visualization_generated_or_aggregated_data_selection', 'value'),
     Input('visualization_variables_pickle_filepath', 'data'),
     Input('visualization_aggregated_pickle_filepath', 'data'),
     Input('visualization_simulation_id', 'data'),
     State('db_settings', 'data'),
+    prevent_initial_call = True
 )
 def populate_zones_dropdowns(data_source, generated_or_aggregated, generated_pickle, aggregated_pickle, simulation_id, db_settings):
-    pass
+
+    generation_zones = []
+    aggregation_zones = []
+
+    if generated_pickle:
+        with open(generated_pickle, 'rb') as f: generated_data = pickle.load(f)
+        generated_data_min_datetime = generated_data['DateTime_List'][0]
+        generated_data_max_datetime = generated_data['DateTime_List'][-1]
+
+    if aggregated_pickle:
+        with open(aggregated_pickle, 'rb') as f: aggregated_data = pickle.load(f)
+        aggregated_data_min_datetime = aggregated_data['DateTime_List'][0]
+        aggregated_data_max_datetime = aggregated_data['DateTime_List'][-1]
+
+    if data_source == 3:
+        generation_zones, aggregation_zones = PSQL.get_generation_aggregation_zones(db_settings, simulation_id)
 
 
 """

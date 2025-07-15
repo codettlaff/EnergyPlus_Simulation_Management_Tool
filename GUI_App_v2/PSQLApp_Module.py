@@ -433,6 +433,46 @@ def get_simulation_start_end_datetimes(db_settings, simulation_id):
 
     return start_datetime, start_datetime_id, end_datetime, end_datetime_id
 
+def get_generation_aggregation_zones(db_settings, simulation_id):
+
+    conn = connect(db_settings)
+
+    try:
+        cursor = conn.cursor()
+
+        # Get all zone_id and zone_name for this building
+        cursor.execute("""
+            SELECT id, zone_name FROM zones
+            WHERE simulation_id = %s;
+        """, (simulation_id,))
+        all_zones = cursor.fetchall()
+        zone_id_to_name = {zid: zname for zid, zname in all_zones}
+        all_zone_ids = set(zone_id_to_name.keys())
+
+        # Get all aggregation_zone_ids and composite_zone_ids from linking table
+        cursor.execute("SELECT aggregation_zone_id, composite_zone_id FROM aggregation_zones;")
+        links = cursor.fetchall()
+        agg_zone_ids = set([row[0] for row in links])
+        comp_zone_ids = set([row[1] for row in links])
+
+        # Generation zones = those that are only in composite_zone_id
+        generation_zone_ids = comp_zone_ids - agg_zone_ids
+
+        # Aggregation zones = those that are only in aggregation_zone_id
+        aggregation_zone_ids = agg_zone_ids
+
+        # Convert IDs back to names
+        generation_zones = [zone_id_to_name[zid] for zid in generation_zone_ids if zid in zone_id_to_name]
+        aggregation_zones = [zone_id_to_name[zid] for zid in aggregation_zone_ids if zid in zone_id_to_name]
+
+        return generation_zones, aggregation_zones
+
+    except Exception as e:
+        print(f"Error in get_generation_and_aggregation_zones: {e}")
+        return [], []
+
+
+
 ########## Temporary Functions for Testing ##########
 
 def delete_all_databases():
