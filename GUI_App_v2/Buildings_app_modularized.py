@@ -1231,6 +1231,7 @@ def handle_exclusive_dropdowns(generation_zone_selection, aggregation_zone_selec
         return '', no_update
     else: return no_update, no_update
 
+# Unhide Variable Selection for Aggregated Data
 @app.callback(
     Output('visualization_generated_data_variable_selection_menu', 'hidden'),
     Input('visualization_generated_or_aggregated_data_selection', 'value'),
@@ -1240,6 +1241,23 @@ def handle_exclusive_dropdowns(generation_zone_selection, aggregation_zone_selec
 def unhide_generated_data_variable_selection_menu(generated_or_aggregated, generated_pickle):
     if (generated_or_aggregated == 1 or generated_or_aggregated == 3) and valid_filepath(generated_pickle): return False
     else: return True
+
+@app.callback(
+    Output('visualization_aggregated_data_variable_dropdown', 'options'),
+    Input('visualization_generation_zones_dropdown', 'value'),
+    Input('visualization_aggregated_zones_dropdown', 'value'),
+    State('db_settings', 'data'),
+    prevent_initial_call = True
+)
+def populate_variables_dropdowns(generation_zone_selection, aggregation_zone_selection, db_settings):
+    if generation_zone_selection: zone_selection = generation_zone_selection
+    elif aggregation_zone_selection: zone_selection = aggregation_zone_selection
+    else: zone_selection = None
+
+    if zone_selection:
+        variables = PSQL.get_variables(db_settings, zone_selection)
+        return variables
+    else: return []
 
 @app.callback(
     Output('visualization_generated_data_variable_dropdown', 'options'),

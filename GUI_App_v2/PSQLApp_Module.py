@@ -433,6 +433,15 @@ def get_simulation_start_end_datetimes(db_settings, simulation_id):
 
     return start_datetime, start_datetime_id, end_datetime, end_datetime_id
 
+def get_variables(db_settings, zone_selection):
+    conn = connect(db_settings)
+    cursor = conn.cursor()
+    cursor.execute("SELECT id FROM zones WHERE zone_name = %s;", (zone_selection,))
+    zone_id = cursor.fetchone()[0]
+    cursor.execute("SELECT variable_name FROM variables WHERE zone_id = %s;", (zone_id,))
+    variable_name_list = [row[0] for row in cursor.fetchall()]
+    return variable_name_list
+
 def get_generation_aggregation_zones(db_settings, simulation_id):
 
     conn = connect(db_settings)
