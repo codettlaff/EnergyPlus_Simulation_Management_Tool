@@ -308,6 +308,17 @@ tab_layout = [
                         'margin-bottom': '2.5%'  
                         }),
 
+                html.Label("Variable Selection:",
+                        style={'margin-left': '2.5%', 'font-weight': 'bold'}),
+
+                    dcc.Dropdown([], '',
+                        id='visualization_aggregated_data_variable_dropdown',
+                        style={
+                            'width': '95%',
+                            'margin-left': '2.5%',
+                            'margin-bottom': '2.5%'
+                        }),
+
             ],
             id = 'visualization_aggregated_data_zone_selection_menu',
             hidden = True,
