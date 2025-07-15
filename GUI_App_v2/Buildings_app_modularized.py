@@ -1208,12 +1208,27 @@ def populate_zones_dropdowns(data_source, generated_or_aggregated, generated_pic
 
     if aggregated_pickle:
         with open(aggregated_pickle, 'rb') as f: aggregated_data = pickle.load(f)
-        aggregation_zones = list(aggregated_data.keys()).remove('DateTime_List')
-        return None, aggregation_zones
+        aggregation_zones = list(aggregated_data.keys())
+        aggregation_zones.remove('DateTime_List')
+        return [], aggregation_zones
 
     if data_source == 3:
         generation_zones_df, aggregation_zones_df = PSQL.get_generation_aggregation_zones(db_settings, simulation_id)
         return generation_zones_df['zone_name'].tolist(), aggregation_zones_df['zone_name'].tolist()
+
+@app.callback(
+Output('visualization_generation_zones_dropdown', 'value'),
+    Output('visualization_aggregated_zones_dropdown', 'value'),
+    Input('visualization_generation_zones_dropdown', 'value'),
+    Input('visualization_aggregated_zones_dropdown', 'value'),
+    prevent_initial_call = True
+)
+def handle_exclusive_dropdowns(generation_zone_selection, aggregation_zone_selection):
+    if get_callback_id() == 'visualization_generation_zones_dropdown':
+        return no_update, ''
+    elif get_callback_id() == 'visualization_aggregated_zones_dropdown':
+        return '', no_update
+    else: return no_update, no_update
 
 @app.callback(
     Output('visualization_generated_data_variable_selection_menu', 'hidden'),
