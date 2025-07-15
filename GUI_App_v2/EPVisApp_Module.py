@@ -255,6 +255,12 @@ tab_layout = [
                         'margin-bottom': '2.5%'  
                         }),
 
+                html.Button(
+                'Add Data',
+                id = 'visualization_generated_data_add_data_button',
+                className = "btn btn-primary btn-lg col-12"
+            ),
+
             ],
             id = 'visualization_generated_data_variable_selection_menu',
             hidden = True,
@@ -334,7 +340,8 @@ tab_layout = [
 
             html.Button(
                 'Generated Data',
-                id = 'EPVis_Button_DistGeneratedData',
+                # id = 'EPVis_Button_DistGeneratedData',
+                id = 'visualization_distribution_plot_button',
                 hidden = True,
                 className = "btn btn-primary btn-lg col-12"
             ),

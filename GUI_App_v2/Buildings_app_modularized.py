@@ -1223,6 +1223,30 @@ def unhide_generated_data_variable_selection_menu(generated_or_aggregated, gener
     if (generated_or_aggregated == 1 or generated_or_aggregated == 3) and valid_filepath(generated_pickle): return False
     else: return True
 
+@app.callback(
+    Output('visualization_generated_data_variable_dropdown', 'options'),
+    Input('visualization_variables_pickle_filepath', 'data'),
+    prevent_initial_call=True
+)
+def populate_generated_data_variable_dropdowns(generated_pickle):
+    if valid_filepath(generated_pickle):
+        with open(generated_pickle, 'rb') as f: generated_data = pickle.load(f)
+        generated_data_variables = list(generated_data.keys())
+        return generated_data_variables
+    else: return []
+
+@app.callback(
+    Output('visualization_generated_data_variable_column_dropdown', 'options'),
+    Input('visualization_generated_data_variable_dropdown', 'value'),
+    State('visualization_variables_pickle_filepath', 'data')
+)
+def populate_generated_data_variable_column_dropdowns(variable_selection, generated_pickle):
+    if valid_filepath(generated_pickle):
+        with open(generated_pickle, 'rb') as f: generated_data = pickle.load(f)
+        variable_columns = generated_data[variable_selection].columns.tolist()
+        return variable_columns
+    else: return []
+
 """
 
 @app.callback(
