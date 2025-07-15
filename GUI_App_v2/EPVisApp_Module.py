@@ -292,7 +292,7 @@ tab_layout = [
                         }),
 
             ],
-            id = 'visualization_variable_selection_menu',
+            id = 'visualization_aggregated_data_zone_selection_menu',
             hidden = True,
             style = {
                         'width': '100%',

@@ -1179,13 +1179,13 @@ def populate_min_max_date_allowed(tab, generated_pickle, aggregated_pickle, simu
     )
 
 @app.callback(
-    Output('visualization_variable_selection_menu', 'hidden'),
-    Input('visualization_date_picker_calendar', 'start_date'),
-    Input('visualization_date_picker_calendar', 'end_date'),
+    Output('visualization_aggregated_data_zone_selection_menu', 'hidden'),
+    Input('visualization_generated_or_aggregated_data_selection', 'value'),
+    Input('visualization_aggregated_pickle_filepath', 'data'),
     prevent_initial_call = True
 )
-def unhide_visualization_select_variable(start_date, end_date):
-    if start_date is not None and end_date is not None: return False
+def unhide_visualization_select_variable(generated_or_aggregated, aggregated_pickle):
+    if (generated_or_aggregated == 2 or generated_or_aggregated == 3) and valid_filepath(aggregated_pickle): return False
     else: return True
 
 @app.callback(
@@ -1204,15 +1204,10 @@ def populate_zones_dropdowns(data_source, generated_or_aggregated, generated_pic
     generation_zones = []
     aggregation_zones = []
 
-    if generated_pickle:
-        with open(generated_pickle, 'rb') as f: generated_data = pickle.load(f)
-        generated_data_min_datetime = generated_data['DateTime_List'][0]
-        generated_data_max_datetime = generated_data['DateTime_List'][-1]
-
     if aggregated_pickle:
         with open(aggregated_pickle, 'rb') as f: aggregated_data = pickle.load(f)
-        aggregated_data_min_datetime = aggregated_data['DateTime_List'][0]
-        aggregated_data_max_datetime = aggregated_data['DateTime_List'][-1]
+        aggregation_zones = list(aggregated_data.keys()).remove('DateTime_List')
+        return None, aggregation_zones
 
     if data_source == 3:
         generation_zones_df, aggregation_zones_df = PSQL.get_generation_aggregation_zones(db_settings, simulation_id)
