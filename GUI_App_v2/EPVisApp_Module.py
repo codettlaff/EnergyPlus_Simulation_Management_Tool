@@ -173,17 +173,6 @@ tab_layout = [
         className='div-box'
         ),
 
-    # Row 3, proceed button
-    dbc.Row([
-        dbc.Col([
-            html.Br(),
-            html.Button('Proceed',
-            id = 'EPVis_Button_Proceed',
-            className = "btn btn-primary btn-lg col-12",
-            hidden=True
-            ),], width = 12),
-        ]),
-
     # Break Row
     dbc.Row([dbc.Col([html.Br()], width = 12),]),
 
@@ -216,32 +205,6 @@ tab_layout = [
 
     # Break Row
     dbc.Row([dbc.Col([html.Br()], width = 12),]),
-
-    # Row 4, select date range
-    dbc.Row([
-
-        dbc.Col([
-
-            html.Div([
-
-                html.H5("Select Date Range for Visualization:",
-                    className = 'text-left text-secondary mb-2'),
-
-                dcc.DatePickerRange(
-                    id='EPVis_DatePickerRange_Visualization',
-                    min_date_allowed=date(2000, 1, 1),
-                    max_date_allowed=date(2021, 12, 31),
-                    initial_visible_month=date(2020, 1, 1),
-                ),
-
-            ],
-            id = 'EPVis_Div_DateRangeVis',
-            hidden = True
-            ),
-
-            ], xs = 12, sm = 12, md = 12, lg = 12, xl = 12), # width = 12
-
-        ], justify = "left", align = "center"),
 
     # Break Row
     dbc.Row([dbc.Col([html.Br()], width = 12),]),
