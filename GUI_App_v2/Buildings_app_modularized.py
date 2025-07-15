@@ -876,7 +876,7 @@ def aggregate_data(n_clicks, aggregation_settings, variables_pickle_filepath, ei
 
 @app.callback(
     Output('agg_download_button', 'hidden'),
-    Input('aggregation_pickle_filepath', 'data'),
+    Input('aggregated_pickle_filepath', 'data'),
     prevent_initial_call = True
 )
 def unhide_download_buttons(aggregation_pickle_filepath):
@@ -887,7 +887,7 @@ def unhide_download_buttons(aggregation_pickle_filepath):
     Output('agg_download_button', 'children'),
     Output('agg_download_files', 'data'),
     Input('agg_download_button', 'n_clicks'),
-    State('aggregation_pickle_filepath', 'data'),
+    State('aggregated_pickle_filepath', 'data'),
     prevent_initial_call = True
 )
 def agg_download_pickle(n_clicks, aggregation_pickle_filepath):
@@ -982,7 +982,7 @@ def get_aggregation_building_id(tab_selection, agg_input_selection, db_settings,
     Input('aggregation_building_information', 'data'),
     Input('aggregation_simulation_information', 'data'),
     Input('aggregation_building_id','data'),
-    Input('aggregation_pickle_filepath', 'data'),
+    Input('aggregated_pickle_filepath', 'data'),
     prevent_initial_call = True)
 def unhide_upload_to_db_button(simulation_name, building_information, simulation_settings, building_id, pickle_filepath):
     if is_valid_string(simulation_name) and is_valid_dict(building_information) and is_valid_dict(simulation_settings) and is_valid_int(building_id) and valid_filepath(pickle_filepath): return False
