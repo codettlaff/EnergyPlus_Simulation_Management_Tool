@@ -265,19 +265,25 @@ tab_layout = [
 
             html.Div([
 
-                html.H5("Aggregated Data",
+                html.H5("Select Zones",
                     className = 'text-left text-secondary mb-2 ms-4 mt-2'),
 
+                html.Label("Generation Zones:",
+                style={'margin-left': '2.5%', 'font-weight': 'bold'}),
+
                 dcc.Dropdown([], '',
-                    id='visualization_aggregated_data_tables',
+                    id='visualization_generation_zones_dropdown',
                     style = {
                         'width': '95%',
                         'margin-left': '2.5%', 
                         'margin-bottom': '2.5%'  
                         }),
 
+                html.Label("Aggregation Zones",
+                style={'margin-left': '2.5%', 'font-weight': 'bold'}),
+
                 dcc.Dropdown([], '',
-                    id='visualization_aggregated_data_columns',
+                    id='visualization_aggregated_zones_dropdown',
                     multi = True,
                     style = {
                         'width': '95%',
@@ -286,7 +292,7 @@ tab_layout = [
                         }),
 
             ],
-            id = 'visualization_aggregated_data_select_variable',
+            id = 'visualization_variable_selection_menu',
             hidden = True,
             style = {
                         'width': '100%',

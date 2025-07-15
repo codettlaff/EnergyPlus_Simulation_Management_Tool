@@ -1163,7 +1163,7 @@ def populate_min_max_date_allowed(tab, data_source, upload_variables_pickle, upl
     )
 
 @app.callback(
-    Output('visualization_aggregated_data_select_variable', 'hidden'),
+    Output('visualization_variable_selection_menu', 'hidden'),
     Input('visualization_date_picker_calendar', 'start_date'),
     Input('visualization_date_picker_calendar', 'end_date'),
     prevent_initial_call = True
