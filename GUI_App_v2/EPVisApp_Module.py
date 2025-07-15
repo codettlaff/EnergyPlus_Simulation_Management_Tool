@@ -302,7 +302,6 @@ tab_layout = [
 
                 dcc.Dropdown([], '',
                     id='visualization_aggregated_zones_dropdown',
-                    multi = True,
                     style = {
                         'width': '95%',
                         'margin-left': '2.5%', 
