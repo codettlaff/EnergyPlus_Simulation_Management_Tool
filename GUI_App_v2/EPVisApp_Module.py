@@ -157,7 +157,7 @@ tab_layout = [
         html.H5("Data to be selected", className = 'section-title'),
 
         dcc.RadioItems(
-            id = 'EPVis_RadioButton_DataToBeSelected',
+            id = 'visualization_generated_or_aggregated_data_selection',
             labelStyle = {'display': 'block'},
             options = [
                 {'label' : " Generated Data", 'value' : 1},
@@ -168,7 +168,7 @@ tab_layout = [
             className = 'radiobutton-box',
         ),
         ],
-        id = 'visualization_generated_or_aggregated_data_selection',
+        id = 'visualization_generated_or_aggregated_data_selection_menu',
         hidden = True,
         className='div-box'
         ),
