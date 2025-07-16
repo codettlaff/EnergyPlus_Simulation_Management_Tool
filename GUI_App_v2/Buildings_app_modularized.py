@@ -1380,6 +1380,35 @@ def unhide_plot_buttons(data_name, data_list, datetime_list):
         return False, False
     else: return True, True
 
+# Create Distribution Plot
+@app.callback(
+    Output('distribution_plot', 'figure'),
+    Input('distribution_plot_button', 'n_clicks'),
+    State('visualization_time_series_data_name', 'data'),
+    State('visualization_time_series_data_list', 'data'),
+    State('visualization_datetime_list', 'data'),
+    prevent_initial_call = True
+)
+def create_distribution_plot(n_clicks, data_name, data_list, datetime_list):
+    # Wrap data in DataFrame with explicit column names
+    df = pd.DataFrame({data_name: data_list, 'Legend': [data_name] * len(data_list)})
+
+    # Plot with explicit color mapping to force legend label
+    figure = px.histogram(
+        df,
+        x=data_name,
+        color='Legend',
+        histnorm='probability',
+        nbins=50,  # optional: control bin count
+        opacity=0.75,
+        labels={data_name: data_name}
+    )
+
+    # Update layout for axis labels
+    figure.update_layout(xaxis_title='Frequency', yaxis_title='Value')
+
+    return figure
+
 """
 
 @app.callback(
