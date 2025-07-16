@@ -369,9 +369,9 @@ tab_layout = [
         dbc.Col([
 
             html.Button(
-                'Generated Data',
+                'Plot Selected Data',
                 # id = 'EPVis_Button_DistGeneratedData',
-                id = 'visualization_distribution_plot_button',
+                id = 'distribution_plot_button',
                 hidden = True,
                 className = "btn btn-primary btn-lg col-12"
             ),
@@ -381,8 +381,8 @@ tab_layout = [
         dbc.Col([
 
             html.Button(
-                'Aggregated Data',
-                id = 'distribution_plot_button',
+                'Remove Plots',
+                id = 'remove_distribution_plots_button',
                 hidden = True,
                 className = "btn btn-primary btn-lg col-12"
             ),
@@ -409,7 +409,7 @@ tab_layout = [
 
         dbc.Col([
 
-            dcc.Graph(id = 'EPVis_Graph_Distribution', figure ={}),
+            dcc.Graph(id = 'distribution_plot', figure ={}),
 
             ], xs = 12, sm = 12, md = 12, lg = 12, xl = 12), # width = 12
 
@@ -422,7 +422,7 @@ tab_layout = [
     html.Div([
         dbc.Row([
             dash_table.DataTable(
-                id='EPVis_Table_GeneratedData',
+                id='distribution_table',
                 columns=[
                     {"name": "Variable", "id": "Variable"},
                     {"name": "Mean", "id": "Mean"},
@@ -436,7 +436,7 @@ tab_layout = [
                 style_header={'fontWeight': 'bold', 'textAlign': 'center'},  # bold headers
             ),
         ]),
-        ],id = 'EPVis_Div_Statistics',
+        ],id = 'statistics',
         style = {
             'borderWidth': '1px',
             'borderStyle': 'solid',

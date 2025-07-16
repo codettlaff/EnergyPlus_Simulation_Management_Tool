@@ -1363,11 +1363,22 @@ def get_time_series_data_from_generation_pickle(pickle_filepath, variable_select
 )
 def set_time_series_data(generated_data_name, aggregated_data_name, generated_data_list, generated_datetime_list, aggregated_data_list, aggregated_datetime_list):
     if get_callback_id() == 'visualization_generated_pickle_time_series_data_name':
-        print('test')
         return generated_data_name, generated_data_list, generated_datetime_list
     elif get_callback_id() == 'visualization_aggregated_pickle_or_database_time_series_data_name':
-        print('test')
         return aggregated_data_name, aggregated_data_list, aggregated_datetime_list
+
+@app.callback(
+    Output('distribution_plot_button', 'hidden'),
+    Output('remove_distribution_plots_button', 'hidden'),
+    Input('visualization_time_series_data_name', 'data'),
+    Input('visualization_time_series_data_list', 'data'),
+    Input('visualization_datetime_list', 'data'),
+    prevent_initial_call = True
+)
+def unhide_plot_buttons(data_name, data_list, datetime_list):
+    if is_valid_string(data_name) and len(data_list) > 0 and len(datetime_list) > 0:
+        return False, False
+    else: return True, True
 
 """
 
