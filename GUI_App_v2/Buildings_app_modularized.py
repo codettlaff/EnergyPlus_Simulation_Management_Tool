@@ -1318,6 +1318,27 @@ def get_time_series_data_for_database(generation_zone_selection, aggregation_zon
         value_list = time_series_data_df['value'].tolist()
         return custom_label, value_list, datetime_list
 
+# Get Time Series Data From Generated Pickle
+@app.callback(
+    Output('visualization_generated_pickle_time_series_data_name', 'data'),
+    Output('visualization_generated_pickle_time_series_data_list', 'data'),
+    Output('visualization_generated_pickle_datetime_list', 'data'),
+    Input('visualization_variables_pickle_filepath', 'data'),
+    Input('visualization_generated_data_variable_dropdown', 'value'),
+    Input('visualization_generated_data_variable_column_dropdown', 'value'),
+    Input('visualization_generated_data_custom_label_input', 'n_blur'),
+    State('visualization_generated_data_custom_label_input', 'value'),
+    prevent_initial_call = True
+)
+def get_time_series_data_from_generation_pickle(pickle_filepath, variable_selection, column_selection, n_blur, custom_label):
+    if variable_selection and column_selection and is_valid_string(custom_label):
+        with open(pickle_filepath, 'rb') as f: pickled_data = pickle.load(f)
+        datetime_list = pickled_data['DateTime_List']
+        value_list = pickled_data[variable_selection][column_selection]
+
+        return custom_label, value_list, datetime_list
+    else: return no_update, [], []
+
 """
 
 @app.callback(
