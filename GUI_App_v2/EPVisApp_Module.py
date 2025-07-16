@@ -382,7 +382,7 @@ tab_layout = [
 
             html.Button(
                 'Aggregated Data',
-                id = 'EPVis_Button_DistAggregatedData',
+                id = 'distribution_plot_button',
                 hidden = True,
                 className = "btn btn-primary btn-lg col-12"
             ),

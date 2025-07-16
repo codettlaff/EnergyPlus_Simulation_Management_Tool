@@ -1349,6 +1349,26 @@ def get_time_series_data_from_generation_pickle(pickle_filepath, variable_select
         return custom_label, value_list, datetime_list
     else: return no_update, [], []
 
+@app.callback(
+    Output('visualization_time_series_data_name', 'data'),
+    Output('visualization_time_series_data_list', 'data'),
+    Output('visualization_datetime_list', 'data'),
+    Input('visualization_generated_pickle_time_series_data_name', 'data'),
+    Input('visualization_aggregated_pickle_or_database_time_series_data_name', 'data'),
+    State('visualization_generated_pickle_time_series_data_list', 'data'),
+    State('visualization_generated_pickle_datetime_list', 'data'),
+    State('visualization_aggregated_pickle_or_database_time_series_data_list', 'data'),
+    State('visualization_aggregated_pickle_or_database_datetime_list', 'data'),
+    prevent_initial_call = True
+)
+def set_time_series_data(generated_data_name, aggregated_data_name, generated_data_list, generated_datetime_list, aggregated_data_list, aggregated_datetime_list):
+    if get_callback_id() == 'visualization_generated_pickle_time_series_data_name':
+        print('test')
+        return generated_data_name, generated_data_list, generated_datetime_list
+    elif get_callback_id() == 'visualization_aggregated_pickle_or_database_time_series_data_name':
+        print('test')
+        return aggregated_data_name, aggregated_data_list, aggregated_datetime_list
+
 """
 
 @app.callback(
