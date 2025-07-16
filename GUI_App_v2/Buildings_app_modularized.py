@@ -1383,6 +1383,7 @@ def unhide_plot_buttons(data_name, data_list, datetime_list):
 # Create Distribution Plot
 @app.callback(
     Output('distribution_plot', 'figure'),
+    Output('distribution_table', 'data'),
     Input('distribution_plot_button', 'n_clicks'),
     State('visualization_time_series_data_name', 'data'),
     State('visualization_time_series_data_list', 'data'),
@@ -1407,7 +1408,15 @@ def create_distribution_plot(n_clicks, data_name, data_list, datetime_list):
     # Update layout for axis labels
     figure.update_layout(xaxis_title='Frequency', yaxis_title='Value')
 
-    return figure
+    series = df[data_name]
+    stats = {
+        "Variable": data_name,
+        "Mean": float(series.mean()),
+        "Variance": float(series.var()),
+        "Standard_Deviation": float(series.std()),
+        "Range": f"{round(series.min(), 4)} – {round(series.max(), 4)}"
+    }
+    return figure, [stats]
 
 """
 
