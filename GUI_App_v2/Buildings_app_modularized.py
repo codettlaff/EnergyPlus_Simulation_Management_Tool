@@ -114,15 +114,15 @@ app.layout = dbc.Container([
 
     # Visualization Parameters
     dcc.Store(id='visualization_simulations_df', data=None),
+
     dcc.Store(id='visualization_generated_pickle_time_series_data_name', data=None),
     dcc.Store(id='visualization_generated_pickle_time_series_data_list', data=None),
     dcc.Store(id='visualization_generated_pickle_datetime_list', data=None),
-    dcc.Store(id='visualization_aggregated_pickle_time_series_data_name', data=None),
-    dcc.Store(id='visualization_aggregated_pickle_time_series_data_list', data=None),
-    dcc.Store(id='visualization_aggregated_pickle_datetime_list', data=None),
-    dcc.Store(id='visualization_database_time_series_data_name', data=None),
-    dcc.Store(id='visualization_database_time_series_data_list', data=None),
-    dcc.Store(id='visualization_database_datetime_list', data=None),
+
+    dcc.Store(id='visualization_aggregated_pickle_or_database_time_series_data_name', data=None),
+    dcc.Store(id='visualization_aggregated_pickle_or_database_time_series_data_list', data=None),
+    dcc.Store(id='visualization_aggregated_pickle_or_database_datetime_list', data=None),
+
     dcc.Store(id='visualization_time_series_data_name', data=None),
     dcc.Store(id='visualization_time_series_data_list', data=None),
     dcc.Store(id='visualization_datetime_list', data=None),
@@ -1296,10 +1296,11 @@ def populate_generated_data_variable_column_dropdowns(variable_selection, genera
 
 # Get Time Series Data From Aggregated Pickle or Database
 @app.callback(
-    Output('visualization_database_time_series_data_name', 'data'),
-    Output('visualization_database_time_series_data_list', 'data'),
-    Output('visualization_datetime_list', 'data'),
+    Output('visualization_aggregated_pickle_or_database_time_series_data_name', 'data'),
+    Output('visualization_aggregated_pickle_or_database_time_series_data_list', 'data'),
+    Output('visualization_aggregated_pickle_or_database_datetime_list', 'data'),
     Input('visualization_data_source', 'value'),
+    Input('visualization_simulation_id', 'data'),
     Input('visualization_aggregated_pickle_filepath', 'data'),
     Input('visualization_generation_zones_dropdown', 'value'),
     Input('visualization_aggregated_zones_dropdown', 'value'),
@@ -1309,17 +1310,17 @@ def populate_generated_data_variable_column_dropdowns(variable_selection, genera
     State('visualization_aggregated_data_custom_label_input', 'value'),
     prevent_initial_call = True
 )
-def get_time_series_data_from_aggregated_pickle_or_database(data_source, pickle_filepath, generation_zone_selection, aggregation_zone_selection, variable_selection, n_blue, db_settings, custom_label):
+def get_time_series_data_from_aggregated_pickle_or_database(data_source, simulation_id, pickle_filepath, generation_zone_selection, aggregation_zone_selection, variable_selection, n_blue, db_settings, custom_label):
     if generation_zone_selection and variable_selection and is_valid_string(custom_label): zone_selection = generation_zone_selection
     elif aggregation_zone_selection and variable_selection and is_valid_string(custom_label): zone_selection = aggregation_zone_selection
     else: zone_selection = None
 
-    if data_source == 3 and zone_selection:
+    if data_source == 3 and zone_selection and is_valid_int(simulation_id):
         time_series_data_df = PSQL.get_time_series_data_column(db_settings, zone_selection, variable_selection)
         datetime_list = time_series_data_df['datetime'].tolist()
         value_list = time_series_data_df['value'].tolist()
         return custom_label, value_list, datetime_list
-    elif zone_selection:
+    elif data_source != 3 and zone_selection:
         with open(pickle_filepath, 'rb') as f: pickled_data = pickle.load(f)
         datetime_list = pickled_data['DateTime_List']
         value_list = pickled_data[zone_selection][variable_selection]
