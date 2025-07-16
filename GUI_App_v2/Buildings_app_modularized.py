@@ -1420,6 +1420,36 @@ def create_distribution_plot(n_clicks, data_name, data_list, datetime_list):
     }
     return figure, [stats]
 
+@app.callback(
+    Output('time_series_plot', 'figure'),
+    Input('time_series_plot_button', 'n_clicks'),
+    State('visualization_time_series_data_name', 'data'),
+    State('visualization_time_series_data_list', 'data'),
+    State('visualization_datetime_list', 'data'),
+    prevent_initial_call = True
+)
+def plot_time_series_data(n_clicks, data_name, data_list, datetime_list):
+
+    # Convert datetime strings to datetime objects
+    datetime_objs = [datetime.fromisoformat(dt) for dt in datetime_list]
+
+    df = pd.DataFrame({
+        'Datetime': datetime_objs,
+        data_name: data_list
+    })
+
+    # Create line plot
+    fig = px.line(df, x='Datetime', y=data_name, title=f"Time Series: {data_name}")
+
+    # Optional: format layout
+    fig.update_layout(
+        xaxis_title='Time',
+        yaxis_title=data_name,
+        margin=dict(l=40, r=40, t=40, b=40)
+    )
+
+    return fig
+
 """
 
 @app.callback(
