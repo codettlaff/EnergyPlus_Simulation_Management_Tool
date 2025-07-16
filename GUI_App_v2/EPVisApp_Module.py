@@ -535,8 +535,8 @@ tab_layout = [
 
         dbc.Col([
 
-            html.Button('Generated Data',
-                        id = 'EPVis_Button_TimeGeneratedData',
+            html.Button('Plot Selected Data',
+                        id = 'time_series_plot_button',
                         hidden = True,
                         className = "btn btn-primary btn-lg col-12"),
 
@@ -544,8 +544,8 @@ tab_layout = [
 
         dbc.Col([
 
-            html.Button('Aggregated Data',
-                        id = 'EPVis_Button_TimeAggregatedData',
+            html.Button('Remove Plots',
+                        id = 'remove_time_series_plot_button',
                         hidden = True,
                         className = "btn btn-primary btn-lg col-12"),
 
@@ -570,7 +570,7 @@ tab_layout = [
 
         dbc.Col([
 
-            dcc.Graph(id = 'EPVis_Graph_TimeSeries', figure ={}),
+            dcc.Graph(id = 'time_series_plot', figure ={}),
 
             ], xs = 12, sm = 12, md = 12, lg = 12, xl = 12), # width = 12
 

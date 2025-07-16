@@ -1370,6 +1370,8 @@ def set_time_series_data(generated_data_name, aggregated_data_name, generated_da
 @app.callback(
     Output('distribution_plot_button', 'hidden'),
     Output('remove_distribution_plots_button', 'hidden'),
+    Output('time_series_plot_button', 'hidden'),
+    Output('remove_time_series_plot_button', 'hidden'),
     Input('visualization_time_series_data_name', 'data'),
     Input('visualization_time_series_data_list', 'data'),
     Input('visualization_datetime_list', 'data'),
@@ -1377,8 +1379,8 @@ def set_time_series_data(generated_data_name, aggregated_data_name, generated_da
 )
 def unhide_plot_buttons(data_name, data_list, datetime_list):
     if is_valid_string(data_name) and len(data_list) > 0 and len(datetime_list) > 0:
-        return False, False
-    else: return True, True
+        return False, False, False, False
+    else: return True, True, True, True
 
 # Create Distribution Plot
 @app.callback(
