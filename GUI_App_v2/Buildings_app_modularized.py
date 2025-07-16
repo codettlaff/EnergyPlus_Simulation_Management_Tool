@@ -1359,13 +1359,34 @@ def get_time_series_data_from_generation_pickle(pickle_filepath, variable_select
     State('visualization_generated_pickle_datetime_list', 'data'),
     State('visualization_aggregated_pickle_or_database_time_series_data_list', 'data'),
     State('visualization_aggregated_pickle_or_database_datetime_list', 'data'),
+    State('visualization_date_picker_calendar', 'start_date'),
+    State('visualization_date_picker_calendar', 'end_date'),
     prevent_initial_call = True
 )
-def set_time_series_data(generated_data_name, aggregated_data_name, generated_data_list, generated_datetime_list, aggregated_data_list, aggregated_datetime_list):
+def set_time_series_data(generated_data_name, aggregated_data_name, generated_data_list, generated_datetime_list, aggregated_data_list, aggregated_datetime_list, start_date, end_date):
+
+    # Convert date strings to datetime.date objects
+    start = datetime.fromisoformat(start_date).date()
+    end = datetime.fromisoformat(end_date).date()
+
+    def trim_data(data_list, datetime_list):
+        # Convert datetime strings to datetime objects
+        dt_objects = [datetime.fromisoformat(dt) for dt in datetime_list]
+        # Filter based on start and end date (date only)
+        trimmed = [(v, dt) for v, dt in zip(data_list, dt_objects) if start <= dt.date() <= end]
+        if not trimmed:
+            return [], []
+        values, dts = zip(*trimmed)
+        return list(values), [dt.isoformat() for dt in dts]
+
     if get_callback_id() == 'visualization_generated_pickle_time_series_data_name':
-        return generated_data_name, generated_data_list, generated_datetime_list
+        trimmed_data, trimmed_datetimes = trim_data(generated_data_list, generated_datetime_list)
+        return generated_data_name, trimmed_data, trimmed_datetimes
     elif get_callback_id() == 'visualization_aggregated_pickle_or_database_time_series_data_name':
-        return aggregated_data_name, aggregated_data_list, aggregated_datetime_list
+        trimmed_data, trimmed_datetimes = trim_data(aggregated_data_list, aggregated_datetime_list)
+        return aggregated_data_name, trimmed_data, trimmed_datetimes
+
+
 
 @app.callback(
     Output('distribution_plot_button', 'hidden'),
