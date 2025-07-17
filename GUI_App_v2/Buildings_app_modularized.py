@@ -1481,6 +1481,7 @@ def create_distribution_plot(plot_n_clicks, remove_plot_n_clicks, data_name_list
     Output('time_series_data_list', 'data'),
     Output('time_series_datetime_list', 'data'),
     Input('time_series_plot_button', 'n_clicks'),
+    Input('remove_time_series_plot_button', 'n_clicks'),
     State('time_series_data_name_list', 'data'),
     State('time_series_data_list', 'data'),
     State('time_series_datetime_list', 'data'),
@@ -1489,43 +1490,47 @@ def create_distribution_plot(plot_n_clicks, remove_plot_n_clicks, data_name_list
     State('visualization_datetime_list', 'data'),
     prevent_initial_call = True
 )
-def plot_time_series_data(n_clicks, data_name_list, data_list_list, datetime_list_list, new_data_name, new_data_list, new_datetime_list):
-    # Initialize if needed
-    if not data_name_list:
-        data_name_list = []
-    if not data_list_list:
-        data_list_list = []
-    if not datetime_list_list:
-        datetime_list_list = []
+def plot_time_series_data(plot_n_clicks, remove_plot_n_clicks, data_name_list, data_list_list, datetime_list_list, new_data_name, new_data_list, new_datetime_list):
 
-    # Append the new variable
-    data_name_list.append(new_data_name)
-    data_list_list.append(new_data_list)
-    datetime_list_list.append(new_datetime_list)
+    if get_callback_id() == 'time_series_plot_button':
+        # Initialize if needed
+        if not data_name_list:
+            data_name_list = []
+        if not data_list_list:
+            data_list_list = []
+        if not datetime_list_list:
+            datetime_list_list = []
 
-    # Create the figure
-    fig = go.Figure()
+        # Append the new variable
+        data_name_list.append(new_data_name)
+        data_list_list.append(new_data_list)
+        datetime_list_list.append(new_datetime_list)
 
-    for name, values, dt_list in zip(data_name_list, data_list_list, datetime_list_list):
-        # Convert datetime strings to datetime objects
-        datetime_objs = [datetime.fromisoformat(dt) for dt in dt_list]
+        # Create the figure
+        fig = go.Figure()
 
-        # Add trace
-        fig.add_trace(go.Scatter(
-            x=datetime_objs,
-            y=values,
-            mode='lines',
-            name=name
-        ))
+        for name, values, dt_list in zip(data_name_list, data_list_list, datetime_list_list):
+            # Convert datetime strings to datetime objects
+            datetime_objs = [datetime.fromisoformat(dt) for dt in dt_list]
 
-    fig.update_layout(
-        title='Time Series Plot',
-        xaxis_title='Time',
-        yaxis_title='Value',
-        margin=dict(l=40, r=40, t=40, b=40)
-    )
+            # Add trace
+            fig.add_trace(go.Scatter(
+                x=datetime_objs,
+                y=values,
+                mode='lines',
+                name=name
+            ))
 
-    return fig, data_name_list, data_list_list, datetime_list_list
+        fig.update_layout(
+            title='Time Series Plot',
+            xaxis_title='Time',
+            yaxis_title='Value',
+            margin=dict(l=40, r=40, t=40, b=40)
+        )
+
+        return fig, data_name_list, data_list_list, datetime_list_list
+
+    else: return go.Figure(), [], [], []
 
 """
 
