@@ -1266,6 +1266,7 @@ def populate_zones_dropdowns(data_source, generated_or_aggregated, generated_pic
         with open(aggregated_pickle, 'rb') as f: aggregated_data = pickle.load(f)
         aggregation_zones = list(aggregated_data.keys())
         aggregation_zones.remove('DateTime_List')
+        aggregation_zones = [s for s in aggregation_zones if '_Equipment' not in s]
         return [], aggregation_zones
 
     if data_source == 3:
