@@ -1297,18 +1297,24 @@ def unhide_generated_data_variable_selection_menu(generated_or_aggregated, gener
 
 @app.callback(
     Output('visualization_aggregated_data_variable_dropdown', 'options'),
+    Input('visualization_data_source', 'value'),
     Input('visualization_generation_zones_dropdown', 'value'),
     Input('visualization_aggregated_zones_dropdown', 'value'),
+    Input('visualization_aggregated_pickle_filepath', 'data'),
     State('db_settings', 'data'),
     prevent_initial_call = True
 )
-def populate_variables_dropdowns(generation_zone_selection, aggregation_zone_selection, db_settings):
+def populate_variables_dropdowns(data_source, generation_zone_selection, aggregation_zone_selection, pickle_filepath, db_settings):
     if generation_zone_selection: zone_selection = generation_zone_selection
     elif aggregation_zone_selection: zone_selection = aggregation_zone_selection
     else: zone_selection = None
 
-    if zone_selection:
+    if zone_selection and data_source == 3:
         variables = PSQL.get_variables(db_settings, zone_selection)
+        return variables
+    elif zone_selection:
+        with open(pickle_filepath, 'rb') as f: data = pickle.load(f)
+        variables = data[zone_selection].columns.tolist()
         return variables
     else: return []
 
