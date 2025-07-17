@@ -88,8 +88,10 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_va
 
         # FOR LOOP: For each element of Unique_Zone_List
         for Unique_Zone in Unique_Zone_List:
-            Unique_Zone_Volume_Dict[Unique_Zone] = float(
-                Eio_OutputFile_Dict['Zone Information'].query('`Zone Name` == Unique_Zone')['Volume {m3}'])
+            zone_information_df = Eio_OutputFile_Dict['Zone Information']
+            row = zone_information_df[zone_information_df['Zone Name'].str.strip() == Unique_Zone].iloc[0]
+            value = float(row['Volume {m3}'])
+            Unique_Zone_Volume_Dict[Unique_Zone] = value
 
         # Creating Zone_TotalVolume_List
         Zone_TotalVolume_List = []
@@ -103,7 +105,7 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_va
             # FOR LOOP: For each Element in Aggregation_Zone_List1
             for element in Aggregation_Zone_List1:
                 # Summing Up Zone Area
-                TotalVolume = TotalVolume + Unique_Zone_Volume_Dict[element]
+                TotalVolume = TotalVolume + Unique_Zone_Volume_Dict[element.strip()]
 
             # Appending Zone_TotalArea_List
             Zone_TotalVolume_List.append(TotalVolume)
@@ -264,14 +266,14 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_va
                         # Filling Aggregation_Dict with Current_Aggregation_Variable
                         Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = (Current_Aggregation_Variable[
                                                                                        Current_DF_Cols_Desired].sum(
-                            axis=1).fillna(0.0)) / Zone_TotalArea_List[Counter]
+                            axis=1).fillna(0.0)) / Zone_TotalArea_List[Counter - 1]
 
                     elif (aggregation_type == 3):  # Weighted Volume Aggregation
 
                         # Filling Aggregation_Dict with Current_Aggregation_Variable
                         Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = (Current_Aggregation_Variable[
                                                                                        Current_DF_Cols_Desired].sum(
-                            axis=1).fillna(0.0)) / Zone_TotalVolume_List[Counter]
+                            axis=1).fillna(0.0)) / Zone_TotalVolume_List[Counter - 1]
 
             elif (Current_Aggregation_Variable_Type == 'Surface'):  # Surface
 
