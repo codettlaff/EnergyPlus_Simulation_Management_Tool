@@ -1471,33 +1471,55 @@ def create_distribution_plot(n_clicks, data_name_list, data_list_list, new_data_
 
 @app.callback(
     Output('time_series_plot', 'figure'),
+    Output('time_series_data_name_list', 'data'),
+    Output('time_series_data_list', 'data'),
+    Output('time_series_datetime_list', 'data'),
     Input('time_series_plot_button', 'n_clicks'),
+    State('time_series_data_name_list', 'data'),
+    State('time_series_data_list', 'data'),
+    State('time_series_datetime_list', 'data'),
     State('visualization_time_series_data_name', 'data'),
     State('visualization_time_series_data_list', 'data'),
     State('visualization_datetime_list', 'data'),
     prevent_initial_call = True
 )
-def plot_time_series_data(n_clicks, data_name, data_list, datetime_list):
+def plot_time_series_data(n_clicks, data_name_list, data_list_list, datetime_list_list, new_data_name, new_data_list, new_datetime_list):
+    # Initialize if needed
+    if not data_name_list:
+        data_name_list = []
+    if not data_list_list:
+        data_list_list = []
+    if not datetime_list_list:
+        datetime_list_list = []
 
-    # Convert datetime strings to datetime objects
-    datetime_objs = [datetime.fromisoformat(dt) for dt in datetime_list]
+    # Append the new variable
+    data_name_list.append(new_data_name)
+    data_list_list.append(new_data_list)
+    datetime_list_list.append(new_datetime_list)
 
-    df = pd.DataFrame({
-        'Datetime': datetime_objs,
-        data_name: data_list
-    })
+    # Create the figure
+    fig = go.Figure()
 
-    # Create line plot
-    fig = px.line(df, x='Datetime', y=data_name, title=f"Time Series: {data_name}")
+    for name, values, dt_list in zip(data_name_list, data_list_list, datetime_list_list):
+        # Convert datetime strings to datetime objects
+        datetime_objs = [datetime.fromisoformat(dt) for dt in dt_list]
 
-    # Optional: format layout
+        # Add trace
+        fig.add_trace(go.Scatter(
+            x=datetime_objs,
+            y=values,
+            mode='lines',
+            name=name
+        ))
+
     fig.update_layout(
+        title='Time Series Plot',
         xaxis_title='Time',
-        yaxis_title=data_name,
+        yaxis_title='Value',
         margin=dict(l=40, r=40, t=40, b=40)
     )
 
-    return fig
+    return fig, data_name_list, data_list_list, datetime_list_list
 
 """
 
