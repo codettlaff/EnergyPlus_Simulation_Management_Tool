@@ -419,11 +419,12 @@ def get_generation_epw_filepath(generation_default_epw_filepath, pnnl_prototype_
 # Get Building Information
 @app.callback(
     Output('building_information', 'data'),
+    Input('using_db', 'value'),
     Input('generation_idf_filepath', 'data'),
     prevent_initial_call=True
 )
-def get_building_information(idf_filepath):
-    if valid_filepath(idf_filepath):
+def get_building_information(using_database, idf_filepath):
+    if valid_filepath(idf_filepath) and using_database:
         try:
             building_information = PSQL.get_building_information(idf_filepath)
             return building_information
@@ -661,13 +662,16 @@ def generate_data(n_clicks, idf_filepath, epw_filepath, simulation_settings, var
     Output('download_variables_pickle_button', 'hidden'),
     Output('download_eio_pickle_button', 'hidden'),
     Output('upload_to_db_button', 'hidden'),
+    Input('using_database', 'value'),
     Input('generation_variables_pickle_filepath', 'data'),
     Input('generation_eio_pickle_filepath', 'data'),
     prevent_initial_call = True
 )
-def unhide_download_buttons(variables_pickle_filepath, eio_pickle_filepath):
-    if variables_pickle_filepath is not None and eio_pickle_filepath is not None:
+def unhide_download_buttons(using_database, variables_pickle_filepath, eio_pickle_filepath):
+    if valid_filepath(variables_pickle_filepath) and valid_filepath(eio_pickle_filepath) and using_database:
         return False, False, False
+    elif valid_filepath(variables_pickle_filepath) and valid_filepath(eio_pickle_filepath):
+        return False, False, True
     else: return True, True, True
 
 # Download Variables Pickle

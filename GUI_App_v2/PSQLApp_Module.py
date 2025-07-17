@@ -54,13 +54,13 @@ tab_layout = [
                 ),
 
                 dcc.RadioItems(
-                    id='PSQL_RadioButton_UsingDatabase',
+                    id='using_database',
                     labelStyle={'display': 'block'},
                     options=[
                         {'label': " Yes", 'value': True},
                         {'label': " No", 'value': False}
                     ],
-                    value='',
+                    value=False,
                     style={
                         'margin-left': '3%',
                         'margin-bottom': '2%'
