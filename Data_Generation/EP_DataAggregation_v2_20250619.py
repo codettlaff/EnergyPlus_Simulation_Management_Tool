@@ -293,6 +293,7 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_va
                 # FOR LOOP: For each element in element
                 for ColName1 in element:
 
+                    ColName1 = ColName1.strip()
                     # FOR LOOP: For each element in Current_Aggregation_Variable_ColName_List
                     for ColName2 in Current_Aggregation_Variable_ColName_List:
 
@@ -378,6 +379,7 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_va
                     # FOR LOOP: For each element in Current_Aggregation_Variable_ColName_List
                     for ColName2 in Current_Aggregation_Variable_ColName_List:
 
+                        ColName1 = ColName1.strip()
                         # IF LOOP: For checking presence of ColName1 in ColName2
                         if ((ColName2.find(ColName1) >= 0) and (
                                 ColName2.find(SystemNode_Name) >= 0)):  # ColName1 present in ColName2
