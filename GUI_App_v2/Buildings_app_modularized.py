@@ -809,7 +809,8 @@ def unhide_agg_variables_menu(upload_variables, upload_eio):
 def agg_populate_available_variables_dropdown(variables_menu_hidden, variables_pickle_filepath):
     if variables_menu_hidden == False:
         variables = EPAgg.get_variable_list(variables_pickle_filepath)
-        return variables
+        allowed_variables = list(set(variables) & set(PRESELECTED_VARIABLES)) # Can only aggregated preselected variables
+        return allowed_variables
     else: return []
 
 @app.callback(
