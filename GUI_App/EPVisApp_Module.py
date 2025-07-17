@@ -100,7 +100,7 @@ tab_layout = [
             html.Div([
                 # Upload Generated Data
                 html.Div([
-                    html.Label("Generated Data", className='section-label'),
+                    html.Label("Select from Unprocessed Data", className='section-label'),
                     dcc.Upload(
                         id='visualization_upload_generated_data_box',
                         children=html.Div("Drag and Drop or Select Files for Generated Data"),
@@ -265,7 +265,19 @@ tab_layout = [
                             'width': '95%',
                             'margin-left': '2.5%',
                             'margin-bottom': '2.5%',
-                        })
+                        }),
+
+                dcc.RadioItems(
+                        id='visualization_select_unprocessed_data_button',
+                        options=[
+                            {'label': ' Use Unprocessed Data', 'value': 1},
+                        ],
+                        value=1,
+                        labelStyle={'display': 'block'},
+                        style={
+                            'margin-left': '2.5%',
+                            'margin-bottom': '2.5%'
+                        }),
 
             ],
             id = 'visualization_generated_data_variable_selection_menu',
@@ -283,7 +295,7 @@ tab_layout = [
 
             html.Div([
 
-                html.H5("Select Zones",
+                html.H5("Select from Aggregated Data",
                     className = 'text-left text-secondary mb-2 ms-4 mt-2'),
 
                 html.Label("Generation Zones:",
@@ -331,8 +343,19 @@ tab_layout = [
                                 'margin-left': '2.5%',
                                 'margin-bottom': '2.5%'
                             }
-                        )
+                        ),
 
+                    dcc.RadioItems(
+                        id='visualization_select_aggregated_data_button',
+                        options=[
+                            {'label': ' Use Aggregated Data', 'value': 2},
+                        ],
+                        value='',
+                        labelStyle={'display': 'block'},
+                        style={
+                            'margin-left': '2.5%',
+                            'margin-bottom': '2.5%'
+                        }),
             ],
             id = 'visualization_aggregated_data_zone_selection_menu',
             hidden = True,
