@@ -1051,6 +1051,22 @@ def upload_to_db(n_clicks, db_settings, sim_name, aggregation_pickle_filepath, b
 ##########################################################################################################
 
 @app.callback(
+    Output('visualization_data_source', 'options'),
+    Input('using_database', 'value'),
+)
+def update_data_source_options(using_database):
+    options = [
+        {'label': " Continue Session", 'value': 1},
+        {'label': " Upload Files", 'value': 2},
+    ]
+
+    # Only include "Database" if using_database is True-ish
+    if using_database:
+        options.append({'label': " Database", 'value': 3})
+
+    return options
+
+@app.callback(
     Output('visualization_upload_data_menu', 'hidden'),
     Input('main_tabs', 'value'),
     Input('visualization_data_source', 'value'),
