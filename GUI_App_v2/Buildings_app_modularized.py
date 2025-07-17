@@ -972,6 +972,7 @@ def get_aggregation_simulation_settings(agg_input_selection, variables_pickle_fi
 @app.callback(
     Output('aggregation_building_id', 'data'),
     Input('main_tabs', 'value'),
+    Input('using_database', 'value'),
     Input('agg_input_selection', 'value'),
     State('db_settings', 'data'),
     State('generation_building_id', 'data'),
@@ -979,9 +980,10 @@ def get_aggregation_simulation_settings(agg_input_selection, variables_pickle_fi
     State('building_information', 'data'),
     prevent_initial_call=True
 )
-def get_aggregation_building_id(tab_selection, agg_input_selection, db_settings, generation_building_id, generation_idf_filepath, building_information):
+def get_aggregation_building_id(tab_selection, using_database, agg_input_selection, db_settings, generation_building_id, generation_idf_filepath, building_information):
 
     if tab_selection != 'tab-aggregation': return no_update
+    if not using_database: return None
 
     if agg_input_selection == 1:
         if generation_building_id is not None: return generation_building_id
@@ -1007,16 +1009,16 @@ def get_aggregation_building_id(tab_selection, agg_input_selection, db_settings,
 
 @app.callback(
     Output('agg_upload_to_db_button', 'hidden'),
+    Input('using_database', 'value'),
     Input('aggregation_simulation_name', 'data'),
     Input('aggregation_building_information', 'data'),
     Input('aggregation_simulation_information', 'data'),
     Input('aggregation_building_id','data'),
     Input('aggregated_pickle_filepath', 'data'),
     prevent_initial_call = True)
-def unhide_upload_to_db_button(simulation_name, building_information, simulation_settings, building_id, pickle_filepath):
-    if is_valid_string(simulation_name) and is_valid_dict(building_information) and is_valid_dict(simulation_settings) and is_valid_int(building_id) and valid_filepath(pickle_filepath): return False
+def unhide_upload_to_db_button(using_database, simulation_name, building_information, simulation_settings, building_id, pickle_filepath):
+    if is_valid_string(simulation_name) and is_valid_dict(building_information) and is_valid_dict(simulation_settings) and is_valid_int(building_id) and valid_filepath(pickle_filepath) and using_database: return False
     else: return True
-
 
 # Upload to DB Button
 @app.callback(
