@@ -100,7 +100,7 @@ tab_layout = [
             html.Div([
                 # Upload Generated Data
                 html.Div([
-                    html.Label("Select from Unprocessed Data", className='section-label'),
+                    html.Label("Upload Pickle File from Data Generation", className='section-label'),
                     dcc.Upload(
                         id='visualization_upload_generated_data_box',
                         children=html.Div("Drag and Drop or Select Files for Generated Data"),
@@ -113,7 +113,7 @@ tab_layout = [
 
                 # Upload Aggregated Data
                 html.Div([
-                    html.Label("Aggregated Data", className='section-label'),
+                    html.Label("Upload Pickle File from Data Aggregation", className='section-label'),
                     dcc.Upload(
                         id='visualization_upload_aggregated_data_box',
                         children=html.Div("Drag and Drop or Select Files for Aggregated Data"),
@@ -229,7 +229,7 @@ tab_layout = [
 
             html.Div([
 
-                html.H5("Generated Data",
+                html.H5("Select From Unprocessed Data",
                     className = 'text-left text-secondary mb-2 ms-4 mt-2'),
 
                 html.Label("Select Variable:",
@@ -348,7 +348,7 @@ tab_layout = [
                     dcc.RadioItems(
                         id='visualization_select_aggregated_data_button',
                         options=[
-                            {'label': ' Use Aggregated Data', 'value': 2},
+                            {'label': ' Use Aggregated Data', 'value': 1},
                         ],
                         value='',
                         labelStyle={'display': 'block'},

@@ -146,6 +146,8 @@ app.layout = dbc.Container([
     dcc.Store(id='time_series_data_list', data=[]),
     dcc.Store(id='time_series_datetime_list', data=[]),
 
+    dcc.Store(id='unprocessed_or_unprocessed_data_selection', data=1),
+
 
     dbc.Row([
         html.H1(
@@ -1397,10 +1399,33 @@ def get_time_series_data_from_generation_pickle(pickle_filepath, variable_select
         return custom_label, value_list, datetime_list
     else: return no_update, [], []
 
+# Get use Unprocessed or Aggregated Data Selection
+@app.callback(
+    Output('visualization_select_unprocessed_data_button', 'value'),
+    Output('visualization_select_aggregated_data_button', 'value'),
+    Output('unprocessed_or_unprocessed_data_selection', 'data'),
+    Input('visualization_generated_or_aggregated_data_selection', 'value'),
+    Input('visualization_select_unprocessed_data_button', 'value'),
+    Input('visualization_select_aggregated_data_button', 'value'),
+    prevent_initial_call = True
+)
+def select_unprocessed_or_aggregated_data(data_source, unprocessed_data_button, processed_data_button):
+
+    if data_source == 1:
+        return 1, 0, 1
+    if data_source == 2:
+        return 0, 1, 2
+
+    if get_callback_id() == 'visualization_select_unprocessed_data_button':
+        return 1, 0, 1
+    else:
+        return 0, 1, 2
+
 @app.callback(
     Output('visualization_time_series_data_name', 'data'),
     Output('visualization_time_series_data_list', 'data'),
     Output('visualization_datetime_list', 'data'),
+    Input('unprocessed_or_unprocessed_data_selection', 'data'),
     Input('visualization_generated_pickle_time_series_data_name', 'data'),
     Input('visualization_aggregated_pickle_or_database_time_series_data_name', 'data'),
     State('visualization_generated_pickle_time_series_data_list', 'data'),
@@ -1411,7 +1436,7 @@ def get_time_series_data_from_generation_pickle(pickle_filepath, variable_select
     State('visualization_date_picker_calendar', 'end_date'),
     prevent_initial_call = True
 )
-def set_time_series_data(generated_data_name, aggregated_data_name, generated_data_list, generated_datetime_list, aggregated_data_list, aggregated_datetime_list, start_date, end_date):
+def set_time_series_data(unprocessed_or_aggregated_selection, generated_data_name, aggregated_data_name, generated_data_list, generated_datetime_list, aggregated_data_list, aggregated_datetime_list, start_date, end_date):
 
     # Convert date strings to datetime.date objects
     start = datetime.fromisoformat(start_date).date()
@@ -1427,13 +1452,12 @@ def set_time_series_data(generated_data_name, aggregated_data_name, generated_da
         values, dts = zip(*trimmed)
         return list(values), [dt.isoformat() for dt in dts]
 
-    if get_callback_id() == 'visualization_generated_pickle_time_series_data_name':
+    if unprocessed_or_aggregated_selection == 1:
         trimmed_data, trimmed_datetimes = trim_data(generated_data_list, generated_datetime_list)
         return generated_data_name, trimmed_data, trimmed_datetimes
-    elif get_callback_id() == 'visualization_aggregated_pickle_or_database_time_series_data_name':
+    elif unprocessed_or_aggregated_selection == 2:
         trimmed_data, trimmed_datetimes = trim_data(aggregated_data_list, aggregated_datetime_list)
         return aggregated_data_name, trimmed_data, trimmed_datetimes
-
 
 
 @app.callback(
