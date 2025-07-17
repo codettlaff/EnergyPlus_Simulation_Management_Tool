@@ -44,7 +44,7 @@ SPECIAL_IDF_FILEPATH = os.path.join(DATA_FOLDERPATH, 'Special.idf')
 if os.path.exists(UPLOAD_DIRECTORY): shutil.rmtree(UPLOAD_DIRECTORY)
 os.mkdir(UPLOAD_DIRECTORY)
 
-TEMPORARY_FOLDERPATH = os.path.join(os.path.dirname(__file__), '..', 'Data_Generation', 'TEMPORARY_FOLDERPATH')
+TEMPORARY_FOLDERPATH = os.path.join(os.path.dirname(__file__), '..', 'Data_Generation', 'temporary_folderpath')
 if os.path.exists(TEMPORARY_FOLDERPATH): shutil.rmtree(TEMPORARY_FOLDERPATH)
 
 ########## System Variables ##########
@@ -57,6 +57,14 @@ DEFAULT_EPW_FILEPATH = os.path.join(DATA_FOLDERPATH, 'TMY3_WeatherFiles_Commerci
 CUSTOM_BUILDING_INFORMATION = {
     "building_type": "Custom"
 }
+
+########## New Run - Refresh Everything ##########
+if os.path.exists(RESULTS_FOLDERPATH): shutil.rmtree(RESULTS_FOLDERPATH)
+os.mkdir(RESULTS_FOLDERPATH)
+if os.path.exists(UPLOAD_DIRECTORY): shutil.rmtree(UPLOAD_DIRECTORY)
+os.mkdir(UPLOAD_DIRECTORY)
+if os.path.exists(TEMPORARY_FOLDERPATH): shutil.rmtree(TEMPORARY_FOLDERPATH)
+os.mkdir(TEMPORARY_FOLDERPATH)
 
 # Instantiate our App and incorporate BOOTSTRAP theme Stylesheet
 # Themes - https://dash-bootstrap-components.opensource.faculty.ai/docs/themes/#available-themes

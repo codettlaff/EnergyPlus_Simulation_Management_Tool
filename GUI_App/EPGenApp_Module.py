@@ -26,11 +26,11 @@ import dash_bootstrap_components as dbc
 import MyDashApp_Module as AppFuncs
 import PSQLApp_Module as psql
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'Data_Generation_v2'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'Data_Generation'))
 import EP_DataGenerator_Script_v2_20250512 as data_generator
 import EP_DataAggregation_v2_20250619 as data_aggregator
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'Database_v2'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'Database'))
 import Database_Creator as db_creator
 import Data_Uploader as db_uploader
 

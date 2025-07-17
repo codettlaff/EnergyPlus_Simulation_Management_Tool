@@ -17,7 +17,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import dash_bootstrap_components as dbc
 
-database_creator_script_dir = os.path.join(os.path.dirname(__file__), '..', 'Database_v2')
+database_creator_script_dir = os.path.join(os.path.dirname(__file__), '..', 'Database')
 sys.path.append(database_creator_script_dir)
 import Database_Creator as db_creator
 import Data_Uploader as db_uploader
