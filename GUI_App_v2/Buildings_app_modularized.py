@@ -127,6 +127,17 @@ app.layout = dbc.Container([
     dcc.Store(id='visualization_time_series_data_list', data=None),
     dcc.Store(id='visualization_datetime_list', data=None),
 
+    dcc.Store(id='distribution_plot_data_name_list', data=[]),
+    dcc.Store(id='distribution_plot_data_list', data=[]),
+
+    dcc.Store(id='scatterplot_data_name_list', data=[]),
+    dcc.Store(id='scatterplot_data_list', data=[]),
+    dcc.Store(id='scatterplot_datetime_list', data=[]),
+
+    dcc.Store(id='time_series_data_name_list', data=[]),
+    dcc.Store(id='time_series_data_list', data=[]),
+    dcc.Store(id='time_series_datetime_list', data=[]),
+
 
     dbc.Row([
         html.H1(
@@ -1403,43 +1414,60 @@ def unhide_plot_buttons(data_name, data_list, datetime_list):
         return False, False, False, False
     else: return True, True, True, True
 
-# Create Distribution Plot
 @app.callback(
     Output('distribution_plot', 'figure'),
     Output('distribution_table', 'data'),
+    Output('distribution_plot_data_name_list', 'data'),
+    Output('distribution_plot_data_list', 'data'),
     Input('distribution_plot_button', 'n_clicks'),
+    State('distribution_plot_data_name_list', 'data'),
+    State('distribution_plot_data_list', 'data'),
     State('visualization_time_series_data_name', 'data'),
     State('visualization_time_series_data_list', 'data'),
     State('visualization_datetime_list', 'data'),
-    prevent_initial_call = True
+    prevent_initial_call=True
 )
-def create_distribution_plot(n_clicks, data_name, data_list, datetime_list):
-    # Wrap data in DataFrame with explicit column names
-    df = pd.DataFrame({data_name: data_list, 'Legend': [data_name] * len(data_list)})
+def create_distribution_plot(n_clicks, data_name_list, data_list_list, new_data_name, new_data_list, new_datetime_list):
+    # Initialize if needed
+    if not data_name_list:
+        data_name_list = []
+    if not data_list_list:
+        data_list_list = []
 
-    # Plot with explicit color mapping to force legend label
-    figure = px.histogram(
-        df,
-        x=data_name,
-        color='Legend',
-        histnorm='probability',
-        nbins=50,  # optional: control bin count
-        opacity=0.75,
-        labels={data_name: data_name}
+    # Append new variable to the list
+    data_name_list.append(new_data_name)
+    data_list_list.append(new_data_list)
+
+    # Create figure using go.Figure
+    fig = go.Figure()
+    stats_table = []
+
+    for name, values in zip(data_name_list, data_list_list):
+        fig.add_trace(go.Histogram(
+            x=values,
+            name=name,
+            histnorm='probability',
+            nbinsx=50,
+            opacity=0.6
+        ))
+
+        series = pd.Series(values)
+        stats_table.append({
+            "Variable": name,
+            "Mean": float(series.mean()),
+            "Variance": float(series.var()),
+            "Standard_Deviation": float(series.std()),
+            "Range": f"{round(series.min(), 4)} – {round(series.max(), 4)}"
+        })
+
+    fig.update_layout(
+        barmode='overlay',  # overlay histograms
+        xaxis_title='Value',
+        yaxis_title='Probability',
+        margin=dict(l=40, r=40, t=40, b=40)
     )
 
-    # Update layout for axis labels
-    figure.update_layout(xaxis_title='Frequency', yaxis_title='Value')
-
-    series = df[data_name]
-    stats = {
-        "Variable": data_name,
-        "Mean": float(series.mean()),
-        "Variance": float(series.var()),
-        "Standard_Deviation": float(series.std()),
-        "Range": f"{round(series.min(), 4)} – {round(series.max(), 4)}"
-    }
-    return figure, [stats]
+    return fig, stats_table, data_name_list, data_list_list
 
 @app.callback(
     Output('time_series_plot', 'figure'),
