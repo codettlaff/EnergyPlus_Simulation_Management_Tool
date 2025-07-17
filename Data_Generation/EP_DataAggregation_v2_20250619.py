@@ -217,13 +217,14 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_va
                     Current_Aggregation_Variable_ColName_List = Current_Aggregation_Variable.columns
 
                     # FOR LOOP: For each element in element
-                    for ColName1 in element:
+                    for ColName1 in element: # Zone in Zone List
 
                         # FOR LOOP: For each element in Current_Aggregation_Variable_ColName_List
                         for ColName2 in Current_Aggregation_Variable_ColName_List:
 
+                            ColName1 = ColName1.strip()
                             # IF LOOP: For checking presence of ColName1 in ColName2
-                            if (ColName2.find(ColName1) >= 0):  # ColName1 present in ColName2
+                            if (ColName2.find(ColName1) >= 0):  # ColName1 present in ColName2 - Are looking at correct zone
 
                                 # Appending ColName2 to Current_DF_Cols_Desired
                                 Current_DF_Cols_Desired.append(ColName2)
