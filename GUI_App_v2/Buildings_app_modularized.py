@@ -1420,6 +1420,7 @@ def unhide_plot_buttons(data_name, data_list, datetime_list):
     Output('distribution_plot_data_name_list', 'data'),
     Output('distribution_plot_data_list', 'data'),
     Input('distribution_plot_button', 'n_clicks'),
+    Input('remove_distribution_plots_button', 'n_clicks'),
     State('distribution_plot_data_name_list', 'data'),
     State('distribution_plot_data_list', 'data'),
     State('visualization_time_series_data_name', 'data'),
@@ -1427,47 +1428,52 @@ def unhide_plot_buttons(data_name, data_list, datetime_list):
     State('visualization_datetime_list', 'data'),
     prevent_initial_call=True
 )
-def create_distribution_plot(n_clicks, data_name_list, data_list_list, new_data_name, new_data_list, new_datetime_list):
-    # Initialize if needed
-    if not data_name_list:
-        data_name_list = []
-    if not data_list_list:
-        data_list_list = []
+def create_distribution_plot(plot_n_clicks, remove_plot_n_clicks, data_name_list, data_list_list, new_data_name, new_data_list, new_datetime_list):
 
-    # Append new variable to the list
-    data_name_list.append(new_data_name)
-    data_list_list.append(new_data_list)
+    if get_callback_id() == 'distribution_plot_button':
 
-    # Create figure using go.Figure
-    fig = go.Figure()
-    stats_table = []
+        # Initialize if needed
+        if not data_name_list:
+            data_name_list = []
+        if not data_list_list:
+            data_list_list = []
 
-    for name, values in zip(data_name_list, data_list_list):
-        fig.add_trace(go.Histogram(
-            x=values,
-            name=name,
-            histnorm='probability',
-            nbinsx=50,
-            opacity=0.6
-        ))
+        # Append new variable to the list
+        data_name_list.append(new_data_name)
+        data_list_list.append(new_data_list)
 
-        series = pd.Series(values)
-        stats_table.append({
-            "Variable": name,
-            "Mean": float(series.mean()),
-            "Variance": float(series.var()),
-            "Standard_Deviation": float(series.std()),
-            "Range": f"{round(series.min(), 4)} – {round(series.max(), 4)}"
-        })
+        # Create figure using go.Figure
+        fig = go.Figure()
+        stats_table = []
 
-    fig.update_layout(
-        barmode='overlay',  # overlay histograms
-        xaxis_title='Value',
-        yaxis_title='Probability',
-        margin=dict(l=40, r=40, t=40, b=40)
-    )
+        for name, values in zip(data_name_list, data_list_list):
+            fig.add_trace(go.Histogram(
+                x=values,
+                name=name,
+                histnorm='probability',
+                nbinsx=50,
+                opacity=0.6
+            ))
 
-    return fig, stats_table, data_name_list, data_list_list
+            series = pd.Series(values)
+            stats_table.append({
+                "Variable": name,
+                "Mean": float(series.mean()),
+                "Variance": float(series.var()),
+                "Standard_Deviation": float(series.std()),
+                "Range": f"{round(series.min(), 4)} – {round(series.max(), 4)}"
+            })
+
+        fig.update_layout(
+            barmode='overlay',  # overlay histograms
+            xaxis_title='Value',
+            yaxis_title='Probability',
+            margin=dict(l=40, r=40, t=40, b=40)
+        )
+
+        return fig, stats_table, data_name_list, data_list_list
+
+    else: return go.Figure(), None, [], []
 
 @app.callback(
     Output('time_series_plot', 'figure'),
