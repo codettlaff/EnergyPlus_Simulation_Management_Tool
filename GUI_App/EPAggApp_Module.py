@@ -346,8 +346,11 @@ def aggregate_data(aggregation_settings, variables_pickle_filepath, eio_pickle_f
     variable_list = aggregation_settings['aggregation_variable_list']
     aggregation_type = aggregation_settings['aggregation_type']
     aggregation_zone_list = aggregation_settings['aggregation_zone_list']
-    aggregation_pickle_filepath = EP_Agg.aggregate_data(variables_pickle_filepath, eio_pickle_filepath, variable_list, aggregation_type, aggregation_zone_list)
-    return aggregation_pickle_filepath
+    try:
+        aggregation_pickle_filepath = EP_Agg.aggregate_data(variables_pickle_filepath, eio_pickle_filepath, variable_list, aggregation_type, aggregation_zone_list)
+        return aggregation_pickle_filepath
+    except Exception as e:
+        return None
 
 def get_time_res(data_dict):
     start_datetime = data_dict['DateTime_List'][0]

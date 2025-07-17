@@ -37,6 +37,7 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_va
 
     # Creating Unique List of Zones
     Total_Zone_List = zone_list
+    Total_Zone_List = [zone.strip() for zone in zone_list]
 
     # Creating Unique Zone List
     Unique_Zone_List = list(set(Total_Zone_List))
@@ -56,8 +57,10 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_va
 
         # FOR LOOP: For each element of Unique_Zone_List
         for Unique_Zone in Unique_Zone_List:
-            Unique_Zone_Area_Dict[Unique_Zone] = float(
-                Eio_OutputFile_Dict['Zone Information'].query('`Zone Name` == Unique_Zone')['Floor Area {m2}'])
+            zone_information_df = Eio_OutputFile_Dict['Zone Information']
+            row = zone_information_df[zone_information_df['Zone Name'].str.strip() == Unique_Zone].iloc[0]
+            value = float(row[" Floor Area {m2}"])
+            Unique_Zone_Area_Dict[Unique_Zone] = value
 
         # Creating Zone_TotalArea_List
         Zone_TotalArea_List = []
@@ -71,7 +74,7 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_va
             # FOR LOOP: For each Element in Aggregation_Zone_List1
             for element in Aggregation_Zone_List1:
                 # Summing Up Zone Area
-                TotalArea = TotalArea + Unique_Zone_Area_Dict[element]
+                TotalArea = TotalArea + Unique_Zone_Area_Dict[element.strip()]
 
             # Appending Zone_TotalArea_List
             Zone_TotalArea_List.append(TotalArea)
