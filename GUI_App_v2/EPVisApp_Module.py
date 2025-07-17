@@ -465,35 +465,30 @@ tab_layout = [
     # Break Row
     dbc.Row([dbc.Col([html.Br()], width = 12),]),
 
-    # Row 13, scatter plot warning
-    dbc.Row([
-
-        dbc.Col([
-
-            html.H5("Please select two variables",
-                    className = 'text-left mb-2',
-                    id = 'EPVis_H5_ScatterPlotComment',
-                    style={'color': 'red'},
-                    hidden = False)
-
-            ], xs = 12, sm = 12, md = 12, lg = 12, xl = 12), # width = 12
-
-        ], justify = "left", align = "center"),
-
     # Row 14, scatter plot button
     dbc.Row([
 
         dbc.Col([
 
-            html.Button('Plot',
-                        id = 'EPVis_Button_ScatterBothData',
+            html.Button('Plot Selected Variable',
+                        id = 'scatterplot_button',
                         hidden = True,
                         className = "btn btn-primary btn-lg col-12"),
 
-            ], xs = 12, sm = 12, md = 12, lg = 12, xl = 12), # width = 12
+            ], xs = 12, sm = 12, md = 4, lg = 4, xl = 4), # width = 12
+
+            dbc.Col([
+
+            html.Button('Remove Plots',
+                        id = 'remove_scatterplots_button',
+                        hidden = True,
+                        className = "btn btn-primary btn-lg col-12"),
+
+            ], xs = 12, sm = 12, md = 4, lg = 4, xl = 4), # width = 12
 
 
         ], justify = "center", align = "center"),
+
 
     # Break Row
     dbc.Row([dbc.Col([html.Br()], width = 12),]),
@@ -503,7 +498,7 @@ tab_layout = [
 
         dbc.Col([
 
-            dcc.Graph(id = 'EPVis_Graph_Scatter', figure ={}),
+            dcc.Graph(id = 'scatterplot', figure ={}),
 
             ], xs = 12, sm = 12, md = 12, lg = 12, xl = 12), # width = 12
 

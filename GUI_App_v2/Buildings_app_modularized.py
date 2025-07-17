@@ -1404,6 +1404,8 @@ def set_time_series_data(generated_data_name, aggregated_data_name, generated_da
     Output('remove_distribution_plots_button', 'hidden'),
     Output('time_series_plot_button', 'hidden'),
     Output('remove_time_series_plot_button', 'hidden'),
+    Output('scatterplot_button', 'hidden'),
+    Output('remove_scatterplots_button', 'hidden'),
     Input('visualization_time_series_data_name', 'data'),
     Input('visualization_time_series_data_list', 'data'),
     Input('visualization_datetime_list', 'data'),
@@ -1411,8 +1413,8 @@ def set_time_series_data(generated_data_name, aggregated_data_name, generated_da
 )
 def unhide_plot_buttons(data_name, data_list, datetime_list):
     if is_valid_string(data_name) and len(data_list) > 0 and len(datetime_list) > 0:
-        return False, False, False, False
-    else: return True, True, True, True
+        return False, False, False, False, False, False
+    else: return True, True, True, True, True, True
 
 @app.callback(
     Output('distribution_plot', 'figure'),
@@ -1527,6 +1529,80 @@ def plot_time_series_data(plot_n_clicks, remove_plot_n_clicks, data_name_list, d
             yaxis_title='Value',
             margin=dict(l=40, r=40, t=40, b=40)
         )
+
+        return fig, data_name_list, data_list_list, datetime_list_list
+
+    else: return go.Figure(), [], [], []
+
+# Scatterplot
+@app.callback(
+    Output('scatterplot', 'figure'),
+    Output('scatterplot_data_name_list', 'data'),
+    Output('scatterplot_data_list', 'data'),
+    Output('scatterplot_datetime_list', 'data'),
+    Input('scatterplot_button', 'n_clicks'),
+    Input('remove_scatterplots_button', 'n_clicks'),
+    State('scatterplot_data_name_list', 'data'),
+    State('scatterplot_data_list', 'data'),
+    State('scatterplot_datetime_list', 'data'),
+    State('visualization_time_series_data_name', 'data'),
+    State('visualization_time_series_data_list', 'data'),
+    State('visualization_datetime_list', 'data'),
+    prevent_initial_call = True
+)
+def create_scatterplot(plot_n_clicks, remove_plot_n_clicks, data_name_list, data_list_list, datetime_list_list, new_data_name, new_data_list, new_datetime_list):
+
+    if get_callback_id() == 'scatterplot_button':
+        # Initialize lists if empty
+        if not data_name_list:
+            data_name_list = []
+        if not data_list_list:
+            data_list_list = []
+        if not datetime_list_list:
+            datetime_list_list = []
+
+        # Append new variable
+        data_name_list.append(new_data_name)
+        data_list_list.append(new_data_list)
+        datetime_list_list.append(new_datetime_list)
+
+        # Require at least 2 variables to plot a scatterplot
+        if len(data_list_list) < 2:
+            fig = go.Figure()
+            fig.update_layout(
+                title="Scatterplot requires at least 2 variables",
+                xaxis_title="X",
+                yaxis_title="Y"
+            )
+            return fig, data_name_list, data_list_list, datetime_list_list
+
+        # Use the last two variables
+        x_name = data_name_list[-2]
+        x_values = data_list_list[-2]
+
+        y_name = data_name_list[-1]
+        y_values = data_list_list[-1]
+
+        # Build scatterplot
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(
+            x=x_values,
+            y=y_values,
+            mode='markers',
+            marker=dict(size=6, opacity=0.7),
+            name=f"{y_name} vs {x_name}"
+        ))
+
+        fig.update_layout(
+            title=f"Scatterplot: {y_name} vs {x_name}",
+            xaxis_title=x_name,
+            yaxis_title=y_name,
+            margin=dict(l=40, r=40, t=40, b=40)
+        )
+
+        data_name_list = data_name_list[:-2]
+        data_list_list = data_list_list[:-2]
+        datetime_list_list = datetime_list_list[:-2]
 
         return fig, data_name_list, data_list_list, datetime_list_list
 
