@@ -96,52 +96,58 @@ tab_layout = [
             ),], xs = 12, sm = 12, md = 6, lg = 6, xl = 6), # width = 12
 
         dbc.Col([
-            # Upload Section Container
             html.Div([
-                # Upload Generated Data
-                html.Div([
-                    html.Label("Upload Pickle File from Data Generation", className='section-label'),
-                    dcc.Upload(
-                        id='visualization_upload_generated_data_box',
-                        children=html.Div("Drag and Drop or Select Files for Generated Data"),
-                        className='upload-box'
-                    )
-                ]),
 
-                # Spacer
-                html.Br(),
+                html.H5("Upload Files",
+                        style={
+                            'textAlign': 'center',
+                            'margin-top': '1rem',
+                            'margin-bottom': '0.5rem',
+                            'color': '#6c757d'  # optional: soft gray like Bootstrap's text-secondary
+                        }
+                        ),
+
+                # Upload Generated Data
+                dcc.Upload(['Upload Generated Data (.pickle)'],
+                           id='visualization_upload_generated_data_box',
+                           className='center',
+                           style={
+                               'width': '90%',
+                               'height': '40px',
+                               'lineHeight': '40px',
+                               'borderWidth': '1px',
+                               'borderStyle': 'dashed',
+                               'borderRadius': '5px',
+                               'textAlign': 'center',
+                               'margin-left': '5%',
+                               'margin-top': '5%'
+                           }
+                           ),
 
                 # Upload Aggregated Data
-                html.Div([
-                    html.Label("Upload Pickle File from Data Aggregation", className='section-label'),
-                    dcc.Upload(
-                        id='visualization_upload_aggregated_data_box',
-                        children=html.Div("Drag and Drop or Select Files for Aggregated Data"),
-                        className="upload-box"
-                    )
-                ])
-            ],
-            id='visualization_upload_data_menu',
-            hidden=True,
-            className='div-box'
-            ),
-
-            # Placeholder for Database Data (currently just a break)
-            html.Div([
-
-                html.Label("Select Simulation", className='section-label'),
-                dcc.Dropdown(
-                    options=[],
-                    value=None,
-                    id='visualization_database_simulation_dropdown',
-                    className='dropdown-box'
-                ),
+                dcc.Upload(['Upload Aggregated Data (.pickle)'],
+                           id='visualization_upload_aggregated_data_box',
+                           className='center',
+                           style={
+                               'width': '90%',
+                               'height': '40px',
+                               'lineHeight': '40px',
+                               'borderWidth': '1px',
+                               'borderStyle': 'dashed',
+                               'borderRadius': '5px',
+                               'textAlign': 'center',
+                               'margin': '5%'
+                           }
+                           )
 
             ],
-            id='visualization_select_from_database_menu',
-            hidden=True,
-            className='div-box'
-            )
+                id='visualization_upload_data_menu',
+                hidden=True,
+                style={
+                    'borderWidth': '1px',
+                    'borderStyle': 'solid',
+                    'borderRadius': '5px'
+                }),
 
 
         ], xs=12, sm=12, md=6, lg=6, xl=6)
