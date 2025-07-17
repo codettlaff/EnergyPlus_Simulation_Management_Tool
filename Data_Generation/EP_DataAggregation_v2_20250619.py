@@ -353,12 +353,12 @@ def aggregate_data(variables_pickle_filepath, eio_pickle_filepath, simulation_va
                 elif (aggregation_type == 2):  # Weighted Area Aggregation
 
                     # Filling Aggregation_Dict with Current_Aggregation_Variable
-                    Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = (Current_Aggregation_Variable[Current_DF_Cols_Desired].sum(axis=1).fillna(0.0)) / Zone_TotalArea_List[Counter]
+                    Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = (Current_Aggregation_Variable[Current_DF_Cols_Desired].sum(axis=1).fillna(0.0)) / Zone_TotalArea_List[Counter - 1]
 
                 elif (aggregation_type == 3):  # Weighted Volume Aggregation
 
                     # Filling Aggregation_Dict with Current_Aggregation_Variable
-                    Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = ( Current_Aggregation_Variable[Current_DF_Cols_Desired].sum(axis=1).fillna(0.0)) / Zone_TotalVolume_List[Counter]
+                    Aggregation_Dict[Aggregated_Zone_Name_1][variable_name] = ( Current_Aggregation_Variable[Current_DF_Cols_Desired].sum(axis=1).fillna(0.0)) / Zone_TotalVolume_List[Counter - 1]
 
 
             elif (Current_Aggregation_Variable_Type == 'System'):  # System Node
