@@ -1405,19 +1405,20 @@ def get_time_series_data_from_generation_pickle(pickle_filepath, variable_select
     Output('visualization_select_unprocessed_data_button', 'value'),
     Output('visualization_select_aggregated_data_button', 'value'),
     Output('unprocessed_or_unprocessed_data_selection', 'data'),
+    Input('visualization_data_source', 'value'),
     Input('visualization_generated_or_aggregated_data_selection', 'value'),
     Input('visualization_select_unprocessed_data_button', 'value'),
     Input('visualization_select_aggregated_data_button', 'value'),
     prevent_initial_call = True
 )
-def select_unprocessed_or_aggregated_data(data_source, unprocessed_data_button, processed_data_button):
+def select_unprocessed_or_aggregated_data(data_source, generated_or_aggregated, unprocessed_data_button, processed_data_button):
 
-    if data_source == 1:
+    if data_source == 3: return 0,1,2
+    elif generated_or_aggregated == 1:
         return 1, 0, 1
-    if data_source == 2:
+    elif generated_or_aggregated == 2:
         return 0, 1, 2
-
-    if get_callback_id() == 'visualization_select_unprocessed_data_button':
+    elif get_callback_id() == 'visualization_select_unprocessed_data_button':
         return 1, 0, 1
     else:
         return 0, 1, 2
