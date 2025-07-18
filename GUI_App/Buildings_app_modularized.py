@@ -251,7 +251,7 @@ def get_callback_id():
 # Database Selection
 @app.callback(
     Output('PSQL_Div_CreateSelectDatabase', 'hidden'),
-    Input('PSQL_RadioButton_UsingDatabase', 'value'),
+    Input('using_database', 'value'),
     prevent_initial_call=True
 )
 def database_selection(selection):
@@ -262,7 +262,7 @@ def database_selection(selection):
     Output('PSQL_Div_EnterInfo', 'hidden'),
     Output('PSQL_Div_SelectDbfromExist', 'hidden'),
     Input('PSQL_RadioButton_CreateSelectDatabase', 'value'),
-    Input('PSQL_RadioButton_UsingDatabase', 'value'),
+    Input('using_database', 'value'),
     prevent_initial_call=True
 )
 def create_select_database(selection, using_db):
@@ -429,7 +429,7 @@ def get_generation_epw_filepath(generation_default_epw_filepath, pnnl_prototype_
 # Get Building Information
 @app.callback(
     Output('building_information', 'data'),
-    Input('using_db', 'value'),
+    Input('using_database', 'value'),
     Input('generation_idf_filepath', 'data'),
     prevent_initial_call=True
 )
@@ -1121,7 +1121,7 @@ def upload_aggregated_pickle(filename, content):
     Output('visualization_database_simulation_dropdown', 'options'),
     Output('visualization_simulations_df', 'data'),
     Input('main_tabs', 'value'),
-    Input('PSQL_RadioButton_UsingDatabase', 'value'),
+    Input('using_database', 'value'),
     State('db_settings', 'data'),
     prevent_initial_call = True
 )
@@ -1879,7 +1879,7 @@ def EPVis_Button_TimeGeneratedData_Interaction(table_gen, column_gen, table_agg,
 # Want to make sure windows go away when 'No' is selected.
 @app.callback(
     Output(component_id = 'PSQL_Div_CreateSelectDatabase', component_property = 'hidden'),
-    Input(component_id = 'PSQL_RadioButton_UsingDatabase', component_property = 'value'),
+    Input(component_id = using_database, component_property = 'value'),
     prevent_initial_call = True)
 def PSQL_Radiobutton_UsingDatabase_Interaction(selection):
     global USING_DATABASE
