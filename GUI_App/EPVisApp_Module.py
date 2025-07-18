@@ -149,6 +149,23 @@ tab_layout = [
                     'borderRadius': '5px'
                 }),
 
+            # Placeholder for Database Data (currently just a break)
+            html.Div([
+
+                html.Label('Select Simulation', className='section-label'),
+                dcc.Dropdown(
+                    options=['sim1', 'sim2', 'sim3'],
+                    value=None,
+                    id='visualization_database_simulation_dropdown',
+                    className='dropdown-box'
+                ),
+
+            ],
+            id='visualization_select_from_database_menu',
+            hidden=True,
+            className='div-box'
+            )
+
 
         ], xs=12, sm=12, md=6, lg=6, xl=6)
 
