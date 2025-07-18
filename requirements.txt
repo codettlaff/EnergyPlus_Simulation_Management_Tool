@@ -1,4 +1,0 @@
-numpy
-pandas
-scipy
-opyplus==2.0.5
