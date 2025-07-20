@@ -677,8 +677,8 @@ def get_datetime_id_list(conn, data_dict, start_datetime, end_datetime, time_res
         else:
             raise ValueError("Not enough timestamps in DateTime_List to determine resolution")
 
-        if time_resolution % 5 != 0:
-            raise ValueError("Time resolution must be a multiple of 5 minutes")
+        if time_resolution % 1 != 0:
+            raise ValueError("Time resolution must be a multiple of 1 minute")
 
         #start_datetime = start_datetime - timedelta(minutes=time_resolution) # First timestamp in DateTime_List, shifted.
         #end_datetime = end_datetime + timedelta(days=1) - timedelta(minutes=time_resolution) # Last timestamp in DateTime_List, shifted

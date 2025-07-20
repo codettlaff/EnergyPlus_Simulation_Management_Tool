@@ -773,8 +773,7 @@ def update_schedule(idf_filepath, schedule_name, schedule_content):
 
 def generate_data(idf_filepath, epw_filepath, simulation_settings, variable_names, results_folderpath):
 
-    simulation_settings['start_datetime'] = simulation_settings['start_datetime'] + timedelta(minutes=5)
-    simulation_settings['end_datetime'] = simulation_settings['end_datetime'] + timedelta(days=1)
+    # Don't Need to Update Start and End Time for Data Generation - Only for Aggregation and Uplaoding
     simulation_results_folderpath = data_generator.simulate_variables(idf_filepath, epw_filepath, simulation_settings, variable_names, results_folderpath)
     variables_pickle_filepath = os.path.join(simulation_results_folderpath, "Sim_ProcessedData", "Output_Variables.pickle")
     eio_pickle_filepath = os.path.join(simulation_results_folderpath, "Sim_ProcessedData", "eio.pickle")
