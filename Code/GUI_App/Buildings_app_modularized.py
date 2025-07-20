@@ -33,7 +33,6 @@ import EPGenApp_Module as EPGen
 import EPAggApp_Module as EPAgg
 import EPVisApp_Module as EPVis
 import PSQLApp_Module as PSQL
-from Archive.Data_Generation.EP_DataGenerator_Script_v2_20250512 import TEMPORARY_FOLDERPATH
 
 # Directory Paths
 UPLOAD_DIRECTORY = os.path.join(os.path.dirname(__file__), "Uploads")
