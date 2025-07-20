@@ -11,10 +11,10 @@ import pickle
 from datetime import datetime, timedelta
 import requests
 
-DATA_FOLDERPATH = os.path.join(os.path.dirname(__file__), '..', '..', 'Data')
+DATA_FOLDERPATH = os.path.join(os.path.dirname(__file__), '..', '..','..', 'Data')
 RESULTS_FOLDERPATH = os.path.join(os.path.dirname(__file__), '..', '..', 'Results')
 SPECIAL_IDF_FILEPATH = os.path.join(DATA_FOLDERPATH, 'Special.idf')
-TEMPORARY_FOLDERPATH = os.path.join(os.path.dirname(__file__), 'Temporary_Folder')
+TEMPORARY_FOLDERPATH = os.path.join(os.path.dirname(__file__), 'temporary_folder')
 
 PRESELECTED_VARIABLES =  ['Schedule Value',
                           'Facility Total HVAC Electric Demand Power',

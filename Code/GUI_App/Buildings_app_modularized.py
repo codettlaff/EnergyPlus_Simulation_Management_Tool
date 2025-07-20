@@ -36,15 +36,16 @@ import PSQLApp_Module as PSQL
 
 # Directory Paths
 UPLOAD_DIRECTORY = os.path.join(os.path.dirname(__file__), "Uploads")
-DATA_FOLDERPATH = os.path.join(os.path.dirname(__file__), '..', '..', 'Data')
+DATA_FOLDERPATH = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'Data')
 RESULTS_FOLDERPATH = os.path.join(os.path.dirname(__file__), '..', '..', 'Results')
 SPECIAL_IDF_FILEPATH = os.path.join(DATA_FOLDERPATH, 'Special.idf')
 
 if os.path.exists(UPLOAD_DIRECTORY): shutil.rmtree(UPLOAD_DIRECTORY)
 os.mkdir(UPLOAD_DIRECTORY)
 
-TEMPORARY_FOLDERPATH = os.path.join(os.path.dirname(__file__), '..', 'Data_Generation', 'temporary_folderpath')
+TEMPORARY_FOLDERPATH = os.path.join(os.path.dirname(__file__), '..', 'Data_Generation', 'temporary_folder')
 if os.path.exists(TEMPORARY_FOLDERPATH): shutil.rmtree(TEMPORARY_FOLDERPATH)
+os.mkdir(TEMPORARY_FOLDERPATH)
 
 ########## System Variables ##########
 
@@ -664,7 +665,7 @@ def generate_data(n_clicks, idf_filepath, epw_filepath, simulation_settings, var
         variables_pickle_filepath, eio_pickle_filepath = EPGen.generate_data(idf_filepath, epw_filepath, simulation_settings, variable_names, RESULTS_FOLDERPATH)
         return 'Data Generated', variables_pickle_filepath, eio_pickle_filepath
     except Exception as e:
-        return "Generation Failed", no_update
+        return "Generation Failed", no_update, no_update
 
 # Unhide Download Buttons
 @app.callback(
