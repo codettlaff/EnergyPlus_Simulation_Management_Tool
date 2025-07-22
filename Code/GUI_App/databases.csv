@@ -1,2 +1,3 @@
 dbname,user,password,host,port
 test_db,Casey,OfficeLarge,localhost,
+test_db,casey,OfficeLarge,localhost,

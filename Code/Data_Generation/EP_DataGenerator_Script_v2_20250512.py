@@ -82,8 +82,8 @@ example_building_information = {
 
 def initial_run(idf_filepath, epw_filepath):
 
-    edited_idf_filepath = os.path.join(TEMPORARY_FOLDERPATH, "edited.idf")
-    initial_run_folderpath = os.path.join(TEMPORARY_FOLDERPATH, "initial_run")
+    edited_idf_filepath = os.path.abspath(os.path.join(TEMPORARY_FOLDERPATH, "edited.idf"))
+    initial_run_folderpath = os.path.abspath(os.path.join(TEMPORARY_FOLDERPATH, "initial_run"))
     initial_run_results_folderpath = os.path.join(TEMPORARY_FOLDERPATH, "initial_run_results")
     rdd_filepath = os.path.join(initial_run_folderpath, "eplusout.rdd")
     eio_filepath = os.path.join(initial_run_folderpath, "eplusout.eio")
