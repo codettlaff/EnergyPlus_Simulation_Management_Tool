@@ -4,11 +4,6 @@
 import psycopg2
 import time
 
-# Casey, OfficeLarge - LabPC
-# casey, OfficeLarge - Laptop
-
-# conn = psycopg2.connect(dbname="postgres", user="casey", password="OfficeLarge", host="localhost")
-
 def delete_database(conn, dbname):
 
     conn.autocommit = True
